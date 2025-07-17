@@ -26,7 +26,6 @@
     <Folder Include="Controllers\" />
     <Folder Include="DTOs\" />
     <Folder Include="Helpers\" />
-    <Folder Include="UnitOfWork\" />
     <Folder Include="Services\Impelementations\" />
     <Folder Include="Services\Interfaces\" />
     <Folder Include="wwwroot\" />
