@@ -12,7 +12,7 @@ using bnbClone_API.Data;
 namespace bnbClone_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250716194249_init")]
+    [Migration("20250717111817_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -205,29 +205,40 @@ namespace bnbClone_API.Migrations
 
                     b.Property<string>("Category")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("category");
 
                     b.Property<string>("IconUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("icon_url");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("name");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Amenities");
+                    b.HasIndex("Category")
+                        .HasDatabaseName("IX_Amenities_Category");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Amenities_Name");
+
+                    b.ToTable("amenities", (string)null);
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.ApplicationUser", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
@@ -235,44 +246,61 @@ namespace bnbClone_API.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("AccountStatus")
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("active")
+                        .HasColumnName("account_status");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("date")
+                        .HasColumnName("date_of_birth");
 
                     b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("email");
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
                     b.Property<bool>("EmailVerified")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("email_verified");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("first_name");
 
                     b.Property<string>("Gender")
                         .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("gender");
 
                     b.Property<DateTime?>("LastLogin")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("last_login");
 
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("last_name");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -289,23 +317,46 @@ namespace bnbClone_API.Migrations
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("nvarchar(max)");
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("password_hash");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("phone_number");
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
                     b.Property<bool>("PhoneVerified")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("phone_verified");
 
                     b.Property<string>("ProfilePictureUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("profile_picture_url");
+
+                    b.Property<string>("RefreshToken")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("refresh_token");
+
+                    b.Property<DateTime?>("RefreshTokenExpiryTime")
+                        .HasColumnType("datetime")
+                        .HasColumnName("refresh_token_expiry_time");
 
                     b.Property<string>("Role")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("guest")
+                        .HasColumnName("role");
 
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
@@ -314,13 +365,18 @@ namespace bnbClone_API.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Users_Email");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -330,349 +386,570 @@ namespace bnbClone_API.Migrations
                         .HasDatabaseName("UserNameIndex")
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.HasIndex("PhoneNumber")
+                        .HasDatabaseName("IX_Users_PhoneNumber");
+
+                    b.ToTable("AspNetUsers", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Users_AccountStatus", "[account_status] IN ('active', 'inactive', 'suspended', 'deleted')");
+
+                            t.HasCheckConstraint("CK_Users_Gender", "[gender] IN ('male', 'female', 'other', 'prefer_not_to_say')");
+
+                            t.HasCheckConstraint("CK_Users_Role", "[role] IN ('guest', 'host', 'admin')");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.Booking", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CheckInStatus")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("pending")
+                        .HasColumnName("check_in_status");
 
                     b.Property<string>("CheckOutStatus")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("pending")
+                        .HasColumnName("check_out_status");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("date")
+                        .HasColumnName("end_date");
 
                     b.Property<int>("GuestId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("guest_id");
 
                     b.Property<int>("PromotionId")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("promotion_id");
 
                     b.Property<int>("PropertyId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("property_id");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("date")
+                        .HasColumnName("start_date");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("status");
 
                     b.Property<decimal>("TotalAmount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("total_amount");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("GuestId");
+                    b.HasIndex("GuestId")
+                        .HasDatabaseName("IX_Bookings_GuestId");
 
-                    b.HasIndex("PropertyId");
+                    b.HasIndex("PropertyId")
+                        .HasDatabaseName("IX_Bookings_PropertyId");
 
-                    b.HasIndex("StartDate", "EndDate");
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Bookings_Status");
 
-                    b.ToTable("Bookings");
+                    b.HasIndex("StartDate", "EndDate")
+                        .HasDatabaseName("IX_Bookings_Dates");
+
+                    b.ToTable("bookings", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Bookings_CheckInStatus", "[check_in_status] IN ('pending', 'completed')");
+
+                            t.HasCheckConstraint("CK_Bookings_CheckOutStatus", "[check_out_status] IN ('pending', 'completed')");
+
+                            t.HasCheckConstraint("CK_Bookings_Dates", "[start_date] < [end_date]");
+
+                            t.HasCheckConstraint("CK_Bookings_Status", "[status] IN ('confirmed', 'denied', 'pending', 'cancelled', 'completed')");
+
+                            t.HasCheckConstraint("CK_Bookings_TotalAmount", "[total_amount] > 0");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.BookingPayment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("amount");
 
                     b.Property<int>("BookingId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("booking_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("PayementGateWayResponse")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("payment_gateway_response");
 
                     b.Property<string>("PaymentMethodType")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("payment_method_type");
 
                     b.Property<decimal>("RefundedAmount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("refunded_amount");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("status");
 
                     b.Property<string>("TransactionId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("transaction_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BookingId");
+                    b.HasIndex("BookingId")
+                        .HasDatabaseName("IX_BookingPayments_BookingId");
 
-                    b.ToTable("BookingPayments");
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_BookingPayments_Status");
+
+                    b.HasIndex("TransactionId")
+                        .HasDatabaseName("IX_BookingPayments_TransactionId");
+
+                    b.ToTable("booking_payments", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_BookingPayments_Amount", "[amount] > 0");
+
+                            t.HasCheckConstraint("CK_BookingPayments_RefundedAmount", "[refunded_amount] >= 0");
+
+                            t.HasCheckConstraint("CK_BookingPayments_RefundedAmount_Amount", "[refunded_amount] <= [amount]");
+
+                            t.HasCheckConstraint("CK_BookingPayments_Status", "[status] IN ('pending', 'completed', 'failed', 'refunded', 'partially_refunded')");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.BookingPayout", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("amount");
 
                     b.Property<int>("BookingId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("booking_id");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("status");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BookingId");
+                    b.HasIndex("BookingId")
+                        .HasDatabaseName("IX_BookingPayouts_BookingId");
 
-                    b.ToTable("BookingPayouts");
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_BookingPayouts_Status");
+
+                    b.ToTable("booking_payouts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_BookingPayouts_Amount", "[amount] > 0");
+
+                            t.HasCheckConstraint("CK_BookingPayouts_Status", "[status] IN ('pending', 'processing', 'completed', 'failed')");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.CancellationPolicy", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("description");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("name");
 
                     b.Property<decimal>("RefundPercentage")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(5,2)")
+                        .HasColumnName("refund_percentage");
 
                     b.HasKey("Id");
 
-                    b.ToTable("CancellationPolicies");
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasDatabaseName("IX_CancellationPolicies_Name");
+
+                    b.ToTable("cancellation_policies", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_CancellationPolicies_Name", "[name] IN ('flexible', 'moderate', 'strict', 'non_refundable')");
+
+                            t.HasCheckConstraint("CK_CancellationPolicies_RefundPercentage", "[refund_percentage] >= 0 AND [refund_percentage] <= 100");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.Conversation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<int?>("PropertyId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("property_id");
 
                     b.Property<string>("Subject")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("subject");
 
                     b.Property<int>("user1Id")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("user1_id");
 
                     b.Property<int>("user2Id")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("user2_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PropertyId");
-
-                    b.HasIndex("user1Id");
+                    b.HasIndex("PropertyId")
+                        .HasDatabaseName("IX_Conversations_PropertyId");
 
                     b.HasIndex("user2Id");
 
-                    b.ToTable("Conversations");
+                    b.HasIndex("user1Id", "user2Id")
+                        .HasDatabaseName("IX_Conversations_Users");
+
+                    b.ToTable("conversations", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Conversations_Users", "[user1_id] != [user2_id]");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.Favourite", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("FavouritedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("favourited_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<int>("PropertyId")
+                        .HasColumnType("int")
+                        .HasColumnName("property_id");
+
+                    b.Property<int?>("PropertyId1")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PropertyId");
+                    b.HasIndex("PropertyId")
+                        .HasDatabaseName("IX_Favourites_PropertyId");
+
+                    b.HasIndex("PropertyId1");
 
                     b.HasIndex("UserId", "PropertyId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Favourites_UserProperty");
 
-                    b.ToTable("Favourites");
+                    b.ToTable("favourites", (string)null);
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.Host", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("host_id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("AboutMe")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("about_me");
 
                     b.Property<decimal>("AvailableBalance")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("decimal(12,2)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("available_balance");
 
                     b.Property<string>("DefaultPayoutMethod")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("default_payout_method");
 
                     b.Property<string>("DreamDestination")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("dream_destination");
 
                     b.Property<string>("Education")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("education");
 
                     b.Property<string>("FunFact")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("fun_fact");
 
                     b.Property<bool>("IsVerified")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_verified");
 
                     b.Property<string>("Languages")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("languages");
 
                     b.Property<string>("LivesIn")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("lives_in");
 
                     b.Property<string>("ObsessedWith")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("obsessed_with");
 
                     b.Property<string>("PayoutAccountDetails")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("payout_account_details");
 
                     b.Property<string>("Pets")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("pets");
 
                     b.Property<decimal>("Rating")
-                        .HasPrecision(3, 2)
-                        .HasColumnType("decimal(3,2)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(3,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("rating");
 
                     b.Property<string>("SpecialAbout")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)")
+                        .HasColumnName("special_about");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("start_date")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("StripeAccountId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("stripe_account_id");
 
                     b.Property<decimal>("TotalEarnings")
-                        .HasPrecision(12, 2)
-                        .HasColumnType("decimal(12,2)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("total_earnings");
 
                     b.Property<int>("TotalReviews")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("total_reviews");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
 
                     b.Property<string>("Work")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("work");
 
                     b.HasKey("Id");
 
                     b.HasIndex("UserId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Hosts_UserId");
 
-                    b.ToTable("Hosts");
+                    b.ToTable("hosts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Hosts_AvailableBalance", "[available_balance] >= 0");
+
+                            t.HasCheckConstraint("CK_Hosts_Rating", "[rating] >= 0 AND [rating] <= 5");
+
+                            t.HasCheckConstraint("CK_Hosts_TotalEarnings", "[total_earnings] >= 0");
+
+                            t.HasCheckConstraint("CK_Hosts_TotalReviews", "[total_reviews] >= 0");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.HostPayout", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("amount");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<int>("HostId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("host_id");
 
                     b.Property<string>("Notes")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("notes");
 
                     b.Property<string>("PayoutAccountDetails")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("payout_account_details");
 
                     b.Property<string>("PayoutMethod")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("payout_method");
 
                     b.Property<DateTime?>("ProcessedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("processed_at");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("status");
 
                     b.Property<string>("TransactionId")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("transaction_id");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HostId");
+                    b.HasIndex("HostId")
+                        .HasDatabaseName("IX_HostPayouts_HostId");
 
-                    b.ToTable("HostPayouts");
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_HostPayouts_Status");
+
+                    b.HasIndex("TransactionId")
+                        .HasDatabaseName("IX_HostPayouts_TransactionId");
+
+                    b.ToTable("host_payouts", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_HostPayouts_Amount", "[amount] > 0");
+
+                            t.HasCheckConstraint("CK_HostPayouts_Status", "[status] IN ('pending', 'processing', 'completed', 'failed')");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.HostPerformanceView", b =>
@@ -705,231 +982,418 @@ namespace bnbClone_API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("DocumentUrl1")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("document_url1");
 
                     b.Property<string>("DocumentUrl2")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("document_url2");
 
                     b.Property<int>("HostId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("host_id");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("pending")
+                        .HasColumnName("status");
 
                     b.Property<DateTime>("SubmittedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("submitted_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("type");
 
                     b.Property<DateTime?>("VerifiedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("verified_at");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HostId");
+                    b.HasIndex("HostId")
+                        .HasDatabaseName("IX_HostVerifications_HostId");
 
-                    b.ToTable("HostVerifications");
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_HostVerifications_Status");
+
+                    b.HasIndex("HostId", "Type")
+                        .IsUnique()
+                        .HasDatabaseName("IX_HostVerifications_HostType");
+
+                    b.ToTable("host_verifications", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_HostVerifications_Status", "[status] IN ('pending', 'approved', 'rejected')");
+
+                            t.HasCheckConstraint("CK_HostVerifications_Type", "[type] IN ('identity', 'address', 'phone', 'email', 'government_id')");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.Message", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("content");
 
                     b.Property<int>("ConversationId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("conversation_id");
 
                     b.Property<DateTime?>("ReadAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("read_at");
 
                     b.Property<int>("ReceiverId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("receiver_id");
 
                     b.Property<int>("SenderId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("sender_id");
 
                     b.Property<DateTime>("SentAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("sent_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ConversationId");
+                    b.HasIndex("ConversationId")
+                        .HasDatabaseName("IX_Messages_ConversationId");
 
-                    b.HasIndex("ReceiverId");
+                    b.HasIndex("ReceiverId")
+                        .HasDatabaseName("IX_Messages_ReceiverId");
+
+                    b.HasIndex("SenderId")
+                        .HasDatabaseName("IX_Messages_SenderId");
+
+                    b.HasIndex("SentAt")
+                        .HasDatabaseName("IX_Messages_SentAt");
+
+                    b.ToTable("messages", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Messages_Users", "[sender_id] != [receiver_id]");
+                        });
+                });
+
+            modelBuilder.Entity("bnbClone_API.Models.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<bool>("IsRead")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_read");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)")
+                        .HasColumnName("message");
+
+                    b.Property<int?>("SenderId")
+                        .HasColumnType("int")
+                        .HasColumnName("sender_id");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Notifications_CreatedAt");
+
+                    b.HasIndex("IsRead")
+                        .HasDatabaseName("IX_Notifications_IsRead");
 
                     b.HasIndex("SenderId");
 
-                    b.ToTable("Messages");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_Notifications_UserId");
+
+                    b.HasIndex("UserId", "IsRead")
+                        .HasDatabaseName("IX_Notifications_UserIsRead");
+
+                    b.ToTable("notifications", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Notifications_Users", "[sender_id] IS NULL OR [sender_id] != [user_id]");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.Promotion", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("amount");
 
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("code");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("DiscountType")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("discount_type");
 
                     b.Property<DateTime>("EndDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("end_date");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_active");
 
                     b.Property<int>("MaxUses")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("max_uses");
 
                     b.Property<DateTime>("StartDate")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("start_date");
 
                     b.Property<int>("UsedCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0)
+                        .HasColumnName("used_count");
 
                     b.HasKey("Id");
 
                     b.HasIndex("Code")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasDatabaseName("IX_Promotions_Code");
 
-                    b.ToTable("Promotions");
+                    b.HasIndex("IsActive")
+                        .HasDatabaseName("IX_Promotions_IsActive");
+
+                    b.HasIndex("StartDate", "EndDate")
+                        .HasDatabaseName("IX_Promotions_Dates");
+
+                    b.ToTable("promotions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Promotions_Amount", "[amount] > 0");
+
+                            t.HasCheckConstraint("CK_Promotions_Dates", "[start_date] <= [end_date]");
+
+                            t.HasCheckConstraint("CK_Promotions_DiscountType", "[discount_type] IN ('Percentage', 'FixedAmount')");
+
+                            t.HasCheckConstraint("CK_Promotions_MaxUses", "[max_uses] > 0");
+
+                            t.HasCheckConstraint("CK_Promotions_UsedCount", "[used_count] >= 0");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.Property", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Address")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("address");
 
                     b.Property<int>("Bathrooms")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("bathrooms");
 
                     b.Property<int>("Bedrooms")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("bedrooms");
 
                     b.Property<int?>("CancellationPolicyId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("cancellation_policy_id");
 
                     b.Property<int?>("CategoryId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("category_id");
 
                     b.Property<TimeSpan?>("CheckInTime")
-                        .HasColumnType("time");
+                        .HasColumnType("time")
+                        .HasColumnName("check_in_time");
 
                     b.Property<TimeSpan?>("CheckOutTime")
-                        .HasColumnType("time");
+                        .HasColumnType("time")
+                        .HasColumnName("check_out_time");
 
                     b.Property<string>("City")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("city");
 
                     b.Property<decimal>("CleaningFee")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("cleaning_fee");
 
                     b.Property<string>("Country")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("country");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)")
+                        .HasColumnName("currency");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("description");
 
                     b.Property<int>("HostId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("host_id");
 
                     b.Property<bool>("InstantBook")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("instant_book");
 
                     b.Property<decimal>("Latitude")
-                        .HasColumnType("decimal(10,8)");
+                        .HasColumnType("decimal(9,6)")
+                        .HasColumnName("latitude");
 
                     b.Property<decimal>("Longitude")
-                        .HasColumnType("decimal(11,8)");
+                        .HasColumnType("decimal(9,6)")
+                        .HasColumnName("longitude");
 
                     b.Property<int>("MaxGuests")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("max_guests");
 
                     b.Property<int>("MaxNights")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("max_nights");
 
                     b.Property<int>("MinNights")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("min_nights");
 
                     b.Property<string>("PostalCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("postal_code");
 
                     b.Property<decimal>("PricePerNight")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price_per_night");
 
                     b.Property<string>("PropertyType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("property_type");
 
                     b.Property<decimal>("ServiceFee")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("decimal(18,2)")
+                        .HasDefaultValue(0m)
+                        .HasColumnName("service_fee");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Pending")
+                        .HasColumnName("status");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("title");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id");
 
@@ -939,20 +1403,21 @@ namespace bnbClone_API.Migrations
 
                     b.HasIndex("HostId");
 
-                    b.HasIndex("Status");
-
-                    b.HasIndex("City", "Country");
-
-                    b.ToTable("Properties");
+                    b.ToTable("Properties", t =>
+                        {
+                            t.HasCheckConstraint("CK_Properties_Status", "[status] IN ('active', 'pending', 'suspended')");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.PropertyAmenity", b =>
                 {
                     b.Property<int>("PropertyId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("property_id");
 
                     b.Property<int>("AmenityId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("amenity_id");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -961,35 +1426,47 @@ namespace bnbClone_API.Migrations
 
                     b.HasIndex("AmenityId");
 
-                    b.ToTable("PropertyAmenity");
+                    b.ToTable("property_amenities", (string)null);
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.PropertyAvailability", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("BlockedReason")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("blocked_reason");
 
                     b.Property<DateTime>("Date")
-                        .HasColumnType("date");
+                        .HasColumnType("date")
+                        .HasColumnName("date");
 
                     b.Property<bool>("IsAvailable")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_available");
 
                     b.Property<int>("MinNights")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1)
+                        .HasColumnName("min_nights");
 
                     b.Property<decimal>("Price")
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("price");
 
                     b.Property<int>("PropertyId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("property_id");
 
                     b.HasKey("Id");
 
@@ -1019,19 +1496,26 @@ namespace bnbClone_API.Migrations
                 {
                     b.Property<int>("CategoryId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("category_id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CategoryId"));
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("description");
 
                     b.Property<string>("IconUrl")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("icon_url");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("name");
 
                     b.HasKey("CategoryId");
 
@@ -1096,61 +1580,88 @@ namespace bnbClone_API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Category")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("category");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("description");
 
                     b.Property<string>("ImageUrl")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("image_url");
 
                     b.Property<bool>("IsPrimary")
-                        .HasColumnType("bit");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_primary");
 
                     b.Property<int>("PropertyId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("property_id");
 
                     b.HasKey("Id");
 
                     b.HasIndex("PropertyId");
 
-                    b.ToTable("PropertyImages");
+                    b.ToTable("PropertyImages", t =>
+                        {
+                            t.HasCheckConstraint("CK_PropertyImages_Category", "[category] IN ('Bedroom', 'Bathroom', 'Living Area', 'Kitchen', 'Exterior', 'Additional')");
+                        });
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.Review", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BookingId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("booking_id");
 
                     b.Property<string>("Comment")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("comment");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("SYSDATETIME()");
 
                     b.Property<int>("Rating")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("rating");
 
                     b.Property<int>("ReviewerId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("reviewer_id");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at");
 
                     b.HasKey("Id");
 
@@ -1206,35 +1717,150 @@ namespace bnbClone_API.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("id");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("BookingId")
+                        .HasColumnType("int")
+                        .HasColumnName("booking_id");
+
+                    b.Property<int?>("BookingId1")
                         .HasColumnType("int");
 
                     b.Property<decimal>("DiscountedAmount")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(18,2)")
+                        .HasColumnName("discounted_amount");
 
                     b.Property<int>("PromotionId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("promotion_id");
 
                     b.Property<DateTime>("UsedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("used_at")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("user_id");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BookingId")
-                        .IsUnique();
+                        .HasDatabaseName("IX_UserUsedPromotions_BookingId");
 
-                    b.HasIndex("PromotionId");
+                    b.HasIndex("BookingId1")
+                        .IsUnique()
+                        .HasFilter("[BookingId1] IS NOT NULL");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("PromotionId")
+                        .HasDatabaseName("IX_UserUsedPromotions_PromotionId");
 
-                    b.ToTable("UserUsedPromotions");
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("IX_UserUsedPromotions_UserId");
+
+                    b.HasIndex("UserId", "PromotionId")
+                        .HasDatabaseName("IX_UserUsedPromotions_UserPromotion");
+
+                    b.ToTable("user_used_promotions", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_UserUsedPromotions_DiscountedAmount", "[discounted_amount] > 0");
+                        });
+                });
+
+            modelBuilder.Entity("bnbClone_API.Models.Violation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasColumnName("id");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("admin_notes");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("description");
+
+                    b.Property<int>("ReportedById")
+                        .HasColumnType("int")
+                        .HasColumnName("reported_by_id");
+
+                    b.Property<int?>("ReportedHostId")
+                        .HasColumnType("int")
+                        .HasColumnName("reported_host_id");
+
+                    b.Property<int?>("ReportedPropertyId")
+                        .HasColumnType("int")
+                        .HasColumnName("reported_property_id");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("datetime")
+                        .HasColumnName("resolved_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Pending")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("GETDATE()");
+
+                    b.Property<string>("ViolationType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("violation_type");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("IX_Violations_CreatedAt");
+
+                    b.HasIndex("ReportedById")
+                        .HasDatabaseName("IX_Violations_ReportedById");
+
+                    b.HasIndex("ReportedHostId")
+                        .HasDatabaseName("IX_Violations_ReportedHostId");
+
+                    b.HasIndex("ReportedPropertyId")
+                        .HasDatabaseName("IX_Violations_ReportedPropertyId");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Violations_Status");
+
+                    b.HasIndex("ViolationType")
+                        .HasDatabaseName("IX_Violations_ViolationType");
+
+                    b.ToTable("violations", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_Violations_Status", "[status] IN ('Pending', 'UnderReview', 'Resolved', 'Dismissed')");
+
+                            t.HasCheckConstraint("CK_Violations_Subject", "[reported_property_id] IS NOT NULL OR [reported_host_id] IS NOT NULL");
+
+                            t.HasCheckConstraint("CK_Violations_ViolationType", "[violation_type] IN ('PropertyMisrepresentation', 'HostMisconduct', 'SafetyIssue', 'PolicyViolation', 'FraudulentActivity', 'Other')");
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -1358,10 +1984,14 @@ namespace bnbClone_API.Migrations
             modelBuilder.Entity("bnbClone_API.Models.Favourite", b =>
                 {
                     b.HasOne("bnbClone_API.Models.Property", "Property")
-                        .WithMany("Favourites")
+                        .WithMany()
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
+
+                    b.HasOne("bnbClone_API.Models.Property", null)
+                        .WithMany("Favourites")
+                        .HasForeignKey("PropertyId1");
 
                     b.HasOne("bnbClone_API.Models.ApplicationUser", "User")
                         .WithMany()
@@ -1434,17 +2064,35 @@ namespace bnbClone_API.Migrations
                     b.Navigation("Sender");
                 });
 
+            modelBuilder.Entity("bnbClone_API.Models.Notification", b =>
+                {
+                    b.HasOne("bnbClone_API.Models.ApplicationUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("bnbClone_API.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Sender");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("bnbClone_API.Models.Property", b =>
                 {
                     b.HasOne("bnbClone_API.Models.CancellationPolicy", "CancellationPolicy")
                         .WithMany("Properties")
                         .HasForeignKey("CancellationPolicyId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("bnbClone_API.Models.PropertyCategory", "Category")
                         .WithMany("Properties")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.HasOne("bnbClone_API.Models.Host", "Host")
                         .WithMany("Properties")
@@ -1468,7 +2116,7 @@ namespace bnbClone_API.Migrations
                         .IsRequired();
 
                     b.HasOne("bnbClone_API.Models.Property", "Property")
-                        .WithMany()
+                        .WithMany("PropertyAmenities")
                         .HasForeignKey("PropertyId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1509,9 +2157,9 @@ namespace bnbClone_API.Migrations
                         .IsRequired();
 
                     b.HasOne("bnbClone_API.Models.ApplicationUser", "Reviewer")
-                        .WithMany()
+                        .WithMany("Reviews")
                         .HasForeignKey("ReviewerId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Booking");
@@ -1522,10 +2170,14 @@ namespace bnbClone_API.Migrations
             modelBuilder.Entity("bnbClone_API.Models.UserUsedPromotion", b =>
                 {
                     b.HasOne("bnbClone_API.Models.Booking", "Booking")
-                        .WithOne("UsedPromotion")
-                        .HasForeignKey("bnbClone_API.Models.UserUsedPromotion", "BookingId")
+                        .WithMany()
+                        .HasForeignKey("BookingId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("bnbClone_API.Models.Booking", null)
+                        .WithOne("UsedPromotion")
+                        .HasForeignKey("bnbClone_API.Models.UserUsedPromotion", "BookingId1");
 
                     b.HasOne("bnbClone_API.Models.Promotion", "Promotion")
                         .WithMany("UserUsedPromotions")
@@ -1546,9 +2198,39 @@ namespace bnbClone_API.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("bnbClone_API.Models.Violation", b =>
+                {
+                    b.HasOne("bnbClone_API.Models.ApplicationUser", "ReportedBy")
+                        .WithMany()
+                        .HasForeignKey("ReportedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("bnbClone_API.Models.Host", "ReportedHost")
+                        .WithMany()
+                        .HasForeignKey("ReportedHostId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("bnbClone_API.Models.Property", "ReportedProperty")
+                        .WithMany()
+                        .HasForeignKey("ReportedPropertyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ReportedBy");
+
+                    b.Navigation("ReportedHost");
+
+                    b.Navigation("ReportedProperty");
+                });
+
             modelBuilder.Entity("bnbClone_API.Models.Amenity", b =>
                 {
                     b.Navigation("PropertyAmenities");
+                });
+
+            modelBuilder.Entity("bnbClone_API.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("Reviews");
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.Booking", b =>
@@ -1595,6 +2277,8 @@ namespace bnbClone_API.Migrations
                     b.Navigation("Conversations");
 
                     b.Navigation("Favourites");
+
+                    b.Navigation("PropertyAmenities");
 
                     b.Navigation("PropertyImages");
                 });

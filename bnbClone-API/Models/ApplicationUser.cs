@@ -29,6 +29,11 @@ namespace bnbClone_API.Models
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastLogin { get; set; }
         public string Role { get; set; } = "guest";
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiryTime { get; set; }
+
+        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+
     }
 
     public enum AccountStatus
@@ -37,6 +42,12 @@ namespace bnbClone_API.Models
         Inactive,
         Suspended,
         Deleted
+    }
+    public enum UserRole
+    {
+        Guest,
+        Host,
+        Admin
     }
 
 }
