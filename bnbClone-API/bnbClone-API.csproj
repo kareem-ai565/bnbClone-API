@@ -27,8 +27,6 @@
     <Folder Include="DTOs\" />
     <Folder Include="Helpers\" />
     <Folder Include="UnitOfWork\" />
-    <Folder Include="Repositories\Interfaces\" />
-    <Folder Include="Repositories\Impelementations\" />
     <Folder Include="Services\Impelementations\" />
     <Folder Include="Services\Interfaces\" />
     <Folder Include="wwwroot\" />
