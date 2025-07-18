@@ -28,7 +28,7 @@
     <Folder Include="UnitOfWork\" />
     <Folder Include="Services\Impelementations\" />
     <Folder Include="Services\Interfaces\" />
-    <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\Images\" />
   </ItemGroup>
 
 </Project>

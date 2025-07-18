@@ -4,6 +4,7 @@ using bnbClone_API.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace bnbClone_API.Controllers
 {
@@ -56,14 +57,26 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> AddAmenity([FromForm] AmenityDTO amenity)
         {
 
-            var FolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\images");
+            var FolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Images");
+
+            if(!Directory.Exists(FolderPath))
+                Directory.CreateDirectory(FolderPath);
+
+            var FileName = $"{Guid.NewGuid()}{Path.GetExtension(amenity.IconUrl.FileName)}";
+
+
+            var FilePath=Path.Combine(FolderPath, FileName);
+
+
+            using var FileStream = new FileStream(FilePath, FileMode.CreateNew);
+
+            amenity.IconUrl.CopyTo(FileStream);
 
             Amenity amenity1 = new Amenity()
             {
-                Id = amenity.Id,
                 Name = amenity.Name,
                 Category = amenity.Category,
-                IconUrl = amenity.IconUrl,
+                IconUrl = FileName,
             };
 
 
@@ -78,11 +91,58 @@ namespace bnbClone_API.Controllers
 
 
 
-        //[HttpPut]
-        //public IActionResult UpdateAmenity()
-        //{
+        [HttpPut]
+        public async Task<IActionResult> UpdateAmenity(int id, [FromForm]  AmenityDTO amenity)
+        {
 
-        //}
+            Amenity amenity1 =await amenityRepo.GetByIdAsync(id);
+
+            if(amenity1 != null)
+            {
+
+
+                amenity1.Name = amenity.Name;
+                amenity1.Category = amenity.Category;
+
+                var FolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Images");
+
+                var FileName = $"{Guid.NewGuid()}{Path.GetExtension(amenity.IconUrl.FileName)}";
+
+                var FilePath = Path.Combine(FolderPath, FileName);
+
+
+                using var fileStream = new FileStream(FilePath, FileMode.CreateNew);
+
+
+                amenity.IconUrl.CopyTo(fileStream);
+
+
+                amenity1.IconUrl = FileName;
+
+
+                var OldImage = Path.Combine(FolderPath, amenity1.IconUrl);
+
+
+                if(OldImage != null)
+                {
+                    System.IO.File.Delete(OldImage);
+                }
+
+
+
+                //await amenityRepo.UpdateAsync(amenity);
+
+
+
+                return Ok(amenity1);
+
+            }
+
+
+            return BadRequest();
+            
+      
+        }
 
 
 
