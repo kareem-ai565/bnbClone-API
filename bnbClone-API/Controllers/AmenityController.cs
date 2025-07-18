@@ -1,5 +1,6 @@
 ﻿using bnbClone_API.DTOs;
 using bnbClone_API.Models;
+using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,7 +48,16 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> DeleteAmenity(int id)
         {
 
-            return Ok(await amenityRepo.DeleteAsync(id));
+            if (await amenityRepo.ExistsAsync(id))
+
+                return Ok(await amenityRepo.DeleteAsync(id));
+
+
+            else
+            {
+                return BadRequest("Enter Id Found");
+            }
+
 
         }
 
@@ -116,17 +126,18 @@ namespace bnbClone_API.Controllers
 
                 amenity.IconUrl.CopyTo(fileStream);
 
+                var OldImage = Path.Combine(FolderPath, amenity1.IconUrl);
+
+
+                if (OldImage != null)
+                {
+                    System.IO.File.Delete(OldImage);
+                }
 
                 amenity1.IconUrl = FileName;
 
 
-                var OldImage = Path.Combine(FolderPath, amenity1.IconUrl);
-
-
-                if(OldImage != null)
-                {
-                    System.IO.File.Delete(OldImage);
-                }
+                
 
 
 
