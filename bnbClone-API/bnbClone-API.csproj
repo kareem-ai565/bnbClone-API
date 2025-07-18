@@ -24,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DTOs\" />
     <Folder Include="Helpers\" />
     <Folder Include="UnitOfWork\" />
     <Folder Include="Services\Impelementations\" />
