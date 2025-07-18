@@ -27,6 +27,7 @@ namespace bnbClone_API
 
             // Add services to the container.
             builder.Services.AddScoped<IAmenityRepo, AmenityRepo>();
+            builder.Services.AddScoped<IPropertyCategoryRepo, PropertyCategoryRepo>();
 
             builder.Services.AddControllers();
 

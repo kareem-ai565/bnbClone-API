@@ -6,7 +6,7 @@ namespace bnbClone_API.DTOs
     {
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
-        public string? IconUrl { get; set; }
+        public IFormFile IconUrl { get; set; }
 
     }
 }
