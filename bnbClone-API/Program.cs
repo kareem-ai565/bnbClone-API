@@ -1,5 +1,7 @@
 
 using bnbClone_API.Data;
+using bnbClone_API.Repositories.Impelementations;
+using bnbClone_API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace bnbClone_API
@@ -16,8 +18,11 @@ namespace bnbClone_API
             //==============================================================================
 
             // Add services to the container.
+            builder.Services.AddScoped<IAmenityRepo, AmenityRepo>();
 
             builder.Services.AddControllers();
+
+           
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
