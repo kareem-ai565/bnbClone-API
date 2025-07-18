@@ -2,6 +2,7 @@
 using bnbClone_API.Data;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 
 namespace bnbClone_API
@@ -16,6 +17,13 @@ namespace bnbClone_API
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
      options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             //==============================================================================
+
+            
+
+            builder.Services.Configure<FormOptions>(options =>
+            {
+                options.ValueCountLimit = int.MaxValue;
+            });
 
             // Add services to the container.
             builder.Services.AddScoped<IAmenityRepo, AmenityRepo>();
