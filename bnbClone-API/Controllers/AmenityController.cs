@@ -2,6 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.Services.Impelementations;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,12 @@ namespace bnbClone_API.Controllers
     public class AmenityController : ControllerBase
     {
        
-        private readonly IUnitOfWork unitOfWork;
+        private readonly AmenityService service;
 
-        public AmenityController(IUnitOfWork unitOfWork)
+        public AmenityController(AmenityService service)
         {
            
-            this.unitOfWork = unitOfWork;
+            this.service = service;
         }
 
 
@@ -29,7 +30,8 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> GetAllAmenities()
         {
 
-          return  Ok( await unitOfWork._Amenities.GetAllAsync());
+
+          return  Ok(await service.GetAmenities());
 
         }
 
@@ -39,7 +41,7 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> GetAmenityById(int id)
         {
 
-            return Ok(await unitOfWork._Amenities.GetByIdAsync(id));
+            return Ok(await service.GetAmenityById(id));
 
         }
 
@@ -51,15 +53,14 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> DeleteAmenity(int id)
         {
 
-            Amenity amenity = await unitOfWork._Amenities.GetByIdAsync(id);
+            Amenity amenity = await service.GetAmenityById(id);
 
 
 
             if (amenity != null)
             {
 
-                await unitOfWork._Amenities.DeleteAsync(id);
-                unitOfWork.SaveAsync();
+               await service.DeleteAmenity(id);
                 return Ok(amenity);
 
             }
@@ -74,37 +75,25 @@ namespace bnbClone_API.Controllers
 
 
 
+
         [HttpPost]
         public async Task<IActionResult> AddAmenity([FromForm] AmenityDTO amenity)
         {
-
-            var FolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Images");
-
-            if(!Directory.Exists(FolderPath))
-                Directory.CreateDirectory(FolderPath);
-
-            var FileName = $"{Guid.NewGuid()}{Path.GetExtension(amenity.IconUrl.FileName)}";
-
-
-            var FilePath=Path.Combine(FolderPath, FileName);
-
-
-            using var FileStream = new FileStream(FilePath, FileMode.CreateNew);
-
-            amenity.IconUrl.CopyTo(FileStream);
-
-            Amenity amenity1 = new Amenity()
+            if(amenity != null)
             {
-                Name = amenity.Name,
-                Category = amenity.Category,
-                IconUrl = FileName,
-            };
+
+              await  service.AddAmenity(amenity);
 
 
-            await unitOfWork._Amenities.AddAsync(amenity1);
-            unitOfWork.SaveAsync();
+                return Ok(amenity);
 
-            return Ok(amenity);
+            }
+            else
+            {
+                return BadRequest(new { error = "U must enter all field which are required" });
+            }
+           
+            
 
         }
 
@@ -116,55 +105,17 @@ namespace bnbClone_API.Controllers
         [HttpPut]
         public async Task<IActionResult> UpdateAmenity(int id, [FromForm]  AmenityDTO amenity)
         {
+            
 
-            Amenity amenity1 =await unitOfWork._Amenities.GetByIdAsync(id);
-
-            if(amenity1 != null)
+            if (id != null)
             {
-
-
-                amenity1.Name = amenity.Name;
-                amenity1.Category = amenity.Category;
-
-                var FolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Images");
-
-                var FileName = $"{Guid.NewGuid()}{Path.GetExtension(amenity.IconUrl.FileName)}";
-
-                var FilePath = Path.Combine(FolderPath, FileName);
-
-
-                using var fileStream = new FileStream(FilePath, FileMode.CreateNew);
-
-
-                amenity.IconUrl.CopyTo(fileStream);
-
-                var OldImage = Path.Combine(FolderPath, amenity1.IconUrl);
-
-
-                if (OldImage != null)
-                {
-                    System.IO.File.Delete(OldImage);
-                }
-
-                amenity1.IconUrl = FileName;
-
-
-
-                unitOfWork.SaveAsync();
-                
-
-
-
-                //await amenityRepo.UpdateAsync(amenity);
-
-
-
-                return Ok(amenity1);
+                await service.EditAmenity(id, amenity);
+                return Ok(amenity);
 
             }
+            
 
-
-            return BadRequest();
+            return BadRequest(new {error= "U must enter all field which are required and correct id" });
             
       
         }
