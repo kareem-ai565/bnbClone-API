@@ -3,6 +3,7 @@ using bnbClone_API.Data;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Services.Impelementations;
+using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
@@ -41,8 +42,9 @@ namespace bnbClone_API
             // Add services to the container.
 
             builder.Services.AddScoped<IUnitOfWork , UnitOfWork.UnitOfWork>();
-            builder.Services.AddScoped<PropertyAmenityService>();
-            builder.Services.AddScoped<AmenityService>();
+            builder.Services.AddScoped<IPropertyAmenityService ,  PropertyAmenityService>();
+            builder.Services.AddScoped<IAmenityService, AmenityService>();
+            builder.Services.AddScoped<IPropertyCategoryService, PropertyCategoryService>();
 
             builder.Services.AddControllers();
 

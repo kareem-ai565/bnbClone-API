@@ -3,6 +3,7 @@ using bnbClone_API.Models;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Services.Impelementations;
+using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,15 +15,15 @@ namespace bnbClone_API.Controllers
     [ApiController]
     public class PropertyAmenityController : ControllerBase
     {
-        private readonly PropertyAmenityService amenityService;
+        private readonly IPropertyAmenityService amenityService;
 
-        public PropertyAmenityController(PropertyAmenityService amenityService)
+        public PropertyAmenityController(IPropertyAmenityService amenityService)
         {
             this.amenityService = amenityService;
         }
 
 
-
+        
         [HttpPost]
         public async Task<IActionResult> AddAmenityToProperty(PropertyAmenityDTO property)
         {
