@@ -2,6 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.Services.Impelementations;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,11 @@ namespace bnbClone_API.Controllers
     [ApiController]
     public class PropertyAmenityController : ControllerBase
     {
-        private readonly IUnitOfWork unitOfWork;
+        private readonly PropertyAmenityService amenityService;
 
-        public PropertyAmenityController(IUnitOfWork unitOfWork)
+        public PropertyAmenityController(PropertyAmenityService amenityService)
         {
-            this.unitOfWork = unitOfWork;
+            this.amenityService = amenityService;
         }
 
 
@@ -25,23 +26,16 @@ namespace bnbClone_API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddAmenityToProperty(PropertyAmenityDTO property)
         {
-            PropertyAmenity amenity = new PropertyAmenity()
-            {
-                PropertyId = property.PropertyId,
-                AmenityId = property.AmenityId,
-                CreatedAt = property.CreatedAt,
-            };
-            if (property != null)
-            {
-                await unitOfWork.PropAmenities.AddAsync(amenity);
-                await unitOfWork.SaveAsync();
+            PropertyAmenity property1=await amenityService.AddAmenityAndProperty(property);
 
-                return Ok("done");
+            if (property1 != null) {
 
+                return Ok(property1);
             }
-
-            return BadRequest("enter data");
-
+            else
+            {
+                return BadRequest(new {error= "Enter Data There is no data to add it" });
+            }
         }
 
 
@@ -50,12 +44,16 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> DeleteAmenityFromProperty(int propID, int AmenityID)
         {
 
+           PropertyAmenity amenity=  await amenityService.deleteAmenitywithProperty(propID , AmenityID);
 
-            PropertyAmenity amenity = await unitOfWork.PropAmenities.DeleteAsync(propID, AmenityID);
+            if (amenity != null) {
+                return Ok(amenity);
+            }
 
-            await unitOfWork.SaveAsync();
 
-            return Ok(amenity);
+            return BadRequest(new { error = "there is no amenityProp with data which u enter" });
+
+
 
         }
 
@@ -64,9 +62,16 @@ namespace bnbClone_API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAmenitiesOfProperty(int id)
         {
-          List<PropertyAmenity> properties = await  unitOfWork.PropAmenities.GetAmenitiesOfProperty(id);
+           List<PropertyAmenity> AllProperties= await amenityService.GetAmenityOfProperty(id);
 
-            return Ok(properties);
+            if (AllProperties != null) {
+                return Ok(AllProperties);
+
+            }
+
+            return BadRequest(new { error = "No property with this ID Enter another Id" });
+
+
 
         }
 

@@ -2,6 +2,7 @@
 using bnbClone_API.Data;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.Services.Impelementations;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
@@ -43,6 +44,7 @@ namespace bnbClone_API
             //builder.Services.AddScoped<IPropertyAmenityRepo, PropertyAmenityRepo>();
 
             builder.Services.AddScoped<IUnitOfWork , UnitOfWork.UnitOfWork>();
+            builder.Services.AddScoped<PropertyAmenityService>();
 
             builder.Services.AddControllers();
 
