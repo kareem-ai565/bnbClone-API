@@ -3,6 +3,7 @@ using bnbClone_API.Models;
 using bnbClone_API.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace bnbClone_API.Repositories.Impelementations
 {
@@ -22,6 +23,14 @@ namespace bnbClone_API.Repositories.Impelementations
                  dbContext.PropertyAmenities.Remove(property);
                  return property;
                
+        }
+
+
+
+        public  async Task<List<PropertyAmenity>> GetAmenitiesOfProperty(int id)
+        {
+         return dbContext.PropertyAmenities.Where(p => p.PropertyId == id).Include(p => p.Amenity).ToList();
+
         }
     }
 }
