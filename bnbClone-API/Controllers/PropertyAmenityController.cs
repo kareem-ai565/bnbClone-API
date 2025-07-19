@@ -25,7 +25,7 @@ namespace bnbClone_API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddAmenityToProperty(PropertyAmenityDTO property)
         {
-            PropertyAmenity amenity =new PropertyAmenity()
+            PropertyAmenity amenity = new PropertyAmenity()
             {
                 PropertyId = property.PropertyId,
                 AmenityId = property.AmenityId,
@@ -51,7 +51,7 @@ namespace bnbClone_API.Controllers
         {
 
 
-           PropertyAmenity amenity=await unitOfWork.PropAmenities.DeleteAsync(propID ,AmenityID);
+            PropertyAmenity amenity = await unitOfWork.PropAmenities.DeleteAsync(propID, AmenityID);
 
             await unitOfWork.SaveAsync();
 
@@ -60,6 +60,15 @@ namespace bnbClone_API.Controllers
         }
 
 
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAmenitiesOfProperty(int id)
+        {
+          List<PropertyAmenity> properties = await  unitOfWork.PropAmenities.GetAmenitiesOfProperty(id);
+
+            return Ok(properties);
+
+        }
 
 
     }
