@@ -23,11 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="DTOs\" />
     <Folder Include="Helpers\" />
-    <Folder Include="Services\Impelementations\" />
-    <Folder Include="Services\Interfaces\" />
     <Folder Include="wwwroot\" />
   </ItemGroup>
 

@@ -1,6 +1,17 @@
-﻿namespace bnbClone_API.Services.Interfaces
+﻿using bnbClone_API.DTOs;
+using bnbClone_API.Models;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+namespace bnbClone_API.Services.Interfaces
 {
     public interface IBookingService
     {
+        public Task<IEnumerable<BookingResponseDto>> GetAllBookingsAsync();
+        public Task<BookingResponseDto> GetBookingByIdAsync(int id);
+        public Task<int> AddBooking(BookingCreateDto createBookingDto);
+        public Task<int> DeleteBooking(int bookingid);
+        public Task<int> UpdateBooking(int bookingid, BookingUpdateDto bookingUpdateDto);
+        public Task<int> UpdateBookingStatusAsync(int bookingId, BookingStatusUpdateDto bookingStatusUpdateDto);
+
     }
 }

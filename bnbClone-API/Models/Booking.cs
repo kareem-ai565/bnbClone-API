@@ -29,7 +29,7 @@ namespace bnbClone_API.Models
         [ForeignKey("GuestId")]
         public virtual ApplicationUser Guest { get; set; }
 
-
+        public int TotalGuests { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 

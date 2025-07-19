@@ -2,6 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace bnbClone_API.UnitOfWork
 {
@@ -28,11 +29,17 @@ namespace bnbClone_API.UnitOfWork
         //        return _bookingRepo;
         //    }
         //}
-        public IBookingRepo BookingRepo => _bookingRepo??=  new BookingRepo(dbContext);
+        public IBookingRepo BookingRepo => _bookingRepo ??= new BookingRepo(dbContext);
+
 
         public void Dispose()
         {
             dbContext.Dispose();
+        }
+
+        public async Task<int> SaveChanges()
+        {
+           return await dbContext.SaveChangesAsync();
         }
     }
 }
