@@ -2,6 +2,7 @@
 using bnbClone_API.Data;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,19 +26,38 @@ namespace bnbClone_API
                 options.ValueCountLimit = int.MaxValue;
             });
 
+
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
+
             // Add services to the container.
-            builder.Services.AddScoped<IAmenityRepo, AmenityRepo>();
-            builder.Services.AddScoped<IPropertyCategoryRepo, PropertyCategoryRepo>();
-            builder.Services.AddScoped<IPropertyAmenityRepo, PropertyAmenityRepo>();
+            //builder.Services.AddScoped<IAmenityRepo, AmenityRepo>();
+            //builder.Services.AddScoped<IPropertyCategoryRepo, PropertyCategoryRepo>();
+            //builder.Services.AddScoped<IPropertyAmenityRepo, PropertyAmenityRepo>();
+
+            builder.Services.AddScoped<IUnitOfWork , UnitOfWork.UnitOfWork>();
 
             builder.Services.AddControllers();
 
-           
+          
+
+
+
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
 
             var app = builder.Build();
+
+            app.UseCors("AllowAll");
+
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
