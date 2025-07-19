@@ -3,6 +3,7 @@ using bnbClone_API.Models;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Services.Impelementations;
+using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,12 +16,10 @@ namespace bnbClone_API.Controllers
     [ApiController]
     public class AmenityController : ControllerBase
     {
-       
-        private readonly AmenityService service;
+        private readonly IAmenityService service;
 
-        public AmenityController(AmenityService service)
+        public AmenityController(IAmenityService service)
         {
-           
             this.service = service;
         }
 
@@ -75,6 +74,7 @@ namespace bnbClone_API.Controllers
 
 
 
+        [Consumes("multipart/form-data")]
 
         [HttpPost]
         public async Task<IActionResult> AddAmenity([FromForm] AmenityDTO amenity)
@@ -107,7 +107,7 @@ namespace bnbClone_API.Controllers
         {
             
 
-            if (id != null)
+            if (id != null  && amenity !=null )
             {
                 await service.EditAmenity(id, amenity);
                 return Ok(amenity);

@@ -1,11 +1,12 @@
 ﻿using bnbClone_API.DTOs;
 using bnbClone_API.Models;
+using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
 using System.Threading.Tasks;
 
 namespace bnbClone_API.Services.Impelementations
 {
-    public class PropertyAmenityService
+    public class PropertyAmenityService:IPropertyAmenityService
     {
 
         private readonly IUnitOfWork unitOfWork;

@@ -1,12 +1,14 @@
 ﻿using bnbClone_API.DTOs;
 using bnbClone_API.Models;
+using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace bnbClone_API.Services.Impelementations
 {
-    public class AmenityService
+    public class AmenityService:IAmenityService
     {
         private readonly IUnitOfWork unitOfWork;
 
