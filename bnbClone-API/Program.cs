@@ -46,7 +46,11 @@ namespace bnbClone_API
             builder.Services.AddScoped<IAmenityService, AmenityService>();
             builder.Services.AddScoped<IPropertyCategoryService, PropertyCategoryService>();
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
+                }); ;
 
           
 
