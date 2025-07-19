@@ -2,6 +2,7 @@
 using bnbClone_API.Models.AiModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace bnbClone_API.Controllers
 {
@@ -9,55 +10,79 @@ namespace bnbClone_API.Controllers
     [ApiController]
     public class RecommendationsController : ControllerBase
     {
+
         private readonly ApplicationDbContext _context;
-        private RecommendationService _recommender =>
-      new RecommendationService(Path.Combine("MLModels", "recommender.zip"));
+        private readonly IWebHostEnvironment _env;
 
-
-        public RecommendationsController(ApplicationDbContext context)
+        public RecommendationsController(
+            ApplicationDbContext context,
+            IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
-
-
 
         [HttpPost("train-model")]
-        public IActionResult TrainModel()
+        public IActionResult TrainRecommendationModel()
         {
-            var path = Path.Combine(Directory.GetCurrentDirectory(), "bookingData.csv");
-            BookingCsvExporter.TrainModel(path, "MLModels/recommender.zip");
+            try
+            {
+                var exporter = new Exporter(_context);
+                string dataDir = Path.Combine(_env.ContentRootPath, "MLData");
+                string csvPath = Path.Combine(dataDir, "bookingData.csv");
 
+                Directory.CreateDirectory(dataDir);
+                exporter.ExportBookingDataToCsv(csvPath);
 
-            return Ok("Model trained and saved!");
+                if (new FileInfo(csvPath).Length == 0)
+                    return BadRequest("No booking data available for training");
+
+                string modelPath = Path.Combine(_env.ContentRootPath, "MLModels", "recommender.zip");
+                Directory.CreateDirectory(Path.GetDirectoryName(modelPath));
+
+                RecommendationService.TrainModel(csvPath, modelPath);
+                return Ok("Model trained successfully");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Training failed: {ex.Message}");
+            }
         }
-
-
 
         [HttpGet("user/{userId}")]
-        public IActionResult GetRecommendations(int userId)
+        public async Task<IActionResult> GetRecommendations(int userId)
         {
-            var modelPath = Path.Combine("MLModels", "recommender.zip");
+            try
+            {
+                string modelPath = Path.Combine(_env.ContentRootPath, "MLModels", "recommender.zip");
 
-            if (!System.IO.File.Exists(modelPath))
-                return BadRequest("Model file not found. Please train the model first.");
+                if (!System.IO.File.Exists(modelPath))
+                    return BadRequest("Model not found. Train model first");
 
-            var recommender = new RecommendationService(modelPath);
+                RecommendationService.LoadModel(modelPath);
 
-            var allProperties = _context.Properties.Select(p => p.Id).ToList();
+                var propertyIds = await _context.Properties
+                    .Select(p => p.Id)
+                    .ToListAsync();
 
-            var recommended = allProperties
-                .Select(propId => new
-                {
-                    PropertyId = propId,
-                    Score = recommender.PredictScore(userId, propId)
-                })
-                .OrderByDescending(p => p.Score)
-                .Take(5)
-                .ToList();
+                var recommendations = propertyIds
+                    .AsParallel()
+                    .Select(propertyId => new
+                    {
+                        PropertyId = propertyId,
+                        Score = RecommendationService.PredictScore(userId, propertyId)
+                    })
+                    .OrderByDescending(r => r.Score)
+                    .Take(10)
+                    .ToList();
 
-            return Ok(recommended);
+                return Ok(recommendations);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Recommendation failed: {ex.Message}");
+            }
         }
-
 
 
 
