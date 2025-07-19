@@ -2,6 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -12,11 +13,11 @@ namespace bnbClone_API.Controllers
     [ApiController]
     public class PropertyAmenityController : ControllerBase
     {
-        private readonly IPropertyAmenityRepo propertyAmenityRepo;
+        private readonly IUnitOfWork unitOfWork;
 
-        public PropertyAmenityController(IPropertyAmenityRepo propertyAmenityRepo)
+        public PropertyAmenityController(IUnitOfWork unitOfWork)
         {
-            this.propertyAmenityRepo = propertyAmenityRepo;
+            this.unitOfWork = unitOfWork;
         }
 
 
@@ -32,7 +33,8 @@ namespace bnbClone_API.Controllers
             };
             if (property != null)
             {
-                await propertyAmenityRepo.AddAsync(amenity);
+                await unitOfWork.PropAmenities.AddAsync(amenity);
+                await unitOfWork.SaveAsync();
 
                 return Ok("done");
 
@@ -49,7 +51,9 @@ namespace bnbClone_API.Controllers
         {
 
 
-           PropertyAmenity amenity=await propertyAmenityRepo.DeleteAsync(propID ,AmenityID);
+           PropertyAmenity amenity=await unitOfWork.PropAmenities.DeleteAsync(propID ,AmenityID);
+
+            await unitOfWork.SaveAsync();
 
             return Ok(amenity);
 

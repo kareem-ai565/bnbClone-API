@@ -2,6 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -13,13 +14,11 @@ namespace bnbClone_API.Controllers
     [ApiController]
     public class PropertyCategoryController : ControllerBase
     {
-        private readonly IPropertyCategoryRepo propertyCategoryRepo;
+        private readonly IUnitOfWork unitOfWork;
 
-
-
-        public PropertyCategoryController(IPropertyCategoryRepo propertyCategoryRepo)
+        public PropertyCategoryController(IUnitOfWork unitOfWork)
         {
-            this.propertyCategoryRepo = propertyCategoryRepo;
+            this.unitOfWork = unitOfWork;
         }
 
 
@@ -28,7 +27,7 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> GetAllCategories()
         {
 
-            return Ok(await propertyCategoryRepo.GetAllAsync());
+            return Ok(await unitOfWork.PropCategory.GetAllAsync());
 
         }
 
@@ -38,7 +37,7 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> GetAllCategoryById(int id)
         {
 
-            return Ok(await propertyCategoryRepo.GetByIdAsync(id));
+            return Ok(await unitOfWork.PropCategory.GetByIdAsync(id));
 
         }
 
@@ -46,14 +45,14 @@ namespace bnbClone_API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
-            return Ok(await propertyCategoryRepo.DeleteAsync(id));
+            return Ok(await unitOfWork.PropCategory.DeleteAsync(id));
 
         }
 
 
 
         [HttpPost]
-        public IActionResult AddCategory([FromForm] CategoryDTO category)
+        public async Task<IActionResult> AddCategory([FromForm] CategoryDTO category)
         {
             if(category != null)
             {
@@ -89,6 +88,10 @@ namespace bnbClone_API.Controllers
 
                 };
 
+                await unitOfWork.PropCategory.AddAsync(property);
+
+                await unitOfWork.SaveAsync();
+
 
                 return Ok(property);
 
@@ -112,7 +115,7 @@ namespace bnbClone_API.Controllers
 
         public async Task<IActionResult> EditCategory(int id , [FromForm] CategoryDTO category)
         {
-            PropertyCategory property = await propertyCategoryRepo.GetByIdAsync(id);
+            PropertyCategory property = await unitOfWork.PropCategory.GetByIdAsync(id);
 
             property.Description = category.Description;
             property.Name = category.Name;
@@ -132,6 +135,8 @@ namespace bnbClone_API.Controllers
 
             property.IconUrl = FileName;
 
+
+            await unitOfWork.SaveAsync();
 
 
             return Ok(property);
