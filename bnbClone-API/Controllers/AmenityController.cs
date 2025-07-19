@@ -2,6 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -13,11 +14,13 @@ namespace bnbClone_API.Controllers
     [ApiController]
     public class AmenityController : ControllerBase
     {
-        private readonly IAmenityRepo amenityRepo;
+       
+        private readonly IUnitOfWork unitOfWork;
 
-        public AmenityController(IAmenityRepo amenityRepo)
+        public AmenityController(IUnitOfWork unitOfWork)
         {
-            this.amenityRepo = amenityRepo;
+           
+            this.unitOfWork = unitOfWork;
         }
 
 
@@ -26,7 +29,7 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> GetAllAmenities()
         {
 
-          return  Ok( await amenityRepo.GetAllAsync());
+          return  Ok( await unitOfWork._Amenities.GetAllAsync());
 
         }
 
@@ -36,7 +39,7 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> GetAmenityById(int id)
         {
 
-            return Ok(await amenityRepo.GetByIdAsync(id));
+            return Ok(await unitOfWork._Amenities.GetByIdAsync(id));
 
         }
 
@@ -48,10 +51,18 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> DeleteAmenity(int id)
         {
 
-            if (await amenityRepo.ExistsAsync(id))
+            Amenity amenity = await unitOfWork._Amenities.GetByIdAsync(id);
 
-                return Ok(await amenityRepo.DeleteAsync(id));
 
+
+            if (amenity != null)
+            {
+
+                await unitOfWork._Amenities.DeleteAsync(id);
+                unitOfWork.SaveAsync();
+                return Ok(amenity);
+
+            }
 
             else
             {
@@ -90,7 +101,8 @@ namespace bnbClone_API.Controllers
             };
 
 
-            await amenityRepo.AddAsync(amenity1);
+            await unitOfWork._Amenities.AddAsync(amenity1);
+            unitOfWork.SaveAsync();
 
             return Ok(amenity);
 
@@ -105,7 +117,7 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> UpdateAmenity(int id, [FromForm]  AmenityDTO amenity)
         {
 
-            Amenity amenity1 =await amenityRepo.GetByIdAsync(id);
+            Amenity amenity1 =await unitOfWork._Amenities.GetByIdAsync(id);
 
             if(amenity1 != null)
             {
@@ -137,6 +149,8 @@ namespace bnbClone_API.Controllers
                 amenity1.IconUrl = FileName;
 
 
+
+                unitOfWork.SaveAsync();
                 
 
 
