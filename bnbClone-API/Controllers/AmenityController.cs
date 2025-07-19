@@ -7,6 +7,7 @@ using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -21,7 +22,11 @@ namespace bnbClone_API.Controllers
         public AmenityController(IAmenityService service)
         {
             this.service = service;
+           
         }
+
+
+        
 
 
 
