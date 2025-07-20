@@ -13,7 +13,9 @@ namespace bnbClone_API.UnitOfWork
         IAmenityRepo _Amenities { get; }
         IPropertyAmenityRepo PropAmenities { get; }
         IPropertyCategoryRepo PropCategory { get; }
-
+        IBookingPaymentRepo BookingPaymentRepo { get; }
+        IBookingPayoutRepo BookingPayoutRepo { get; }
+        IHostPayoutRepo HostPayoutRepo { get; }
         Task SaveAsync();
 
     }

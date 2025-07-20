@@ -11,8 +11,12 @@ namespace bnbClone_API.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
-        private BookingRepo _bookingRepo;
-
+        private readonly ApplicationDbContext dbContext;
+        private BookingRepo _BookingRepo;
+        AmenityRepo _Amenity;
+        PropertyCategoryRepo _PropertyCategory;
+        PropertyAmenityRepo _PropertyAmenity;
+        private BookingPaymentRepo _BookingPaymentRepo;
 
         public UnitOfWork(ApplicationDbContext dbContext)
         {
@@ -33,7 +37,7 @@ namespace bnbClone_API.UnitOfWork
         //        return _bookingRepo;
         //    }
         //}
-        public IBookingRepo BookingRepo => _bookingRepo ??= new BookingRepo(dbContext);
+        public IBookingRepo BookingRepo => _BookingRepo ??= new BookingRepo(dbContext);
 
 
         public void Dispose()
@@ -43,12 +47,9 @@ namespace bnbClone_API.UnitOfWork
 
        
 
-        }
-        private readonly ApplicationDbContext dbContext;
+        
 
-        AmenityRepo _Amenity;
-        PropertyCategoryRepo _PropertyCategory;
-        PropertyAmenityRepo _PropertyAmenity;
+
 
 
         public async Task SaveAsync()
@@ -90,5 +91,8 @@ namespace bnbClone_API.UnitOfWork
             }
         }
 
+        public IBookingPaymentRepo BookingPaymentRepo => _BookingPaymentRepo ??= new BookingPaymentRepo(dbContext);
+        public IBookingPayoutRepo BookingPayoutRepo => new BookingPayoutRepo(dbContext);
+        public IHostPayoutRepo HostPayoutRepo => new HostPayoutRepo(dbContext);
     }
 }
