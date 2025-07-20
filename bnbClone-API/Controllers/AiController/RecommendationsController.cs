@@ -87,5 +87,17 @@ namespace bnbClone_API.Controllers.AiController
 
 
 
+        [HttpPost("export-csv")]
+        public IActionResult ExportToCsv()
+        {
+            var exporter = new Exporter(_context);
+            var path = Path.Combine(Directory.GetCurrentDirectory(), "Data", "bookingData.csv");
+            exporter.ExportBookingDataToCsv(path);
+
+            return Ok("Data exported successfully to: " + path);
+        }
+
+
+
     }
 }
