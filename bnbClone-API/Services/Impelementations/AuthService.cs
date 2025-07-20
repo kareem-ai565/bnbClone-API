@@ -2,7 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Services;
 using bnbClone_API.Services.Interfaces;
-using bnbClone_API.Infrastructure;
+using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Cryptography;
 
@@ -63,7 +63,7 @@ namespace bnbClone_API.Services.Impelementations
                 user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
                 await _unitOfWork.Users.AddAsync(user);
-                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.SaveAsync();
 
                 // Generate JWT token
                 var jwtToken = _tokenService.GenerateJwtToken(user);
@@ -110,7 +110,7 @@ namespace bnbClone_API.Services.Impelementations
                 user.LastLogin = DateTime.UtcNow;
 
                 _unitOfWork.Users.Update(user);
-                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.SaveAsync();
 
                 // Generate JWT token
                 var jwtToken = _tokenService.GenerateJwtToken(user);
@@ -150,7 +150,7 @@ namespace bnbClone_API.Services.Impelementations
                 user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
                 _unitOfWork.Users.Update(user);
-                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.SaveAsync();
 
                 return new AuthResponseDto
                 {
@@ -182,7 +182,7 @@ namespace bnbClone_API.Services.Impelementations
                 user.RefreshTokenExpiryTime = null;
 
                 _unitOfWork.Users.Update(user);
-                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.SaveAsync();
 
                 return true;
             }
@@ -240,7 +240,7 @@ namespace bnbClone_API.Services.Impelementations
 
                 await _unitOfWork.Hosts.AddAsync(host);
                 _unitOfWork.Users.Update(user);
-                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.SaveAsync();
 
                 return new HostRegistrationResponseDto
                 {
@@ -395,7 +395,7 @@ namespace bnbClone_API.Services.Impelementations
                 }
 
                 _unitOfWork.Users.Update(user);
-                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.SaveAsync();
 
                 // Return updated profile
                 return await GetUserProfileAsync(userId);

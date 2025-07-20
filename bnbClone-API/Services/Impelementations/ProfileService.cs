@@ -1,6 +1,6 @@
 ﻿using bnbClone_API.DTOs.ProfileDTOs;
-using bnbClone_API.Infrastructure;
 using bnbClone_API.Services.Interfaces;
+using bnbClone_API.UnitOfWork;
 
 namespace bnbClone_API.Services.Impelementations
 {
@@ -87,7 +87,7 @@ namespace bnbClone_API.Services.Impelementations
             user.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.Users.Update(user);
-            await _unitOfWork.CompleteAsync();
+            await _unitOfWork.SaveAsync();
 
             return await GetUserProfileAsync(userId);
         }
@@ -132,7 +132,7 @@ namespace bnbClone_API.Services.Impelementations
                 _unitOfWork.Hosts.Update(host);
             }
 
-            await _unitOfWork.CompleteAsync();
+            await _unitOfWork.SaveAsync();
 
             return await GetHostProfileAsync(userId);
         }
@@ -185,7 +185,7 @@ namespace bnbClone_API.Services.Impelementations
             user.UpdatedAt = DateTime.UtcNow;
 
             _unitOfWork.Users.Update(user);
-            await _unitOfWork.CompleteAsync();
+            await _unitOfWork.SaveAsync();
 
             return user.ProfilePictureUrl;
         }

@@ -1,7 +1,7 @@
 ﻿using bnbClone_API.DTOs.Admin;
-using bnbClone_API.Infrastructure;
 using bnbClone_API.Models;
 using bnbClone_API.Services.Interfaces;
+using bnbClone_API.UnitOfWork;
 
 namespace bnbClone_API.Services.Implementations
 {
@@ -37,7 +37,7 @@ namespace bnbClone_API.Services.Implementations
             }).ToList();
 
             await _unitOfWork.Notifications.BulkInsertAsync(notifications);
-            var result = await _unitOfWork.CompleteAsync();
+            await _unitOfWork.SaveAsync();
 
             return new AdminNotificationResponseDto
             {
@@ -57,7 +57,7 @@ namespace bnbClone_API.Services.Implementations
             }).ToList();
 
             await _unitOfWork.Notifications.BulkInsertAsync(notifications);
-            var result = await _unitOfWork.CompleteAsync();
+            var result = await _unitOfWork.SaveAsync();
 
             return new AdminNotificationResponseDto
             {

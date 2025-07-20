@@ -1,5 +1,6 @@
 ﻿using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.Repositories.Interfaces.admin;
 
 namespace bnbClone_API.UnitOfWork
 {
@@ -18,7 +19,19 @@ namespace bnbClone_API.UnitOfWork
         IHostPayoutRepo HostPayoutRepo { get; }
         IHostVerificationRepo hostVerification { get; }
 
-        Task SaveAsync();
+
+        IUserRepository Users { get; }
+        IHostRepository Hosts { get; } // Add this
+
+        IPropertyRepository Properties { get; }
+        IViolationRepository Violations { get; }
+        IHostVerificationRepository HostVerifications { get; }
+        INotificationRepository Notifications { get; }
+
+        Task BeginTransactionAsync();
+        Task CommitTransactionAsync();
+        Task RollbackTransactionAsync();
+        Task <int>SaveAsync();
 
     }
 }
