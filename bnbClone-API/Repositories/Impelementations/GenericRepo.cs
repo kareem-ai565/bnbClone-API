@@ -20,7 +20,7 @@ namespace bnbClone_API.Repositories.Impelementations
             return entity;
         }
 
-        public async Task<bool> DeleteAsync(int id)
+        public virtual async Task<bool> DeleteAsync(int id)
         {
             var entity = await dbContext.Set<T>().FindAsync(id);
             if (entity == null)
