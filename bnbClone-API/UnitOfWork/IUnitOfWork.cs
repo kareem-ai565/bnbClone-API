@@ -8,7 +8,9 @@ namespace bnbClone_API.UnitOfWork
 
        
         IBookingRepo BookingRepo { get; }
-
+        IFavouriteRepo FavouriteRepo { get; }
+        IAvailabilityRepo AvailabilityRepo { get; }
+        IViolationRepo ViolationRepo { get; }
 
         IAmenityRepo _Amenities { get; }
         IPropertyAmenityRepo PropAmenities { get; }
@@ -16,6 +18,5 @@ namespace bnbClone_API.UnitOfWork
         IHostVerificationRepo hostVerification { get; }
 
         Task SaveAsync();
-
     }
 }

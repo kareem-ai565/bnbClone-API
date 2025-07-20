@@ -1,32 +1,45 @@
-﻿using bnbClone_API.Data;
-
+using bnbClone_API.Data;
+using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Models;
 using Microsoft.EntityFrameworkCore;
-
 using bnbClone_API.Repositories.Impelementations;
-using bnbClone_API.Repositories.Interfaces;
 
 
 namespace bnbClone_API.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
+
         private readonly ApplicationDbContext dbContext;
 
-        private BookingRepo _bookingRepo;
-
-
-        public UnitOfWork(ApplicationDbContext dbContext)
-        {
-            this.dbContext = dbContext;
-
-        }
-
+        public IBookingRepo BookingRepo { get; }
+        public IFavouriteRepo FavouriteRepo { get; }
+        public IAvailabilityRepo AvailabilityRepo { get; }
+        public IViolationRepo ViolationRepo { get; }
+        
         AmenityRepo _Amenity;
         PropertyCategoryRepo _PropertyCategory;
         PropertyAmenityRepo _PropertyAmenity;
         HostVerificationRepo _VerificationRepo;
 
+        public UnitOfWork(
+            ApplicationDbContext dbContext,
+            IBookingRepo bookingRepo,
+            IFavouriteRepo favouriteRepo,
+            IAvailabilityRepo availabilityRepo,
+            IViolationRepo violationRepo)
+        {
+            this.dbContext = dbContext;
+            BookingRepo = bookingRepo;
+            FavouriteRepo = favouriteRepo;
+            AvailabilityRepo = availabilityRepo;
+            ViolationRepo = violationRepo;
+        }
+    
+
+        private BookingRepo _bookingRepo;
+
+      
 
         //public IBookingRepo BookingRepo
         //{
@@ -46,13 +59,6 @@ namespace bnbClone_API.UnitOfWork
         {
             dbContext.Dispose();
         }
-
-       
-
-       
-
-
-
 
         public async Task SaveAsync()
         {
@@ -106,7 +112,6 @@ namespace bnbClone_API.UnitOfWork
             } 
         }
 
-
-
     }
+
 }
