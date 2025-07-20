@@ -16,6 +16,7 @@ namespace bnbClone_API.UnitOfWork
         private BookingRepo _bookingRepo;
 
 
+
         public UnitOfWork(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
@@ -26,6 +27,11 @@ namespace bnbClone_API.UnitOfWork
         PropertyCategoryRepo _PropertyCategory;
         PropertyAmenityRepo _PropertyAmenity;
         HostVerificationRepo _VerificationRepo;
+        private ReviewRepo _reviewRepo;
+        private PromotionRepository _promotionRepository;
+
+        public IReviewRepo Reviews => _reviewRepo ??= new ReviewRepo(dbContext);
+        public IPromotionRepository Promotions => _promotionRepository ??= new PromotionRepository(dbContext);
 
 
         //public IBookingRepo BookingRepo

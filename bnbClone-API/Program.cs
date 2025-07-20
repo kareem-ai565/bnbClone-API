@@ -49,6 +49,8 @@ namespace bnbClone_API
             builder.Services.AddScoped<IAmenityService, AmenityService>();
             builder.Services.AddScoped<IPropertyCategoryService, PropertyCategoryService>();
             builder.Services.AddScoped<IhostVerificationService, hostVerificationService>();
+            builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
+            builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>

@@ -8,7 +8,8 @@ namespace bnbClone_API.UnitOfWork
 
        
         IBookingRepo BookingRepo { get; }
-
+        IReviewRepo Reviews { get; }
+        IPromotionRepository Promotions { get; }
 
         IAmenityRepo _Amenities { get; }
         IPropertyAmenityRepo PropAmenities { get; }
