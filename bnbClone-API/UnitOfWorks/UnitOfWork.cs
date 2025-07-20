@@ -2,7 +2,7 @@
 using bnbClone_API.Repositories.Implementations;
 using bnbClone_API.Repositories.Interfaces;
 
-namespace bnbClone_API.UnitOfWork
+namespace bnbClone_API.UnitOfWorks
 {
     public class UnitOfWork : IUnitOfWork
     {

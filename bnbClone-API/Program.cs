@@ -4,6 +4,13 @@ using AutoMapper;
 using bnbClone_API.Helpers.MappingProfiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using bnbClone_API.Services.Implementations;
+using bnbClone_API.Services.Interfaces;
+using bnbClone_API.Repositories.Impelementations;
+using bnbClone_API.Repositories.Implementations;
+using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.UnitOfWorks;
+using bnbClone_API.Services.Impelementations;
 
 namespace bnbClone_API
 {
@@ -21,11 +28,20 @@ namespace bnbClone_API
 
 
             // Add services to the container.
+            builder.Services.AddScoped<IPropertyRepo, PropertyRepo>();
+            builder.Services.AddScoped<IPropertyImageRepo, PropertyImageRepo>();
+            builder.Services.AddScoped<ICancellationPolicyRepo, CancellationPolicyRepo>();
+            builder.Services.AddScoped<ICancellationPolicyService, CancellationPolicyService>();
+            builder.Services.AddScoped<IPropertyImageService, PropertyImageService>();
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IPropertyService, PropertyService>();
+
 
             builder.Services.AddControllers();
 
             // AutoMapper
-            builder.Services.AddAutoMapper(typeof(PropertyProfile).Assembly);
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<PropertyProfile>());
+
 
             // ? Swagger setup
             builder.Services.AddEndpointsApiExplorer();

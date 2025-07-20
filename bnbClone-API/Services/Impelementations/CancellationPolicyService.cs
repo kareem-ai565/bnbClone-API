@@ -2,7 +2,7 @@
 using bnbClone_API.DTOs;
 using bnbClone_API.Models;
 using bnbClone_API.Services.Interfaces;
-using bnbClone_API.UnitOfWork;
+using bnbClone_API.UnitOfWorks;
 
 namespace bnbClone_API.Services.Impelementations
 {
