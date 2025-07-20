@@ -1,6 +1,6 @@
 ﻿using bnbClone_API.DTOs.Admin;
-using bnbClone_API.Infrastructure;
 using bnbClone_API.Services.Interfaces;
+using bnbClone_API.UnitOfWork;
 
 namespace bnbClone_API.Services.Implementations
 {
@@ -50,7 +50,7 @@ namespace bnbClone_API.Services.Implementations
         public async Task<bool> UpdateVerificationStatusAsync(int verificationId, HostVerificationStatusUpdateDto request)
         {
             await _unitOfWork.HostVerifications.UpdateStatusAsync(verificationId, request.Status, request.AdminNotes);
-            var result = await _unitOfWork.CompleteAsync();
+            var result = await _unitOfWork.SaveAsync();
             return result > 0;
         }
 
