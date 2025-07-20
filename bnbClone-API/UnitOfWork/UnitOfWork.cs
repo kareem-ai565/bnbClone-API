@@ -24,7 +24,11 @@ namespace bnbClone_API.UnitOfWork
 
         }
 
-        //============For Undrestand ==============
+        AmenityRepo _Amenity;
+        PropertyCategoryRepo _PropertyCategory;
+        PropertyAmenityRepo _PropertyAmenity;
+        HostVerificationRepo _VerificationRepo;
+
 
         //public IBookingRepo BookingRepo
         //{
@@ -45,19 +49,10 @@ namespace bnbClone_API.UnitOfWork
             dbContext.Dispose();
         }
 
-       
-
-        
-
-
-
-
         public async Task SaveAsync()
         {
           await  dbContext.SaveChangesAsync();
         }
-
-
 
         public IAmenityRepo _Amenities
         {
@@ -94,5 +89,20 @@ namespace bnbClone_API.UnitOfWork
         public IBookingPaymentRepo BookingPaymentRepo => _BookingPaymentRepo ??= new BookingPaymentRepo(dbContext);
         public IBookingPayoutRepo BookingPayoutRepo => new BookingPayoutRepo(dbContext);
         public IHostPayoutRepo HostPayoutRepo => new HostPayoutRepo(dbContext);
+
+
+
+        public IHostVerificationRepo hostVerification { 
+            get{
+                if(_VerificationRepo == null)
+            
+                 _VerificationRepo = new HostVerificationRepo(dbContext);
+                return _VerificationRepo;
+            
+            } 
+        }
+
+
+
     }
 }

@@ -16,6 +16,8 @@ namespace bnbClone_API.UnitOfWork
         IBookingPaymentRepo BookingPaymentRepo { get; }
         IBookingPayoutRepo BookingPayoutRepo { get; }
         IHostPayoutRepo HostPayoutRepo { get; }
+        IHostVerificationRepo hostVerification { get; }
+
         Task SaveAsync();
 
     }
