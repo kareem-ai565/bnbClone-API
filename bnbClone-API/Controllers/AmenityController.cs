@@ -106,7 +106,7 @@ namespace bnbClone_API.Controllers
 
 
 
-
+        [Consumes("multipart/form-data")]
         [HttpPut]
         public async Task<IActionResult> UpdateAmenity(int id, [FromForm]  AmenityDTO amenity)
         {

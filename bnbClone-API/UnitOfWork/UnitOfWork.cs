@@ -17,6 +17,8 @@ namespace bnbClone_API.UnitOfWork
         AmenityRepo _Amenity;
         PropertyCategoryRepo _PropertyCategory;
         PropertyAmenityRepo _PropertyAmenity;
+        HostVerificationRepo _VerificationRepo;
+
 
         public IBookingRepo BookingRepo => throw new NotImplementedException();
 
@@ -68,6 +70,18 @@ namespace bnbClone_API.UnitOfWork
             }
         }
 
-    
+
+
+        public IHostVerificationRepo hostVerification { 
+            get{
+                if(_VerificationRepo == null)
+            
+                 _VerificationRepo = new HostVerificationRepo(dbContext);
+                return _VerificationRepo;
+            
+            } 
+        }
+
+
     }
 }
