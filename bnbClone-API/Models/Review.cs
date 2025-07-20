@@ -15,6 +15,9 @@ namespace bnbClone_API.Models
         public int ReviewerId { get; set; }
         public virtual ApplicationUser Reviewer { get; set; } = null!;
 
+
+   
+
         [Range(1, 5)]
         public int Rating { get; set; }
         public string? Comment { get; set; }

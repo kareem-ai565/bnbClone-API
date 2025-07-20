@@ -1,6 +1,9 @@
 
 using bnbClone_API.Data;
+using AutoMapper;
+using bnbClone_API.Helpers.MappingProfiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace bnbClone_API
 {
@@ -15,9 +18,19 @@ namespace bnbClone_API
      options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             //==============================================================================
 
+
+
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            // AutoMapper
+            builder.Services.AddAutoMapper(typeof(PropertyProfile).Assembly);
+
+            // ? Swagger setup
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
@@ -27,7 +40,8 @@ namespace bnbClone_API
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI();
             }
 
             app.UseHttpsRedirection();

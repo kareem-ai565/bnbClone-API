@@ -4,7 +4,11 @@ namespace bnbClone_API.UnitOfWork
 {
     public interface IUnitOfWork : IDisposable
     {
-        IBookingRepo BookingRepo { get; }
-        
+        IPropertyRepo PropertyRepo { get; }
+        IPropertyImageRepo PropertyImageRepo { get; }
+        ICancellationPolicyRepo CancellationPolicies { get; }
+
+
+        Task<int> CompleteAsync();
     }
 }
