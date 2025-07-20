@@ -1,9 +1,4 @@
-﻿using bnbClone_API.Models;
-using Stripe;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace bnbClone_API.Models
 {
