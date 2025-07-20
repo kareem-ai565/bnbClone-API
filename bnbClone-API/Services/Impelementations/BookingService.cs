@@ -76,7 +76,7 @@ namespace bnbClone_API.Services.Impelementations
                 PromotionId = createBookingDto.PromotionId ?? 0
             };
             await unitOfWork.BookingRepo.AddAsync(booking);
-            await unitOfWork.SaveChanges();
+            await unitOfWork.SaveAsync();
             // Host Notification
             //var hostId = property.HostId;
             //var guestId = booking.GuestId;
@@ -104,7 +104,7 @@ namespace bnbClone_API.Services.Impelementations
             else
             {
                 await unitOfWork.BookingRepo.DeleteAsync(bookingid);
-                await unitOfWork.SaveChanges();
+                await unitOfWork.SaveAsync();
                 return booking.Id;
             }
         }
@@ -280,7 +280,7 @@ namespace bnbClone_API.Services.Impelementations
             booking.UpdatedAt = DateTime.UtcNow;
 
             await unitOfWork.BookingRepo.UpdateAsync(booking);
-            await unitOfWork.SaveChanges();
+            await unitOfWork.SaveAsync();
             return booking.Id;
 
         }
@@ -293,7 +293,7 @@ namespace bnbClone_API.Services.Impelementations
             booking.CheckInStatus = bookingCheckInStatusUpdate.CheckInStatus;
             booking.UpdatedAt = DateTime.UtcNow;
             await unitOfWork.BookingRepo.UpdateAsync(booking);
-            await unitOfWork.SaveChanges();
+            await unitOfWork.SaveAsync();
             return booking.Id;
         }
 
@@ -305,7 +305,7 @@ namespace bnbClone_API.Services.Impelementations
             booking.CheckOutStatus = bookingCheckOutStatusUpdate.CheckOutStatus;
             booking.UpdatedAt = DateTime.UtcNow;
             await unitOfWork.BookingRepo.UpdateAsync(booking);
-            await unitOfWork.SaveChanges();
+            await unitOfWork.SaveAsync();
             return booking.Id;
         }
 
@@ -319,7 +319,7 @@ namespace bnbClone_API.Services.Impelementations
             booking.Status = bookingStatusUpdateDto.Status.ToString();
             booking.UpdatedAt = DateTime.UtcNow;
             await unitOfWork.BookingRepo.UpdateAsync(booking);
-            await unitOfWork.SaveChanges();
+            await unitOfWork.SaveAsync();
             return booking.Id;
         }
     }

@@ -11,6 +11,8 @@ namespace bnbClone_API.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
+        private readonly ApplicationDbContext dbContext;
+
         private BookingRepo _bookingRepo;
 
 
@@ -20,7 +22,11 @@ namespace bnbClone_API.UnitOfWork
 
         }
 
-        //============For Undrestand ==============
+        AmenityRepo _Amenity;
+        PropertyCategoryRepo _PropertyCategory;
+        PropertyAmenityRepo _PropertyAmenity;
+        HostVerificationRepo _VerificationRepo;
+
 
         //public IBookingRepo BookingRepo
         //{
@@ -43,12 +49,9 @@ namespace bnbClone_API.UnitOfWork
 
        
 
-        }
-        private readonly ApplicationDbContext dbContext;
+       
 
-        AmenityRepo _Amenity;
-        PropertyCategoryRepo _PropertyCategory;
-        PropertyAmenityRepo _PropertyAmenity;
+
 
 
         public async Task SaveAsync()
@@ -89,6 +92,21 @@ namespace bnbClone_API.UnitOfWork
 
             }
         }
+
+
+
+
+        public IHostVerificationRepo hostVerification { 
+            get{
+                if(_VerificationRepo == null)
+            
+                 _VerificationRepo = new HostVerificationRepo(dbContext);
+                return _VerificationRepo;
+            
+            } 
+        }
+
+
 
     }
 }
