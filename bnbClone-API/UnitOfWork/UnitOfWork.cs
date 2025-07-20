@@ -1,18 +1,26 @@
 ﻿using bnbClone_API.Data;
+
+using bnbClone_API.Models;
+using Microsoft.EntityFrameworkCore;
+
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
+
 
 namespace bnbClone_API.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
+        private readonly ApplicationDbContext dbContext;
+
+        private BookingRepo _bookingRepo;
+
 
         public UnitOfWork(ApplicationDbContext dbContext)
         {
             this.dbContext = dbContext;
 
         }
-        private readonly ApplicationDbContext dbContext;
 
         AmenityRepo _Amenity;
         PropertyCategoryRepo _PropertyCategory;
@@ -20,15 +28,30 @@ namespace bnbClone_API.UnitOfWork
         HostVerificationRepo _VerificationRepo;
 
 
-        public IBookingRepo BookingRepo => throw new NotImplementedException();
+        //public IBookingRepo BookingRepo
+        //{
+        //    get
+        //    {
+        //        if (_bookingRepo == null)
+        //        {
+        //            _bookingRepo = new BookingRepo(dbContext);
+        //        }
+        //        return _bookingRepo;
+        //    }
+        //}
+        public IBookingRepo BookingRepo => _bookingRepo ??= new BookingRepo(dbContext);
 
-
-       
 
         public void Dispose()
         {
-            throw new NotImplementedException();
+            dbContext.Dispose();
         }
+
+       
+
+       
+
+
 
 
         public async Task SaveAsync()
@@ -72,6 +95,7 @@ namespace bnbClone_API.UnitOfWork
 
 
 
+
         public IHostVerificationRepo hostVerification { 
             get{
                 if(_VerificationRepo == null)
@@ -81,6 +105,7 @@ namespace bnbClone_API.UnitOfWork
             
             } 
         }
+
 
 
     }
