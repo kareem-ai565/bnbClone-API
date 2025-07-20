@@ -12,7 +12,6 @@ namespace bnbClone_API.UnitOfWork
 
         private readonly ApplicationDbContext dbContext;
 
-        public IBookingRepo BookingRepo { get; }
         public IFavouriteRepo FavouriteRepo { get; }
         public IAvailabilityRepo AvailabilityRepo { get; }
         public IViolationRepo ViolationRepo { get; }
@@ -30,7 +29,6 @@ namespace bnbClone_API.UnitOfWork
             IViolationRepo violationRepo)
         {
             this.dbContext = dbContext;
-            BookingRepo = bookingRepo;
             FavouriteRepo = favouriteRepo;
             AvailabilityRepo = availabilityRepo;
             ViolationRepo = violationRepo;
@@ -65,8 +63,6 @@ namespace bnbClone_API.UnitOfWork
           await  dbContext.SaveChangesAsync();
         }
 
-
-
         public IAmenityRepo _Amenities
         {
             get
@@ -98,10 +94,6 @@ namespace bnbClone_API.UnitOfWork
 
             }
         }
-
-
-
-
         public IHostVerificationRepo hostVerification { 
             get{
                 if(_VerificationRepo == null)
