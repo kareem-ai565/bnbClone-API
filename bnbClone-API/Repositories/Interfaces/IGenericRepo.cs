@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using bnbClone_API.Models;
+using System.Linq.Expressions;
 
 namespace bnbClone_API.Repositories.Interfaces
 {
@@ -17,6 +18,7 @@ namespace bnbClone_API.Repositories.Interfaces
             Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy,
             int pageNumber,
             int pageSize);
+        Task<bool> FindAnyConAsync(Expression<Func<Booking, bool>> predicate);
 
     }
 }

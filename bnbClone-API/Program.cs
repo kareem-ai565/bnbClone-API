@@ -4,9 +4,13 @@ using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Interfaces;
+
+using bnbClone_API.Stripe;
+=======
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
 
 namespace bnbClone_API
 {
@@ -58,7 +62,14 @@ namespace bnbClone_API
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
+            builder.Services.AddScoped<IUnitOfWork, bnbClone_API.UnitOfWork.UnitOfWork>();
+            builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
+            builder.Services.AddScoped<IBookingService, BookingService>();
 
+            //===============Stripe=========================
+            builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+
+            StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
             var app = builder.Build();
 
@@ -69,6 +80,7 @@ namespace bnbClone_API
             if (app.Environment.IsDevelopment())
             {
                 app.MapOpenApi();
+       
                 app.UseSwaggerUI(option => option.SwaggerEndpoint("/openapi/v1.json", "v1"));
             }
 

@@ -9,10 +9,12 @@ namespace bnbClone_API.UnitOfWork
        
         IBookingRepo BookingRepo { get; }
 
+
         IAmenityRepo _Amenities { get; }
         IPropertyAmenityRepo PropAmenities { get; }
         IPropertyCategoryRepo PropCategory { get; }
 
         Task SaveAsync();
+
     }
 }
