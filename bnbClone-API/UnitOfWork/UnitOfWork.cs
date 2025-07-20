@@ -41,14 +41,10 @@ namespace bnbClone_API.UnitOfWork
         public IAvailabilityRepo AvailabilityRepo { get; }
         public IViolationRepo ViolationRepo { get; }
         
-        AmenityRepo _Amenity;
-        PropertyCategoryRepo _PropertyCategory;
-        PropertyAmenityRepo _PropertyAmenity;
-        HostVerificationRepo _VerificationRepo;
+       
 
         public UnitOfWork(
             ApplicationDbContext dbContext,
-            IBookingRepo bookingRepo,
             IFavouriteRepo favouriteRepo,
             IAvailabilityRepo availabilityRepo,
             IViolationRepo violationRepo)

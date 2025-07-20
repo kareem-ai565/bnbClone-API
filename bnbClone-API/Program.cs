@@ -167,7 +167,7 @@ namespace bnbClone_API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
+                c.SwaggerDoc("v2", new OpenApiInfo
                 {
                     Title = "bnbClone API",
                     Version = "v1"
@@ -226,7 +226,7 @@ namespace bnbClone_API
                // {
                  //   options.SwaggerEndpoint("/swagger/v1/swagger.json", "bnbClone API v1");
                  //   options.RoutePrefix = "swagger"; 
-                });
+                //});
                // app.MapOpenApi();
        
               //  app.UseSwaggerUI(option => option.SwaggerEndpoint("/openapi/v1.json", "v1"));
