@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace bnbClone_API.Controllers
+namespace bnbClone_API.Controllers.AiController
 {
     [Route("api/[controller]")]
     [ApiController]
