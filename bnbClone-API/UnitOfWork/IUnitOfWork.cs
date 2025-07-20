@@ -9,7 +9,9 @@ namespace bnbClone_API.UnitOfWork
 
        
         IBookingRepo BookingRepo { get; }
-
+        IFavouriteRepo FavouriteRepo { get; }
+        IAvailabilityRepo AvailabilityRepo { get; }
+        IViolationRepo ViolationRepo { get; }
 
         IAmenityRepo _Amenities { get; }
         IPropertyAmenityRepo PropAmenities { get; }
@@ -18,6 +20,7 @@ namespace bnbClone_API.UnitOfWork
         IBookingPayoutRepo BookingPayoutRepo { get; }
         IHostPayoutRepo HostPayoutRepo { get; }
         IHostVerificationRepo hostVerification { get; }
+
 
 
         IUserRepository Users { get; }
@@ -32,6 +35,7 @@ namespace bnbClone_API.UnitOfWork
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
         Task <int>SaveAsync();
+
 
     }
 }

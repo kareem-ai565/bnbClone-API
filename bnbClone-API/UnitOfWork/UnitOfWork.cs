@@ -1,8 +1,7 @@
-﻿using bnbClone_API.Data;
-
+using bnbClone_API.Data;
+using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Models;
 using Microsoft.EntityFrameworkCore;
-
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
 using Microsoft.ML;
@@ -12,10 +11,12 @@ using bnbClone_API.Repositories.Impelementations.admin;
 using bnbClone_API.Repositories.Implementations.admin;
 
 
+
 namespace bnbClone_API.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
+
         private readonly ApplicationDbContext dbContext;
         private BookingRepo _BookingRepo;
         AmenityRepo _Amenity;
@@ -36,13 +37,32 @@ namespace bnbClone_API.UnitOfWork
         private IDbContextTransaction _transaction;
 
 
-        public UnitOfWork(ApplicationDbContext dbContext)
+        public IFavouriteRepo FavouriteRepo { get; }
+        public IAvailabilityRepo AvailabilityRepo { get; }
+        public IViolationRepo ViolationRepo { get; }
+        
+        AmenityRepo _Amenity;
+        PropertyCategoryRepo _PropertyCategory;
+        PropertyAmenityRepo _PropertyAmenity;
+        HostVerificationRepo _VerificationRepo;
+
+        public UnitOfWork(
+            ApplicationDbContext dbContext,
+            IBookingRepo bookingRepo,
+            IFavouriteRepo favouriteRepo,
+            IAvailabilityRepo availabilityRepo,
+            IViolationRepo violationRepo)
         {
             this.dbContext = dbContext;
-
+            FavouriteRepo = favouriteRepo;
+            AvailabilityRepo = availabilityRepo;
+            ViolationRepo = violationRepo;
         }
+    
 
 
+
+      
 
         //public IBookingRepo BookingRepo
         //{
@@ -63,7 +83,9 @@ namespace bnbClone_API.UnitOfWork
             dbContext.Dispose();
         }
 
+
         public async Task<int> SaveAsync()
+
         {
           return await  dbContext.SaveChangesAsync();
         }
@@ -100,9 +122,11 @@ namespace bnbClone_API.UnitOfWork
             }
         }
 
+
         public IBookingPaymentRepo BookingPaymentRepo => _BookingPaymentRepo ??= new BookingPaymentRepo(dbContext);
         public IBookingPayoutRepo BookingPayoutRepo =>_BookingPayoutRepo??= new BookingPayoutRepo(dbContext);
         public IHostPayoutRepo HostPayoutRepo => _HostPayoutRepo??= new HostPayoutRepo(dbContext);
+
 
 
 
@@ -126,6 +150,7 @@ namespace bnbClone_API.UnitOfWork
         {
             _transaction = await dbContext.Database.BeginTransactionAsync();
         }
+
 
         public async Task CommitTransactionAsync()
         {
@@ -151,5 +176,7 @@ namespace bnbClone_API.UnitOfWork
             await _transaction.DisposeAsync();
         }
 
+
     }
+
 }
