@@ -173,48 +173,49 @@ namespace bnbClone_API.Controllers
             var results = await _unitOfWork.ViolationRepo.GetViolationsByPropertyAsync(propertyId);
             return Ok(results);
         }
-        //// Admin deletes a violation : /api/violations/{id}
-        ////[Authorize(Roles = "admin")]
-        //[HttpDelete("{id}")]
-        //public async Task<IActionResult> DeleteViolation(int id)
-        //{
-        //    var violation = await _unitOfWork.ViolationRepo.GetByIdAsync(id);
-        //    if (violation == null)
-        //        return NotFound("Violation not found.");
 
-        //    await _unitOfWork.ViolationRepo.DeleteAsync(id);
-        //    await _unitOfWork.SaveChangesAsync();
-        //    return Ok("Violation deleted successfully.");
-        //}
+        // Admin deletes a violation : /api/violations/{id}
+        //[Authorize(Roles = "admin")]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteViolation(int id)
+        {
+            var violation = await _unitOfWork.ViolationRepo.GetByIdAsync(id);
+            if (violation == null)
+                return NotFound("Violation not found.");
 
-        //// Admin edits a violation (type, description, notes) : /api/violations/{id}
-        ////[Authorize(Roles = "admin")]
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> EditViolation(int id, EditViolationDTO dto)
-        //{
-        //    var violation = await _unitOfWork.ViolationRepo.GetByIdAsync(id);
-        //    if (violation == null)
-        //        return NotFound("Violation not found.");
+            await _unitOfWork.ViolationRepo.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
+            return Ok("Violation deleted successfully.");
+        }
 
-        //    violation.ViolationType = dto.ViolationType.ToString();
-        //    violation.Description = dto.Description;
-        //    violation.AdminNotes = dto.AdminNotes;
-        //    violation.Status = dto.Status;
-        //    violation.UpdatedAt = DateTime.UtcNow;
-        //    violation.ResolvedAt = dto.Status == "Resolved" ? DateTime.UtcNow : null;
+        // Admin edits a violation (type, description, notes) : /api/violations/{id}
+        //[Authorize(Roles = "admin")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditViolation(int id, EditViolationDTO dto)
+        {
+            var violation = await _unitOfWork.ViolationRepo.GetByIdAsync(id);
+            if (violation == null)
+                return NotFound("Violation not found.");
 
-        //    await _unitOfWork.SaveChangesAsync();
-        //    return Ok("Violation updated.");
-        //}
+            violation.ViolationType = dto.ViolationType.ToString();
+            violation.Description = dto.Description;
+            violation.AdminNotes = dto.AdminNotes;
+            violation.Status = dto.Status;
+            violation.UpdatedAt = DateTime.UtcNow;
+            violation.ResolvedAt = dto.Status == "Resolved" ? DateTime.UtcNow : null;
 
-        //// List only violations with status = "Pending" : /api/violations/pending
-        ////[Authorize(Roles = "admin")]
-        //[HttpGet("pending")]
-        //public async Task<IActionResult> GetPendingViolations()
-        //{
-        //    var violations = await _unitOfWork.ViolationRepo.GetViolationsByStatusAsync("Pending");
-        //    return Ok(violations);
-        //}
+            await _unitOfWork.SaveChangesAsync();
+            return Ok("Violation updated.");
+        }
+
+        // List only violations with status = "Pending" : /api/violations/pending
+        //[Authorize(Roles = "admin")]
+        [HttpGet("pending")]
+        public async Task<IActionResult> GetPendingViolations()
+        {
+            var violations = await _unitOfWork.ViolationRepo.GetViolationsByStatusAsync("Pending");
+            return Ok(violations);
+        }
 
     }
 }

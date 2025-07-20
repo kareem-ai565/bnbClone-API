@@ -60,61 +60,63 @@ namespace bnbClone_API.Controllers
             return Ok("Availability deleted.");
         }
 
-        ////Allows host to update price, dates, or flags on a slot: /api/availability/{id}
-        ////[Authorize(Roles = "host")]
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateAvailability(int id, CreateAvailabilityDTO dto)
-        //{
-        //    var slot = await _unitOfWork.AvailabilityRepo.GetByIdAsync(id);
-        //    if (slot == null) return NotFound("Slot not found.");
+        //Allows host to update price, dates, or flags on a slot: /api/availability/{id}
+        //[Authorize(Roles = "host")]
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAvailability(int id, CreateAvailabilityDTO dto)
+        {
+            var slot = await _unitOfWork.AvailabilityRepo.GetByIdAsync(id);
+            if (slot == null) return NotFound("Slot not found.");
 
-        //    slot.Price = dto.Price;
-        //    slot.MinNights = dto.MinNights;
-        //    slot.Date = dto.Date;
-        //    slot.BlockedReason = dto.BlockedReason;
-        //    slot.IsAvailable = dto.IsAvailable;
+            slot.Price = dto.Price;
+            slot.MinNights = dto.MinNights;
+            slot.Date = dto.Date;
+            slot.BlockedReason = dto.BlockedReason;
+            slot.IsAvailable = dto.IsAvailable;
 
-        //    await _unitOfWork.SaveChangesAsync();
-        //    return Ok("Availability updated.");
-        //}
+            await _unitOfWork.SaveChangesAsync();
+            return Ok("Availability updated.");
+        }
 
-        ////Lists all slots tied to a host’s properties: /api/availability/host/{hostId}
-        ////[Authorize(Roles = "host,admin")]
-        //public async Task<IActionResult> GetByHost(int hostId)
-        //{
-        //    var slots = await _unitOfWork.AvailabilityRepo.GetAvailabilityByHostIdAsync(hostId);
+        //Lists all slots tied to a host’s properties: /api/availability/host/{hostId}
+        //[Authorize(Roles = "host,admin")]
+        [HttpGet("host/{hostId}")]
+        public async Task<IActionResult> GetByHost(int hostId)
+        {
+            var slots = await _unitOfWork.AvailabilityRepo.GetAvailabilityByHostIdAsync(hostId);
 
-        //    var response = slots.Select(a => new CreateAvailabilityDTO
-        //    {
-        //        PropertyId = a.PropertyId,
-        //        Date = a.Date,
-        //        IsAvailable = a.IsAvailable,
-        //        BlockedReason = a.BlockedReason,
-        //        Price = a.Price,
-        //        MinNights = a.MinNights
-        //    });
+            var response = slots.Select(a => new CreateAvailabilityDTO
+            {
+                PropertyId = a.PropertyId,
+                Date = a.Date,
+                IsAvailable = a.IsAvailable,
+                BlockedReason = a.BlockedReason,
+                Price = a.Price,
+                MinNights = a.MinNights
+            });
 
-        //    return Ok(response);
-        //}
-        //// Admin/Host: list all availability slots : /api/availability
-        ////[Authorize(Roles = "admin,host")]
-        //[HttpGet]
-        //public async Task<IActionResult> GetAllAvailability()
-        //{
-        //    var slots = await _unitOfWork.AvailabilityRepo.GetAllAsync();
+            return Ok(response);
+        }
 
-        //    var response = slots.Select(a => new CreateAvailabilityDTO
-        //    {
-        //        PropertyId = a.PropertyId,
-        //        Date = a.Date,
-        //        IsAvailable = a.IsAvailable,
-        //        BlockedReason = a.BlockedReason,
-        //        Price = a.Price,
-        //        MinNights = a.MinNights
-        //    });
+        // Admin/Host: list all availability slots : /api/availability
+        //[Authorize(Roles = "admin,host")]
+        [HttpGet]
+        public async Task<IActionResult> GetAllAvailability()
+        {
+            var slots = await _unitOfWork.AvailabilityRepo.GetAllAsync();
 
-        //    return Ok(response);
-        //}
+            var response = slots.Select(a => new CreateAvailabilityDTO
+            {
+                PropertyId = a.PropertyId,
+                Date = a.Date,
+                IsAvailable = a.IsAvailable,
+                BlockedReason = a.BlockedReason,
+                Price = a.Price,
+                MinNights = a.MinNights
+            });
+
+            return Ok(response);
+        }
 
     }
 }
