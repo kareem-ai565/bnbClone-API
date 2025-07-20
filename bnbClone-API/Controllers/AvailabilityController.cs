@@ -45,7 +45,7 @@ namespace bnbClone_API.Controllers
             };
 
             await _unitOfWork.AvailabilityRepo.AddAsync(newSlot);
-            await _unitOfWork.SaveChangesAsync(); // commit the transaction
+            await _unitOfWork.SaveAsync(); // commit the transaction
             return Ok("Availability added.");
         }
 
@@ -56,7 +56,7 @@ namespace bnbClone_API.Controllers
             bool deleted = await _unitOfWork.AvailabilityRepo.DeleteAsync(id);
             if (!deleted) return NotFound("Availability not found or couldn't be deleted.");
 
-            await _unitOfWork.SaveChangesAsync(); // commit the transaction
+            await _unitOfWork.SaveAsync(); // commit the transaction
             return Ok("Availability deleted.");
         }
 
@@ -74,7 +74,7 @@ namespace bnbClone_API.Controllers
             slot.BlockedReason = dto.BlockedReason;
             slot.IsAvailable = dto.IsAvailable;
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveAsync();
             return Ok("Availability updated.");
         }
 

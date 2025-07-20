@@ -2,10 +2,13 @@ using bnbClone_API.Data;
 using bnbClone_API.Infrastructure;
 using bnbClone_API.Models;
 using bnbClone_API.Repositories;
+using bnbClone_API.Repositories.Impelementations;
+using bnbClone_API.Repositories.Impelementations.admin;
 using bnbClone_API.Repositories.Implementations;
 using bnbClone_API.Repositories.Implementations.admin;
 using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Repositories.Interfaces.admin;
+using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Implementations;
 using bnbClone_API.Services.Interfaces;
 using bnbClone_API.Stripe;
@@ -18,6 +21,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Stripe;
 using System.Text;
+using IUnitOfWork = bnbClone_API.Infrastructure.IUnitOfWork;
 
 namespace bnbClone_API
 {
@@ -58,7 +62,7 @@ namespace bnbClone_API
             // ----------------------
             // Repository Registrations
             // ----------------------
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            builder.Services.AddScoped<IUnitOfWork, bnbClone_API.Infrastructure.UnitOfWork>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IHostRepository, HostRepository>();
             builder.Services.AddScoped<IGenericRepository<ApplicationUser>, GenericRepository<ApplicationUser>>();
@@ -79,7 +83,7 @@ namespace bnbClone_API
             // Service Registrations
             // ----------------------
             builder.Services.AddScoped<IAuthService, AuthService>();
-            builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<ITokenService, Services.Impelementations.TokenService>();
             builder.Services.AddScoped<IAdminUserService, AdminUserService>();
             builder.Services.AddScoped<IAdminPropertyService, AdminPropertyService>();
             builder.Services.AddScoped<IAdminViolationService, AdminViolationService>();
@@ -135,7 +139,7 @@ namespace bnbClone_API
             builder.Services.AddScoped<IFavouriteRepo, FavouriteRepo>();
             builder.Services.AddScoped<IAvailabilityRepo, AvailabilityRepo>();
             builder.Services.AddScoped<IViolationRepo, ViolationRepo>();
-            builder.Services.AddScoped<IUnitOfWork, bnbClone_API.UnitOfWork.UnitOfWork>();
+            builder.Services.AddScoped<IUnitOfWork, bnbClone_API.Infrastructure.UnitOfWork>();
             builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
             builder.Services.AddScoped<IBookingService, BookingService>();
 

@@ -37,7 +37,7 @@ namespace bnbClone_API.Controllers
             };
 
             await _unitOfWork.ViolationRepo.AddAsync(violation);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveAsync();
             return Ok("Violation report submitted successfully.");
         }
 
@@ -152,7 +152,7 @@ namespace bnbClone_API.Controllers
             violation.UpdatedAt = DateTime.UtcNow;
             violation.ResolvedAt = newStatus == "Resolved" ? DateTime.UtcNow : null;
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveAsync();
             return Ok($"Violation status updated to {newStatus}.");
         }
 
@@ -184,7 +184,7 @@ namespace bnbClone_API.Controllers
                 return NotFound("Violation not found.");
 
             await _unitOfWork.ViolationRepo.DeleteAsync(id);
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveAsync();
             return Ok("Violation deleted successfully.");
         }
 
@@ -204,7 +204,7 @@ namespace bnbClone_API.Controllers
             violation.UpdatedAt = DateTime.UtcNow;
             violation.ResolvedAt = dto.Status == "Resolved" ? DateTime.UtcNow : null;
 
-            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.SaveAsync();
             return Ok("Violation updated.");
         }
 

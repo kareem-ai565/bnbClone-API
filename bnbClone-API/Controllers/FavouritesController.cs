@@ -39,7 +39,7 @@ namespace bnbClone_API.Controllers
             };
 
             await _unitOfWork.FavouriteRepo.AddAsync(favourite);
-            await _unitOfWork.SaveChangesAsync(); // Commit transaction
+            await _unitOfWork.SaveAsync(); // Commit transaction
             return Ok("Property added to favourites.");
         }
 
@@ -55,7 +55,7 @@ namespace bnbClone_API.Controllers
                 return NotFound("Favourite not found.");
 
             await _unitOfWork.FavouriteRepo.DeleteAsync(favourite.Id);
-            await _unitOfWork.SaveChangesAsync(); // Commit transaction
+            await _unitOfWork.SaveAsync(); // Commit transaction
             return Ok("Property removed from favourites.");
         }
 
