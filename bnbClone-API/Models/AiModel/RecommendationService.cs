@@ -65,7 +65,7 @@ namespace bnbClone_API.Models.AiModel
                         MatrixColumnIndexColumnName = "UserIdKey",
                         MatrixRowIndexColumnName = "PropertyIdKey",
                         LabelColumnName = nameof(BookingCsvRow.Label),
-                        NumberOfIterations = 30,
+                        NumberOfIterations = 20,
                         ApproximationRank = 32,
                         LearningRate = 0.1,
                         Lambda = 0.025,
