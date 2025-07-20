@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using bnbClone_API.Data;
 
@@ -11,9 +12,11 @@ using bnbClone_API.Data;
 namespace bnbClone_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250719101153_addDbsetPropertyAmenity")]
+    partial class addDbsetPropertyAmenity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -405,12 +408,6 @@ namespace bnbClone_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("BookingStatus")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("status");
-
                     b.Property<string>("CheckInStatus")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -455,12 +452,15 @@ namespace bnbClone_API.Migrations
                         .HasColumnType("date")
                         .HasColumnName("start_date");
 
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("status");
+
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("total_amount");
-
-                    b.Property<int>("TotalGuests")
-                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime")
@@ -468,14 +468,14 @@ namespace bnbClone_API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BookingStatus")
-                        .HasDatabaseName("IX_Bookings_Status");
-
                     b.HasIndex("GuestId")
                         .HasDatabaseName("IX_Bookings_GuestId");
 
                     b.HasIndex("PropertyId")
                         .HasDatabaseName("IX_Bookings_PropertyId");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("IX_Bookings_Status");
 
                     b.HasIndex("StartDate", "EndDate")
                         .HasDatabaseName("IX_Bookings_Dates");
@@ -1403,7 +1403,7 @@ namespace bnbClone_API.Migrations
 
                     b.HasIndex("HostId");
 
-                    b.ToTable("Properties", null, t =>
+                    b.ToTable("Properties", t =>
                         {
                             t.HasCheckConstraint("CK_Properties_Status", "[status] IN ('active', 'pending', 'suspended')");
                         });
@@ -1473,7 +1473,7 @@ namespace bnbClone_API.Migrations
                     b.HasIndex("PropertyId", "Date")
                         .IsUnique();
 
-                    b.ToTable("PropertyAvailabilities", (string)null);
+                    b.ToTable("PropertyAvailabilities");
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.PropertyAvailabilityView", b =>
@@ -1519,7 +1519,7 @@ namespace bnbClone_API.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("PropertyCategories", (string)null);
+                    b.ToTable("PropertyCategories");
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.PropertyDetailsView", b =>
@@ -1621,7 +1621,7 @@ namespace bnbClone_API.Migrations
 
                     b.HasIndex("PropertyId");
 
-                    b.ToTable("PropertyImages", null, t =>
+                    b.ToTable("PropertyImages", t =>
                         {
                             t.HasCheckConstraint("CK_PropertyImages_Category", "[category] IN ('Bedroom', 'Bathroom', 'Living Area', 'Kitchen', 'Exterior', 'Additional')");
                         });
@@ -1670,7 +1670,7 @@ namespace bnbClone_API.Migrations
 
                     b.HasIndex("ReviewerId");
 
-                    b.ToTable("Reviews", (string)null);
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.UserBookingHistoryView", b =>

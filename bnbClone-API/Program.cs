@@ -1,3 +1,4 @@
+
 ﻿using bnbClone_API.Data;
 using bnbClone_API.Infrastructure;
 using bnbClone_API.Models;
@@ -17,6 +18,19 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 
+
+using bnbClone_API.Data;
+using bnbClone_API.Repositories.Impelementations;
+using bnbClone_API.Repositories.Interfaces;
+using bnbClone_API.Services.Impelementations;
+using bnbClone_API.Services.Interfaces;
+
+using bnbClone_API.Stripe;
+using bnbClone_API.UnitOfWork;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.EntityFrameworkCore;
+using Stripe;
+
 namespace bnbClone_API
 {
     public class Program
@@ -24,6 +38,7 @@ namespace bnbClone_API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
 
             // ----------------------
             // Database Configuration
@@ -86,22 +101,56 @@ namespace bnbClone_API
 
             builder.Services.AddScoped<IProfileService, ProfileService>();
 
+            //==================================== DataBase ================================
+          //  builder.Services.AddDbContext<ApplicationDbContext>(options =>
+   // options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            //==============================================================================
 
-            // ----------------------
-            // CORS Configuration
-            // ----------------------
+            
+
+            builder.Services.Configure<FormOptions>(options =>
+            {
+                options.ValueCountLimit = int.MaxValue;
+            });
+
+
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowAll", policy =>
+                {
                     policy.AllowAnyOrigin()
-                          .AllowAnyHeader()
-                          .AllowAnyMethod());
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
             });
 
-            // ----------------------
-            // Controller & Swagger Setup
-            // ----------------------
-            builder.Services.AddControllers();
+
+
+          //  builder.Services.AddScoped<IUnitOfWork , UnitOfWork.UnitOfWork>();
+            builder.Services.AddScoped<IPropertyAmenityService ,  PropertyAmenityService>();
+            builder.Services.AddScoped<IAmenityService, AmenityService>();
+            builder.Services.AddScoped<IPropertyCategoryService, PropertyCategoryService>();
+            builder.Services.AddScoped<IhostVerificationService, hostVerificationService>();
+
+            builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
+                }); ;
+
+
+
+            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+            builder.Services.AddOpenApi();
+            builder.Services.AddScoped<IUnitOfWork, bnbClone_API.UnitOfWork.UnitOfWork>();
+            builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
+            builder.Services.AddScoped<IBookingService, BookingService>();
+
+            //===============Stripe=========================
+            builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+
+            StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+
 
             builder.Services.AddEndpointsApiExplorer();
 
@@ -147,17 +196,20 @@ namespace bnbClone_API
             // ----------------------
             var app = builder.Build();
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
-            else
-            {
-                app.UseHttpsRedirection();
-            }
 
             app.UseCors("AllowAll");
+
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+       
+                app.UseSwaggerUI(option => option.SwaggerEndpoint("/openapi/v1.json", "v1"));
+            }
+
+                app.UseHttpsRedirection();
+
 
             app.UseAuthentication();
             app.UseAuthorization();
