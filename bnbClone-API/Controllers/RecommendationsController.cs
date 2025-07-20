@@ -72,8 +72,9 @@ namespace bnbClone_API.Controllers
                         PropertyId = propertyId,
                         Score = RecommendationService.PredictScore(userId, propertyId)
                     })
+                    .Where(p => !float.IsNaN(p.Score))
                     .OrderByDescending(r => r.Score)
-                    .Take(10)
+                    .Take(3)
                     .ToList();
 
                 return Ok(recommendations);
