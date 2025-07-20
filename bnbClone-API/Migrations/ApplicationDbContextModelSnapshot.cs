@@ -405,6 +405,12 @@ namespace bnbClone_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("BookingStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("status");
+
                     b.Property<string>("CheckInStatus")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -449,15 +455,12 @@ namespace bnbClone_API.Migrations
                         .HasColumnType("date")
                         .HasColumnName("start_date");
 
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)")
-                        .HasColumnName("status");
-
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)")
                         .HasColumnName("total_amount");
+
+                    b.Property<int>("TotalGuests")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime")
@@ -465,14 +468,14 @@ namespace bnbClone_API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("BookingStatus")
+                        .HasDatabaseName("IX_Bookings_Status");
+
                     b.HasIndex("GuestId")
                         .HasDatabaseName("IX_Bookings_GuestId");
 
                     b.HasIndex("PropertyId")
                         .HasDatabaseName("IX_Bookings_PropertyId");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("IX_Bookings_Status");
 
                     b.HasIndex("StartDate", "EndDate")
                         .HasDatabaseName("IX_Bookings_Dates");
@@ -1400,7 +1403,7 @@ namespace bnbClone_API.Migrations
 
                     b.HasIndex("HostId");
 
-                    b.ToTable("Properties", t =>
+                    b.ToTable("Properties", null, t =>
                         {
                             t.HasCheckConstraint("CK_Properties_Status", "[status] IN ('active', 'pending', 'suspended')");
                         });
@@ -1470,7 +1473,7 @@ namespace bnbClone_API.Migrations
                     b.HasIndex("PropertyId", "Date")
                         .IsUnique();
 
-                    b.ToTable("PropertyAvailabilities");
+                    b.ToTable("PropertyAvailabilities", (string)null);
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.PropertyAvailabilityView", b =>
@@ -1516,7 +1519,7 @@ namespace bnbClone_API.Migrations
 
                     b.HasKey("CategoryId");
 
-                    b.ToTable("PropertyCategories");
+                    b.ToTable("PropertyCategories", (string)null);
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.PropertyDetailsView", b =>
@@ -1618,7 +1621,7 @@ namespace bnbClone_API.Migrations
 
                     b.HasIndex("PropertyId");
 
-                    b.ToTable("PropertyImages", t =>
+                    b.ToTable("PropertyImages", null, t =>
                         {
                             t.HasCheckConstraint("CK_PropertyImages_Category", "[category] IN ('Bedroom', 'Bathroom', 'Living Area', 'Kitchen', 'Exterior', 'Additional')");
                         });
@@ -1667,7 +1670,7 @@ namespace bnbClone_API.Migrations
 
                     b.HasIndex("ReviewerId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("bnbClone_API.Models.UserBookingHistoryView", b =>

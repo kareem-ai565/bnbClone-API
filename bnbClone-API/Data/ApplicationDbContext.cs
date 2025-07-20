@@ -33,6 +33,7 @@ namespace bnbClone_API.Data
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<CancellationPolicy> CancellationPolicies { get; set; }
         public DbSet<PropertyCategory> PropertyCategories { get; set; }
+        public DbSet<PropertyAmenity> PropertyAmenities { get; set; }
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Violation> Violations { get; set; }
 

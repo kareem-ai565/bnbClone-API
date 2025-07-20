@@ -1,9 +1,4 @@
-﻿using bnbClone_API.Models;
-using Stripe;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace bnbClone_API.Models
 {
@@ -29,7 +24,7 @@ namespace bnbClone_API.Models
         [ForeignKey("GuestId")]
         public virtual ApplicationUser Guest { get; set; }
 
-
+        public int TotalGuests { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
 

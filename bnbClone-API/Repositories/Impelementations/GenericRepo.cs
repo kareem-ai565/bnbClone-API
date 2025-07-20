@@ -14,13 +14,15 @@ namespace bnbClone_API.Repositories.Impelementations
         {
             this.dbContext = dbContext;
         }
-        public async Task<T> AddAsync(T entity)
+        virtual public async Task<T> AddAsync(T entity)
         {
             await dbContext.Set<T>().AddAsync(entity);
             return entity;
         }
 
-        public virtual async Task<bool> DeleteAsync(int id)
+
+        virtual public async Task<bool> DeleteAsync(int id)
+
         {
             var entity = await dbContext.Set<T>().FindAsync(id);
             if (entity == null)
@@ -33,26 +35,28 @@ namespace bnbClone_API.Repositories.Impelementations
             {
                 entityType.GetProperty("AccountStatus")?.SetValue(entity, AccountStatus.Deleted);
             }
-            else if (entityType.GetProperty("PropertyStatus") != null)
+            else if (entityType.GetProperty("Status") != null && entityType.GetProperty("Status")!.PropertyType == typeof(string))
             {
-                entityType.GetProperty("PropertyStatus")?.SetValue(entity, PropertyStatus.Suspended);
+                if (entity is Property)
+                {
+                    entityType.GetProperty("Status")?.SetValue(entity, PropertyStatus.Suspended.ToString());
+                }
+                else if (entity is Booking)
+                {
+                    entityType.GetProperty("Status")?.SetValue(entity, BookingStatus.Cancelled.ToString());
+                }
+                else
+                {
+                    // Optional: fallback if entity has no supported status
+                    throw new InvalidOperationException("Entity does not support soft delete via status enum.");
+                }
             }
-            else if (entityType.GetProperty("BookingStatus") != null)
-            {
-                entityType.GetProperty("BookingStatus")?.SetValue(entity, BookingStatus.Cancelled);
-            }
-            else
-            {
-                // Optional: fallback if entity has no supported status
-                throw new InvalidOperationException("Entity does not support soft delete via status enum.");
-            }
-
-            dbContext.Set<T>().Update(entity);
-            return true;
-
+                dbContext.Set<T>().Update(entity);
+                return true;
+            
         }
 
-        public async Task<bool> ExistsAsync(int id)
+        virtual public async Task<bool> ExistsAsync(int id)
         {
             var entity = await dbContext.Set<T>().FindAsync(id);
             if (entity != null)
@@ -61,22 +65,22 @@ namespace bnbClone_API.Repositories.Impelementations
 
         }
 
-        public async Task<IEnumerable<T>> FindInDataAsync(Expression<Func<T, bool>> predicate)
+        virtual public async Task<IEnumerable<T>> FindInDataAsync(Expression<Func<T, bool>> predicate)
         {
              return await dbContext.Set<T>().Where(predicate).ToListAsync();
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        virtual public async Task<IEnumerable<T>> GetAllAsync()
         {
            return await dbContext.Set<T>().ToListAsync();
         }
 
-        public async Task<T> GetByIdAsync(int id)
+        virtual public async Task<T> GetByIdAsync(int id)
         {
             return await dbContext.Set<T>().FindAsync(id);
         }
 
-        public async Task<IEnumerable<T>> GetPagedAsync(Expression<Func<T, bool>>? filter, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy, int pageNumber, int pageSize)
+        virtual public async Task<IEnumerable<T>> GetPagedAsync(Expression<Func<T, bool>>? filter, Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy, int pageNumber, int pageSize)
         {
             IQueryable<T> query = dbContext.Set<T>();
 
@@ -96,10 +100,15 @@ namespace bnbClone_API.Repositories.Impelementations
             return await query.ToListAsync();
         }
 
-        public async Task<T> UpdateAsync(T entity)
+        virtual public async Task<T> UpdateAsync(T entity)
         {
             dbContext.Set<T>().Update(entity);
             return entity;
+        }
+
+       virtual public async Task<bool> FindAnyConAsync(Expression<Func<Booking, bool>> predicate)
+        {
+            return await dbContext.Set<Booking>().AnyAsync(predicate);
         }
     }
 }
