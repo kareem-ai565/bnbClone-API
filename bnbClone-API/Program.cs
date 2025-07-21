@@ -165,6 +165,8 @@ namespace bnbClone_API
             builder.Services.AddScoped<IPropertyService, PropertyService>();
             builder.Services.AddScoped<IPropertyImageService, PropertyImageService>();
             builder.Services.AddScoped<ICancellationPolicyService, CancellationPolicyService>();
+            builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
+            builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 
 
             builder.Services.AddScoped<IUserUsedPromotionService, UserUsedPromotionService>();

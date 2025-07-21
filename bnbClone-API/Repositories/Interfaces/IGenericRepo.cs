@@ -20,5 +20,9 @@ namespace bnbClone_API.Repositories.Interfaces
             int pageSize);
         Task<bool> FindAnyConAsync(Expression<Func<Booking, bool>> predicate);
 
+        //This method is designed to find a single Entity record from the database
+        //that matches a given condition (predicate). It returns the first match, or null if nothing matches.
+        Task<T?> FindFirstAsync(Expression<Func<T, bool>> predicate);
+
     }
 }
