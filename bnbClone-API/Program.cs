@@ -48,6 +48,16 @@ namespace bnbClone_API
             // ----------------------
             // Identity & Auth Setup
             // ----------------------
+            builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole<int>>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+            builder.Services.AddScoped<UserManager<ApplicationUser>>();
+            builder.Services.AddScoped<SignInManager<ApplicationUser>>();
+
+
+
             builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -100,6 +110,12 @@ namespace bnbClone_API
 
             builder.Services.AddScoped<IProfileService, ProfileService>();
 
+
+            // ----------------------
+            // host Repository Registrations
+            // ----------------------
+            builder.Services.AddScoped<IHostService, HostService>();
+
             //==================================== DataBase ================================
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -140,7 +156,7 @@ namespace bnbClone_API
 
 
 
-    
+
             // Repositories and Unit of Work
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
@@ -170,6 +186,10 @@ namespace bnbClone_API
             builder.Services.AddScoped<IConversationService, ConversationService>();
             builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
+
+
+            builder.Services.AddScoped<IUserUsedPromotionService, UserUsedPromotionService>();
+          
 
             //===============Stripe=========================
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));

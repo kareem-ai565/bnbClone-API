@@ -31,6 +31,9 @@ namespace bnbClone_API.UnitOfWork
         IHostVerificationRepository HostVerifications { get; }
         INotificationRepository Notifications { get; }
 
+
+
+        IUserUsedPromotionRepo UserUsedPromotion { get; }
         Task BeginTransactionAsync();
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
@@ -45,6 +48,7 @@ namespace bnbClone_API.UnitOfWork
         INotificationRepo NotificationRepo { get; }
 
         Task <int>SaveAsync();
+        Task<int> CompleteAsync();
 
 
 

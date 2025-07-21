@@ -63,6 +63,11 @@ namespace bnbClone_API.Repositories.Impelementations
                 .FirstOrDefaultAsync(h => h.Id == hostId);
         }
 
+        public async Task<Models.Host?> GetHostWithUserByIdAsync(int id)
+        {
+            return await _context.Hosts.Include(h => h.User).FirstOrDefaultAsync(h => h.Id == id);
+        }
+
         private ApplicationDbContext _context => (ApplicationDbContext)base._context;
     }
 }

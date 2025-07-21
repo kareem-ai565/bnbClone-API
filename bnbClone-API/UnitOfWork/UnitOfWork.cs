@@ -50,6 +50,9 @@ namespace bnbClone_API.UnitOfWork
         public IFavouriteRepo FavouriteRepo { get; }
         public IAvailabilityRepo AvailabilityRepo { get; }
         public IViolationRepo ViolationRepo { get; }
+
+
+        UserUsedPromotionRepo _UserUsedPromotion;
         
        
 
@@ -152,6 +155,13 @@ namespace bnbClone_API.UnitOfWork
         public IHostVerificationRepository HostVerifications => _HostVerificationRepo??= new HostVerificationRepository(dbContext);
         public INotificationRepository Notifications => _NotificationRepository??= new NotificationRepository(dbContext);
 
+
+        public IUserUsedPromotionRepo UserUsedPromotion => _UserUsedPromotion ??= new UserUsedPromotionRepo(dbContext);
+
+
+                    
+           
+
         public async Task BeginTransactionAsync()
         {
             _transaction = await dbContext.Database.BeginTransactionAsync();
@@ -180,6 +190,12 @@ namespace bnbClone_API.UnitOfWork
         {
             await _transaction.RollbackAsync();
             await _transaction.DisposeAsync();
+        }
+
+
+        public async Task<int> CompleteAsync()
+        {
+            return await dbContext.SaveChangesAsync();
         }
 
         public IPropertyRepo PropertyRepo => _PropertyRepo ??= new PropertyRepo(dbContext);
