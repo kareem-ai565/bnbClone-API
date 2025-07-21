@@ -153,6 +153,9 @@ namespace bnbClone_API
             builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
             builder.Services.AddScoped<IBookingService, BookingService>();
 
+
+            builder.Services.AddScoped<IUserUsedPromotionService, UserUsedPromotionService>();
+
             //===============Stripe=========================
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
 

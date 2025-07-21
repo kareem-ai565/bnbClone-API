@@ -40,6 +40,9 @@ namespace bnbClone_API.UnitOfWork
         public IFavouriteRepo FavouriteRepo { get; }
         public IAvailabilityRepo AvailabilityRepo { get; }
         public IViolationRepo ViolationRepo { get; }
+
+
+        UserUsedPromotionRepo _UserUsedPromotion;
         
        
 
@@ -141,6 +144,13 @@ namespace bnbClone_API.UnitOfWork
         public IViolationRepository Violations => _ViolationRepository??= new ViolationRepository(dbContext);
         public IHostVerificationRepository HostVerifications => _HostVerificationRepo??= new HostVerificationRepository(dbContext);
         public INotificationRepository Notifications => _NotificationRepository??= new NotificationRepository(dbContext);
+
+
+        public IUserUsedPromotionRepo UserUsedPromotion => _UserUsedPromotion ??= new UserUsedPromotionRepo(dbContext);
+
+
+                    
+           
 
         public async Task BeginTransactionAsync()
         {
