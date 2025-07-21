@@ -38,9 +38,17 @@ namespace bnbClone_API.UnitOfWork
         Task CommitTransactionAsync();
         Task RollbackTransactionAsync();
 
-
+        IPropertyRepo PropertyRepo { get; }
+        IPropertyImageRepo PropertyImageRepo { get; }
+        ICancellationPolicyRepo CancellationPolicies { get; }
+        IReviewRepo Reviews { get; }
+        IPromotionRepository Promotions { get; }
+        IMessageRepo MessageRepo { get; }
+        IConversationRepo ConversationRepo { get; }
+        INotificationRepo NotificationRepo { get; }
 
         Task <int>SaveAsync();
+        Task<int> CompleteAsync();
 
 
 

@@ -23,14 +23,14 @@ namespace bnbClone_API.Controllers
             var bookings = await _bookingService.GetAllBookingsAsync();
             return Ok(bookings);
         }
-        [HttpPost]
-        public async Task<IActionResult> CreateBooking([FromBody] BookingCreateDto bookingCreateDto)
+        [HttpPost("CreateBookingByUserId{id:int}")]
+        public async Task<IActionResult> CreateBooking(int id,[FromBody] BookingCreateDto bookingCreateDto)
         {
             if (bookingCreateDto == null)
             {
                 return BadRequest("Booking data is required.");
             }
-            var bookingid = await _bookingService.AddBooking(bookingCreateDto);
+            var bookingid = await _bookingService.AddBooking(id,bookingCreateDto);
             if (bookingid > 0)
             {
                 return CreatedAtAction(nameof(GetBookings), new { id = bookingid }, bookingid);

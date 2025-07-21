@@ -16,16 +16,17 @@ namespace bnbClone_API.Services.Impelementations
             this.unitOfWork = unitOfWork;
         }
 
-        public async Task<int> AddBooking(BookingCreateDto createBookingDto)
+        public async Task<int> AddBooking(int userId,BookingCreateDto createBookingDto)
         {
-            //var property = await unitOfWork.PropertyRepo.GetByIdAsync(createBookingDto.PropertyId);
-            //if (property == null)
-            //{
-            //    throw new ArgumentException("Property not found.");
-            //}
+            var userid = await unitOfWork.Users.GetByIdAsync(userId);
+            var property = await unitOfWork.PropertyRepo.GetByIdAsync(createBookingDto.PropertyId);
+            if (property == null)
+            {
+                throw new ArgumentException("Property not found.");
+            }
             // Validate guest count
-            //if (createBookingDto.TotalGuests > property.MaxGuests)
-            //    throw new Exception($"Total guests exceed property max capacity ({property.MaxGuests}).");
+            if (createBookingDto.TotalGuests > property.MaxGuests)
+                throw new Exception($"Total guests exceed property max capacity ({property.MaxGuests}).");
 
             // Validate overlapping dates
             var isOverlapping = await unitOfWork.BookingRepo
@@ -41,55 +42,63 @@ namespace bnbClone_API.Services.Impelementations
 
             if (isOverlapping)
                 throw new Exception("This property is already booked during the selected dates.");
-            //var nights = (createBookingDto.EndDate - createBookingDto.StartDate).TotalDays;
-            //if (nights <= 0)
-            //{
-            //    throw new ArgumentException("End date must be after start date.");
-            //}
-            //if (createBookingDto.TotalGuests <= 0)
-            //{
-            //    throw new ArgumentException("Total guests must be greater than zero.");
-            //}
+            var nights = (decimal)(createBookingDto.EndDate - createBookingDto.StartDate).TotalDays;
+            if (nights <= 0)
+            {
+                throw new ArgumentException("End date must be after start date.");
+            }
+            if (createBookingDto.TotalGuests <= 0)
+            {
+                throw new ArgumentException("Total guests must be greater than zero.");
+            }
 
-            //decimal baseAmount = property.PricePerNight * nights;
-            //decimal discount = 0;
-            //if (createBookingDto.PromotionId.HasValue && createBookingDto.PromotionId.Value > 0)
-            //{
-            //    var promo = await unitOfWork.PromotionRepo.GetByIdAsync(createBookingDto.PromotionId.Value);
-            //    if (promo != null)
-            //    {
-            //        discount = baseAmount * (promo.DiscountPercentage / 100m);
-            //    }
-            //}
+            decimal baseAmount = property.PricePerNight * nights;
+            decimal discount = 0;
+            if (createBookingDto.PromotionId.HasValue && createBookingDto.PromotionId.Value > 0)
+            {
+                var promo = await unitOfWork.Promotions.GetByIdAsync(createBookingDto.PromotionId.Value);
+                if (promo != null && promo.IsActive && promo.StartDate <= DateTime.UtcNow && promo.EndDate >= DateTime.UtcNow)
+                {
+                    if (promo.DiscountType.Equals("Percentage", StringComparison.OrdinalIgnoreCase))
+                    {
+                        discount = baseAmount * (promo.Amount / 100m);
+                    }
+                    else if (promo.DiscountType.Equals("FixedAmount", StringComparison.OrdinalIgnoreCase))
+                    {
+                        discount = promo.Amount;
+                    }
+                }
+            }
 
-            //decimal finalAmount = baseAmount - discount;
+            decimal finalAmount = baseAmount - discount;
 
             var booking = new Booking()
             {
+                GuestId = userId, 
                 PropertyId = createBookingDto.PropertyId,
                 StartDate = createBookingDto.StartDate,
                 EndDate = createBookingDto.EndDate,
                 TotalGuests = createBookingDto.TotalGuests,
                 Status = BookingStatus.Pending.ToString(),
-                //TotalAmount = finalAmount,
+                TotalAmount = finalAmount,
                 CreatedAt = DateTime.UtcNow,
                 PromotionId = createBookingDto.PromotionId ?? 0
             };
             await unitOfWork.BookingRepo.AddAsync(booking);
             await unitOfWork.SaveAsync();
             // Host Notification
-            //var hostId = property.HostId;
-            //var guestId = booking.GuestId;
+            var hostId = property.HostId;
+            var guestId = userId;
 
-            //var notification = new Notification
-            //{
-            //    UserId = hostId,
-            //    SenderId = guestId, // if GuestId is int, convert to string
-            //    Message = $"New booking for '{property.Title}' from {booking.StartDate:yyyy-MM-dd} to {booking.EndDate:yyyy-MM-dd}.",
-            //};
+            var notification = new Notification
+            {
+                UserId = hostId,
+                SenderId = guestId, // if GuestId is int, convert to string
+                Message = $"New booking for '{property.Title}' from {booking.StartDate:yyyy-MM-dd} to {booking.EndDate:yyyy-MM-dd}.",
+            };
 
-            //await unitOfWork.NotificationRepo.AddAsync(notification);
-            //await unitOfWork.SaveChanges();
+            await unitOfWork.NotificationRepo.AddAsync(notification);
+            await unitOfWork.SaveAsync();
             return booking.Id;
 
         }

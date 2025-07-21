@@ -27,6 +27,7 @@ using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http.Features;
 using Stripe;
 using TokenService = bnbClone_API.Services.Impelementations.TokenService;
+using bnbClone_API.Helpers.MappingProfiles;
 
 
 namespace bnbClone_API
@@ -109,6 +110,12 @@ namespace bnbClone_API
 
             builder.Services.AddScoped<IProfileService, ProfileService>();
 
+
+            // ----------------------
+            // host Repository Registrations
+            // ----------------------
+            builder.Services.AddScoped<IHostService, HostService>();
+
             //==================================== DataBase ================================
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -162,6 +169,23 @@ namespace bnbClone_API
 
             builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
             builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped<IPropertyRepo, PropertyRepo>();
+            builder.Services.AddScoped<IPropertyImageRepo, PropertyImageRepo>();
+            builder.Services.AddScoped<ICancellationPolicyRepo, CancellationPolicyRepo>();
+            builder.Services.AddScoped<IPropertyService, PropertyService>();
+            builder.Services.AddScoped<IPropertyImageService, PropertyImageService>();
+            builder.Services.AddScoped<ICancellationPolicyService, CancellationPolicyService>();
+            builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
+            builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
+            //AOsama
+            builder.Services.AddScoped<IMessageRepo, MessageRepo>();
+            builder.Services.AddScoped<IMessageService, MessageService>();
+            builder.Services.AddScoped<IConversationRepo, ConversationRepo>();
+            builder.Services.AddScoped<INotificationRepo, NotificationRepo>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<IConversationService, ConversationService>();
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
+
 
 
             builder.Services.AddScoped<IUserUsedPromotionService, UserUsedPromotionService>();
@@ -175,6 +199,11 @@ namespace bnbClone_API
 
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
+
+            // AutoMapper
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<PropertyProfile>());
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<PropertyImageProfile>());
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<CancellationPolicyProfile>());
 
 
             //swagger

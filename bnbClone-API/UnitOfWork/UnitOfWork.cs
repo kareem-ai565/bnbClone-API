@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using bnbClone_API.Repositories.Interfaces.admin;
 using bnbClone_API.Repositories.Impelementations.admin;
 using bnbClone_API.Repositories.Implementations.admin;
+using bnbClone_API.Repositories.Implementations;
 
 
 
@@ -32,6 +33,15 @@ namespace bnbClone_API.UnitOfWork
         private NotificationRepository _NotificationRepository;
         private PropertyRepository _PropertyRepository;
         private ViolationRepository _ViolationRepository;
+        private PropertyRepo  _PropertyRepo;
+        private PropertyImageRepo _PropertyImageRepo;
+        private CancellationPolicyRepo _CancellationPolicyRepo;
+        private ReviewRepo _ReviewRepo;
+        private PromotionRepository _PromotionRepository;
+        private ConversationRepo _ConversationRepo;
+        private MessageRepo _MessageRepo;
+        private NotificationRepo _NotificationRepo;
+
 
 
         private IDbContextTransaction _transaction;
@@ -182,6 +192,20 @@ namespace bnbClone_API.UnitOfWork
             await _transaction.DisposeAsync();
         }
 
+
+        public async Task<int> CompleteAsync()
+        {
+            return await dbContext.SaveChangesAsync();
+        }
+
+        public IPropertyRepo PropertyRepo => _PropertyRepo ??= new PropertyRepo(dbContext);
+        public IPropertyImageRepo PropertyImageRepo => _PropertyImageRepo ??= new PropertyImageRepo(dbContext);
+        public ICancellationPolicyRepo CancellationPolicies => _CancellationPolicyRepo ??= new CancellationPolicyRepo(dbContext);
+        public IReviewRepo Reviews => _ReviewRepo ??= new ReviewRepo(dbContext);
+        public IPromotionRepository Promotions => _PromotionRepository ??= new PromotionRepository(dbContext);
+        public IMessageRepo MessageRepo => _MessageRepo ??= new MessageRepo(dbContext);
+        public IConversationRepo ConversationRepo => _ConversationRepo ??= new ConversationRepo(dbContext);
+        public INotificationRepo NotificationRepo => _NotificationRepo ??= new NotificationRepo(dbContext);
 
     }
 
