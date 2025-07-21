@@ -48,6 +48,16 @@ namespace bnbClone_API
             // ----------------------
             // Identity & Auth Setup
             // ----------------------
+            builder.Services
+    .AddIdentity<ApplicationUser, IdentityRole<int>>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
+
+            builder.Services.AddScoped<UserManager<ApplicationUser>>();
+            builder.Services.AddScoped<SignInManager<ApplicationUser>>();
+
+
+
             builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -146,7 +156,7 @@ namespace bnbClone_API
 
 
 
-    
+
             // Repositories and Unit of Work
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
@@ -179,6 +189,7 @@ namespace bnbClone_API
 
 
             builder.Services.AddScoped<IUserUsedPromotionService, UserUsedPromotionService>();
+          
 
             //===============Stripe=========================
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));

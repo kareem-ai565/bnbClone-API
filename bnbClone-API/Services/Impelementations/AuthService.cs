@@ -3,8 +3,11 @@ using bnbClone_API.Models;
 using bnbClone_API.Services;
 using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace bnbClone_API.Services.Impelementations
 {
@@ -14,415 +17,368 @@ namespace bnbClone_API.Services.Impelementations
         private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
         private readonly ITokenService _tokenService;
         private readonly ILogger<AuthService> _logger;
+        private readonly UserManager<ApplicationUser> userManager;
 
         public AuthService(
             IUnitOfWork unitOfWork,
             IPasswordHasher<ApplicationUser> passwordHasher,
             ITokenService tokenService,
-            ILogger<AuthService> logger)
+            ILogger<AuthService> logger,
+            UserManager<ApplicationUser> _userManager
+            )
         {
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
             _logger = logger;
+            userManager = _userManager;
         }
 
-        public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
+        public async Task<bool> UserFound(string email)
         {
-            try
+            ApplicationUser user1 = await _unitOfWork.Users.GetByEmailAsync(email);
+            if (user1 == null)
             {
-                // Check if email already exists
-                if (await _unitOfWork.Users.EmailExistsAsync(registerDto.Email))
-                {
-                    throw new InvalidOperationException("Email already exists");
-                }
+                return false;
+            }
+            return true;
+        }
 
-                // Create new user
-                var user = new ApplicationUser
+        public async Task<ApplicationUser> RegisterAsync(RegisterDto registerDto)
+        {
+
+            ApplicationUser user = new ApplicationUser()
                 {
                     Email = registerDto.Email,
-                    UserName = registerDto.Email,
+                    UserName=Guid.NewGuid().ToString(),
                     FirstName = registerDto.FirstName,
                     LastName = registerDto.LastName,
                     PhoneNumber = registerDto.PhoneNumber,
                     DateOfBirth = registerDto.DateOfBirth,
                     Gender = registerDto.Gender,
-                    Role = "guest", // Default role
-                    AccountStatus = "active",
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    EmailVerified = false,
-                    PhoneVerified = false
                 };
 
-                // Hash password
-                user.PasswordHash = _passwordHasher.HashPassword(user, registerDto.Password);
+            await userManager.CreateAsync(user, registerDto.Password);
+            return user;
 
-                // Generate refresh token
-                user.RefreshToken = _tokenService.GenerateRefreshToken();
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-
-                await _unitOfWork.Users.AddAsync(user);
-                await _unitOfWork.SaveAsync();
-
-                // Generate JWT token
-                var jwtToken = _tokenService.GenerateJwtToken(user);
-
-                return new AuthResponseDto
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Role = user.Role,
-                    Token = jwtToken,
-                    RefreshToken = user.RefreshToken,
-                    TokenExpiry = DateTime.UtcNow.AddHours(1)
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred during user registration");
-                throw;
-            }
         }
-
-        public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
+    
+        public async Task<ApplicationUser?> LoginAsync(LoginDto loginDto)
         {
-            try
-            {
-                var user = await _unitOfWork.Users.GetByEmailAsync(loginDto.Email);
-                if (user == null)
+           
+                ApplicationUser user = await userManager.FindByEmailAsync(loginDto.Email);
+
+                if (await userManager.CheckPasswordAsync(user, loginDto.Password))
                 {
-                    throw new UnauthorizedAccessException("Invalid email or password");
-                }
+                 return user;
 
-                // Verify password
-                var result = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginDto.Password);
-                if (result == PasswordVerificationResult.Failed)
-                {
-                    throw new UnauthorizedAccessException("Invalid email or password");
-                }
+                 }
+              return null;
+            
 
-                // Update refresh token and last login
-                user.RefreshToken = _tokenService.GenerateRefreshToken();
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
-                user.LastLogin = DateTime.UtcNow;
+           
 
-                _unitOfWork.Users.Update(user);
-                await _unitOfWork.SaveAsync();
 
-                // Generate JWT token
-                var jwtToken = _tokenService.GenerateJwtToken(user);
 
-                return new AuthResponseDto
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Role = user.Role,
-                    Token = jwtToken,
-                    RefreshToken = user.RefreshToken,
-                    TokenExpiry = DateTime.UtcNow.AddHours(1)
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred during user login");
-                throw;
-            }
+
+
         }
 
-        public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
-        {
-            try
-            {
-                var user = await _unitOfWork.Users.GetByRefreshTokenAsync(refreshTokenDto.RefreshToken);
-                if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
-                {
-                    throw new UnauthorizedAccessException("Invalid refresh token");
-                }
 
-                // Generate new tokens
-                var jwtToken = _tokenService.GenerateJwtToken(user);
-                user.RefreshToken = _tokenService.GenerateRefreshToken();
-                user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
-                _unitOfWork.Users.Update(user);
-                await _unitOfWork.SaveAsync();
 
-                return new AuthResponseDto
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    Role = user.Role,
-                    Token = jwtToken,
-                    RefreshToken = user.RefreshToken,
-                    TokenExpiry = DateTime.UtcNow.AddHours(1)
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred during token refresh");
-                throw;
-            }
-        }
 
-        public async Task<bool> RevokeTokenAsync(string refreshToken)
-        {
-            try
-            {
-                var user = await _unitOfWork.Users.GetByRefreshTokenAsync(refreshToken);
-                if (user == null) return false;
+        //public async Task<AuthResponseDto> RefreshTokenAsync(RefreshTokenDto refreshTokenDto)
+        //{
+        //    try
+        //    {
+        //        var user = await _unitOfWork.Users.GetByRefreshTokenAsync(refreshTokenDto.RefreshToken);
+        //        if (user == null || user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+        //        {
+        //            throw new UnauthorizedAccessException("Invalid refresh token");
+        //        }
 
-                user.RefreshToken = null;
-                user.RefreshTokenExpiryTime = null;
+        //        // Generate new tokens
+        //        var jwtToken = _tokenService.GenerateJwtToken(user);
+        //        user.RefreshToken = _tokenService.GenerateRefreshToken();
+        //        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
-                _unitOfWork.Users.Update(user);
-                await _unitOfWork.SaveAsync();
+        //        _unitOfWork.Users.Update(user);
+        //        await _unitOfWork.SaveAsync();
 
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred during token revocation");
-                return false;
-            }
-        }
+        //        return new AuthResponseDto
+        //        {
+        //            Id = user.Id,
+        //            Email = user.Email,
+        //            FirstName = user.FirstName,
+        //            LastName = user.LastName,
+        //            Role = user.Role,
+        //            Token = jwtToken,
+        //            RefreshToken = user.RefreshToken,
+        //            TokenExpiry = DateTime.UtcNow.AddHours(1)
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error occurred during token refresh");
+        //        throw;
+        //    }
+        //}
 
-        // NEW METHODS
+        //public async Task<bool> RevokeTokenAsync(string refreshToken)
+        //{
+        //    try
+        //    {
+        //        var user = await _unitOfWork.Users.GetByRefreshTokenAsync(refreshToken);
+        //        if (user == null) return false;
 
-        public async Task<HostRegistrationResponseDto> RegisterHostAsync(int userId, RegisterHostDto registerHostDto)
-        {
-            try
-            {
-                var user = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (user == null)
-                {
-                    throw new InvalidOperationException("User not found");
-                }
+        //        user.RefreshToken = null;
+        //        user.RefreshTokenExpiryTime = null;
 
-                // Check if user is already a host
-                var existingHost = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
-                if (existingHost != null)
-                {
-                    throw new InvalidOperationException("User is already registered as a host");
-                }
+        //        _unitOfWork.Users.Update(user);
+        //        await _unitOfWork.SaveAsync();
 
-                // Create host record
-                var host = new Models.Host
-                {
-                    UserId = userId,
-                    StartDate = DateTime.UtcNow,
-                    AboutMe = registerHostDto.AboutMe,
-                    Work = registerHostDto.Work,
-                    Education = registerHostDto.Education,
-                    Languages = registerHostDto.Languages,
-                    LivesIn = registerHostDto.LivesIn,
-                    DreamDestination = registerHostDto.DreamDestination,
-                    FunFact = registerHostDto.FunFact,
-                    Pets = registerHostDto.Pets,
-                    ObsessedWith = registerHostDto.ObsessedWith,
-                    SpecialAbout = registerHostDto.SpecialAbout,
-                    Rating = 0,
-                    TotalReviews = 0,
-                    IsVerified = false,
-                    TotalEarnings = 0,
-                    AvailableBalance = 0
-                };
+        //        return true;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error occurred during token revocation");
+        //        return false;
+        //    }
+        //}
 
-                // Update user role to host
-                user.Role = "host";
-                user.UpdatedAt = DateTime.UtcNow;
+        //// NEW METHODS
 
-                await _unitOfWork.Hosts.AddAsync(host);
-                _unitOfWork.Users.Update(user);
-                await _unitOfWork.SaveAsync();
+        //public async Task<HostRegistrationResponseDto> RegisterHostAsync(int userId, RegisterHostDto registerHostDto)
+        //{
+        //    try
+        //    {
+        //        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        //        if (user == null)
+        //        {
+        //            throw new InvalidOperationException("User not found");
+        //        }
 
-                return new HostRegistrationResponseDto
-                {
-                    HostId = host.Id,
-                    Message = "Successfully registered as a host",
-                    NewRole = user.Role,
-                    StartDate = host.StartDate
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred during host registration");
-                throw;
-            }
-        }
+        //        // Check if user is already a host
+        //        var existingHost = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
+        //        if (existingHost != null)
+        //        {
+        //            throw new InvalidOperationException("User is already registered as a host");
+        //        }
 
-        public async Task<UserProfileDto> GetUserProfileAsync(int userId)
-        {
-            try
-            {
-                var user = await _unitOfWork.Users.GetUserWithHostAsync(userId);
-                if (user == null)
-                {
-                    throw new InvalidOperationException("User not found");
-                }
+        //        // Create host record
+        //        var host = new Models.Host
+        //        {
+        //            UserId = userId,
+        //            StartDate = DateTime.UtcNow,
+        //            AboutMe = registerHostDto.AboutMe,
+        //            Work = registerHostDto.Work,
+        //            Education = registerHostDto.Education,
+        //            Languages = registerHostDto.Languages,
+        //            LivesIn = registerHostDto.LivesIn,
+        //            DreamDestination = registerHostDto.DreamDestination,
+        //            FunFact = registerHostDto.FunFact,
+        //            Pets = registerHostDto.Pets,
+        //            ObsessedWith = registerHostDto.ObsessedWith,
+        //            SpecialAbout = registerHostDto.SpecialAbout,
+        //            Rating = 0,
+        //            TotalReviews = 0,
+        //            IsVerified = false,
+        //            TotalEarnings = 0,
+        //            AvailableBalance = 0
+        //        };
 
-                var userProfile = new UserProfileDto
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    FirstName = user.FirstName,
-                    LastName = user.LastName,
-                    PhoneNumber = user.PhoneNumber,
-                    DateOfBirth = user.DateOfBirth,
-                    Gender = user.Gender,
-                    ProfilePictureUrl = user.ProfilePictureUrl,
-                    AccountStatus = user.AccountStatus,
-                    EmailVerified = user.EmailVerified,
-                    PhoneVerified = user.PhoneVerified,
-                    CreatedAt = user.CreatedAt,
-                    LastLogin = user.LastLogin,
-                    Role = user.Role
-                };
+        //        // Update user role to host
+        //        user.Role = "host";
+        //        user.UpdatedAt = DateTime.UtcNow;
 
-                // Include host profile if user is a host
-                if (user.Role == "host")
-                {
-                    var host = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
-                    if (host != null)
-                    {
-                        userProfile.HostProfile = new HostProfileDto
-                        {
-                            Id = host.Id,
-                            StartDate = host.StartDate,
-                            AboutMe = host.AboutMe,
-                            Work = host.Work,
-                            Rating = host.Rating,
-                            TotalReviews = host.TotalReviews,
-                            Education = host.Education,
-                            Languages = host.Languages,
-                            IsVerified = host.IsVerified,
-                            TotalEarnings = host.TotalEarnings,
-                            AvailableBalance = host.AvailableBalance,
-                            LivesIn = host.LivesIn,
-                            DreamDestination = host.DreamDestination,
-                            FunFact = host.FunFact,
-                            Pets = host.Pets,
-                            ObsessedWith = host.ObsessedWith,
-                            SpecialAbout = host.SpecialAbout
-                        };
-                    }
-                }
+        //        await _unitOfWork.Hosts.AddAsync(host);
+        //        _unitOfWork.Users.Update(user);
+        //        await _unitOfWork.SaveAsync();
 
-                return userProfile;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while getting user profile");
-                throw;
-            }
-        }
+        //        return new HostRegistrationResponseDto
+        //        {
+        //            HostId = host.Id,
+        //            Message = "Successfully registered as a host",
+        //            NewRole = user.Role,
+        //            StartDate = host.StartDate
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error occurred during host registration");
+        //        throw;
+        //    }
+        //}
 
-        public async Task<UserProfileDto> UpdateUserProfileAsync(int userId, UpdateProfileDto updateProfileDto)
-        {
-            try
-            {
-                var user = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (user == null)
-                {
-                    throw new InvalidOperationException("User not found");
-                }
+        //public async Task<UserProfileDto> GetUserProfileAsync(int userId)
+        //{
+        //    try
+        //    {
+        //        var user = await _unitOfWork.Users.GetUserWithHostAsync(userId);
+        //        if (user == null)
+        //        {
+        //            throw new InvalidOperationException("User not found");
+        //        }
 
-                // Update user fields
-                if (!string.IsNullOrEmpty(updateProfileDto.FirstName))
-                    user.FirstName = updateProfileDto.FirstName;
+        //        var userProfile = new UserProfileDto
+        //        {
+        //            Id = user.Id,
+        //            Email = user.Email,
+        //            FirstName = user.FirstName,
+        //            LastName = user.LastName,
+        //            PhoneNumber = user.PhoneNumber,
+        //            DateOfBirth = user.DateOfBirth,
+        //            Gender = user.Gender,
+        //            ProfilePictureUrl = user.ProfilePictureUrl,
+        //            AccountStatus = user.AccountStatus,
+        //            EmailVerified = user.EmailVerified,
+        //            PhoneVerified = user.PhoneVerified,
+        //            CreatedAt = user.CreatedAt,
+        //            LastLogin = user.LastLogin,
+        //            Role = user.Role
+        //        };
 
-                if (!string.IsNullOrEmpty(updateProfileDto.LastName))
-                    user.LastName = updateProfileDto.LastName;
+        //        // Include host profile if user is a host
+        //        if (user.Role == "host")
+        //        {
+        //            var host = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
+        //            if (host != null)
+        //            {
+        //                userProfile.HostProfile = new HostProfileDto
+        //                {
+        //                    Id = host.Id,
+        //                    StartDate = host.StartDate,
+        //                    AboutMe = host.AboutMe,
+        //                    Work = host.Work,
+        //                    Rating = host.Rating,
+        //                    TotalReviews = host.TotalReviews,
+        //                    Education = host.Education,
+        //                    Languages = host.Languages,
+        //                    IsVerified = host.IsVerified,
+        //                    TotalEarnings = host.TotalEarnings,
+        //                    AvailableBalance = host.AvailableBalance,
+        //                    LivesIn = host.LivesIn,
+        //                    DreamDestination = host.DreamDestination,
+        //                    FunFact = host.FunFact,
+        //                    Pets = host.Pets,
+        //                    ObsessedWith = host.ObsessedWith,
+        //                    SpecialAbout = host.SpecialAbout
+        //                };
+        //            }
+        //        }
 
-                if (!string.IsNullOrEmpty(updateProfileDto.PhoneNumber))
-                    user.PhoneNumber = updateProfileDto.PhoneNumber;
+        //        return userProfile;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error occurred while getting user profile");
+        //        throw;
+        //    }
+        //}
 
-                if (updateProfileDto.DateOfBirth.HasValue)
-                    user.DateOfBirth = updateProfileDto.DateOfBirth;
+        //public async Task<UserProfileDto> UpdateUserProfileAsync(int userId, UpdateProfileDto updateProfileDto)
+        //{
+        //    try
+        //    {
+        //        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        //        if (user == null)
+        //        {
+        //            throw new InvalidOperationException("User not found");
+        //        }
 
-                if (!string.IsNullOrEmpty(updateProfileDto.Gender))
-                    user.Gender = updateProfileDto.Gender;
+        //        // Update user fields
+        //        if (!string.IsNullOrEmpty(updateProfileDto.FirstName))
+        //            user.FirstName = updateProfileDto.FirstName;
 
-                if (!string.IsNullOrEmpty(updateProfileDto.ProfilePictureUrl))
-                    user.ProfilePictureUrl = updateProfileDto.ProfilePictureUrl;
+        //        if (!string.IsNullOrEmpty(updateProfileDto.LastName))
+        //            user.LastName = updateProfileDto.LastName;
 
-                user.UpdatedAt = DateTime.UtcNow;
+        //        if (!string.IsNullOrEmpty(updateProfileDto.PhoneNumber))
+        //            user.PhoneNumber = updateProfileDto.PhoneNumber;
 
-                // Update host profile if user is a host
-                if (user.Role == "host")
-                {
-                    var host = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
-                    if (host != null)
-                    {
-                        if (!string.IsNullOrEmpty(updateProfileDto.AboutMe))
-                            host.AboutMe = updateProfileDto.AboutMe;
+        //        if (updateProfileDto.DateOfBirth.HasValue)
+        //            user.DateOfBirth = updateProfileDto.DateOfBirth;
 
-                        if (!string.IsNullOrEmpty(updateProfileDto.Work))
-                            host.Work = updateProfileDto.Work;
+        //        if (!string.IsNullOrEmpty(updateProfileDto.Gender))
+        //            user.Gender = updateProfileDto.Gender;
 
-                        if (!string.IsNullOrEmpty(updateProfileDto.Education))
-                            host.Education = updateProfileDto.Education;
+        //        if (!string.IsNullOrEmpty(updateProfileDto.ProfilePictureUrl))
+        //            user.ProfilePictureUrl = updateProfileDto.ProfilePictureUrl;
 
-                        if (!string.IsNullOrEmpty(updateProfileDto.Languages))
-                            host.Languages = updateProfileDto.Languages;
+        //        user.UpdatedAt = DateTime.UtcNow;
 
-                        if (!string.IsNullOrEmpty(updateProfileDto.LivesIn))
-                            host.LivesIn = updateProfileDto.LivesIn;
+        //        // Update host profile if user is a host
+        //        if (user.Role == "host")
+        //        {
+        //            var host = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
+        //            if (host != null)
+        //            {
+        //                if (!string.IsNullOrEmpty(updateProfileDto.AboutMe))
+        //                    host.AboutMe = updateProfileDto.AboutMe;
 
-                        if (!string.IsNullOrEmpty(updateProfileDto.DreamDestination))
-                            host.DreamDestination = updateProfileDto.DreamDestination;
+        //                if (!string.IsNullOrEmpty(updateProfileDto.Work))
+        //                    host.Work = updateProfileDto.Work;
 
-                        if (!string.IsNullOrEmpty(updateProfileDto.FunFact))
-                            host.FunFact = updateProfileDto.FunFact;
+        //                if (!string.IsNullOrEmpty(updateProfileDto.Education))
+        //                    host.Education = updateProfileDto.Education;
 
-                        if (!string.IsNullOrEmpty(updateProfileDto.Pets))
-                            host.Pets = updateProfileDto.Pets;
+        //                if (!string.IsNullOrEmpty(updateProfileDto.Languages))
+        //                    host.Languages = updateProfileDto.Languages;
 
-                        if (!string.IsNullOrEmpty(updateProfileDto.ObsessedWith))
-                            host.ObsessedWith = updateProfileDto.ObsessedWith;
+        //                if (!string.IsNullOrEmpty(updateProfileDto.LivesIn))
+        //                    host.LivesIn = updateProfileDto.LivesIn;
 
-                        if (!string.IsNullOrEmpty(updateProfileDto.SpecialAbout))
-                            host.SpecialAbout = updateProfileDto.SpecialAbout;
+        //                if (!string.IsNullOrEmpty(updateProfileDto.DreamDestination))
+        //                    host.DreamDestination = updateProfileDto.DreamDestination;
 
-                        _unitOfWork.Hosts.Update(host);
-                    }
-                }
+        //                if (!string.IsNullOrEmpty(updateProfileDto.FunFact))
+        //                    host.FunFact = updateProfileDto.FunFact;
 
-                _unitOfWork.Users.Update(user);
-                await _unitOfWork.SaveAsync();
+        //                if (!string.IsNullOrEmpty(updateProfileDto.Pets))
+        //                    host.Pets = updateProfileDto.Pets;
 
-                // Return updated profile
-                return await GetUserProfileAsync(userId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while updating user profile");
-                throw;
-            }
-        }
+        //                if (!string.IsNullOrEmpty(updateProfileDto.ObsessedWith))
+        //                    host.ObsessedWith = updateProfileDto.ObsessedWith;
 
-        public async Task<bool> ConfirmEmailAsync(int userId, string token)
-        {
-            // Implementation for email confirmation
-            throw new NotImplementedException();
-        }
+        //                if (!string.IsNullOrEmpty(updateProfileDto.SpecialAbout))
+        //                    host.SpecialAbout = updateProfileDto.SpecialAbout;
 
-        public async Task<bool> SendPasswordResetAsync(string email)
-        {
-            // Implementation for password reset
-            throw new NotImplementedException();
-        }
+        //                _unitOfWork.Hosts.Update(host);
+        //            }
+        //        }
 
-        public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
-        {
-            // Implementation for password reset
-            throw new NotImplementedException();
-        }
+        //        _unitOfWork.Users.Update(user);
+        //        await _unitOfWork.SaveAsync();
+
+        //        // Return updated profile
+        //        return await GetUserProfileAsync(userId);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error occurred while updating user profile");
+        //        throw;
+        //    }
+        //}
+
+        //public async Task<bool> ConfirmEmailAsync(int userId, string token)
+        //{
+        //    // Implementation for email confirmation
+        //    throw new NotImplementedException();
+        //}
+
+        //public async Task<bool> SendPasswordResetAsync(string email)
+        //{
+        //    // Implementation for password reset
+        //    throw new NotImplementedException();
+        //}
+
+        //public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
+        //{
+        //    // Implementation for password reset
+        //    throw new NotImplementedException();
+        //}
+    
+    
     }
 }
