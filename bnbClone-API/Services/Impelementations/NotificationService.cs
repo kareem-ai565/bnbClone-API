@@ -18,11 +18,24 @@ namespace bnbClone_API.Services.Impelementations
             this.unitOfWork = unitOfWork;
         }
 
-        public Task<List<NotificationResponseDTO>> BroadcastNotificationAsync(BroadcastNotificationDTO dto)
-        {
-            throw new NotImplementedException();
-            //implement Later
-        }
+        //public Task<List<NotificationResponseDTO>> BroadcastNotificationAsync(BroadcastNotificationDTO dto)
+        //{
+        //    var users = await unitOfWork.UserRepo.GetAllAsync();
+        //    var notifications = users.Select(user => new Notification
+        //    {
+        //        UserId = user.Id,
+        //        SenderId = dto.SenderId,
+        //        Message = dto.Message,
+        //        CreatedAt = DateTime.UtcNow,
+        //        IsRead = false
+        //    }).ToList();
+
+        //    await unitOfWork.NotificationRepo.AddRangeAsync(notifications);
+        //    await unitOfWork.SaveAsync();
+
+        //    return mapper.Map<List<NotificationResponseDto>>(notifications);
+
+        //}
 
         public async Task<NotificationResponseDTO?> CreateNotificationAsync(CreateNotificationDTO dto)
         {

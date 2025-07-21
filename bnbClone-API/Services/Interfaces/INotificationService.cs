@@ -10,7 +10,7 @@ namespace bnbClone_API.Services.Interfaces
         Task<bool> MarkAsReadAsync (int id);
         Task<bool> MarkAllAsReadAsync(int userId);
         Task<NotificationResponseDTO?> CreateNotificationAsync(CreateNotificationDTO dto);
-        Task<List<NotificationResponseDTO>> BroadcastNotificationAsync(BroadcastNotificationDTO dto);
+        //Task<List<NotificationResponseDTO>> BroadcastNotificationAsync(BroadcastNotificationDTO dto);
 
     }
 }
