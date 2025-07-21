@@ -40,6 +40,8 @@ namespace bnbClone_API
             builder.Services.AddScoped<IMessageService, MessageService>();
             builder.Services.AddScoped<IConversationRepo,ConversationRepo>();
             builder.Services.AddScoped<INotificationRepo, NotificationRepo>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<IConversationService, ConversationService>();
             builder.Services.AddScoped<IUnitOfWork, bnbClone_API.UnitOfWork.UnitOfWork>();
             var app = builder.Build();
 

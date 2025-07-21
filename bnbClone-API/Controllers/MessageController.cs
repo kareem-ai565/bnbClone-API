@@ -49,7 +49,7 @@ namespace bnbClone_API.Controllers
             }
             return Ok("Message sent Successfully");
         }
-        [HttpPut("{id}/read")]
+        [HttpPut("{messageId}/read")]
         public async Task<IActionResult> MarkMessageAsReadAsync(int messageId)
         {
             var success= await messageService.MarkMessageAsReadAsync(messageId);

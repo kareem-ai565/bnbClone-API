@@ -16,9 +16,9 @@ namespace bnbClone_API.Repositories.Impelementations
         public async Task<Conversation?> GetByIdWithUsersAndPropertyAsync(int id)
         {
             return await dbContext.Conversations
-                .Include(c=>c.user1Id)
-                .Include(c=>c.user2Id)
-                .Include(c=>c.PropertyId)
+                .Include(c=>c.User1)
+                .Include(c=>c.User2)
+                .Include(c=>c.Property)
                 .Include(c=>c.Messages)
                 .FirstOrDefaultAsync(c=>c.Id==id);
         }
@@ -36,9 +36,10 @@ namespace bnbClone_API.Repositories.Impelementations
         public async Task<List<Conversation>> GetUserConversationsAsync(int userId)
         {
             return await dbContext.Conversations
-                 .Include(c => c.user1Id)
-                 .Include(c => c.user2Id)
-                 .Include(c => c.PropertyId)
+                 .Include(c => c.User1)
+                 .Include(c => c.User2)
+                 .Include(c => c.Property)
+                 .Include(c => c.Messages)
                  .Where(c => c.user1Id == userId || c.user2Id == userId)        
                  .ToListAsync();
         }

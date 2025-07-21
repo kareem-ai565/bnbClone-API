@@ -18,6 +18,7 @@ public class MappingProfile : Profile
         .ForMember(dest => dest.PropertyName, opt => opt.MapFrom(src => src.Property != null ? src.Property.Title : null))
         .ForMember(dest => dest.User1Name, opt => opt.MapFrom(src => src.User1.UserName))
         .ForMember(dest => dest.User2Name, opt => opt.MapFrom(src => src.User2.UserName));
+        CreateMap<StartConversationDTO, Conversation>();
         CreateMap<CreateNotificationDTO, Notification>();
         CreateMap<BroadcastNotificationDTO, Notification>(); // used inside foreach per user
 
