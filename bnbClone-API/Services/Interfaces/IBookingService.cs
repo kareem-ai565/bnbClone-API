@@ -8,7 +8,7 @@ namespace bnbClone_API.Services.Interfaces
     {
         public Task<IEnumerable<BookingResponseDto>> GetAllBookingsAsync();
         public Task<BookingResponseDto> GetBookingByIdAsync(int id);
-        public Task<int> AddBooking(BookingCreateDto createBookingDto);
+        public Task<int> AddBooking(int userId,BookingCreateDto createBookingDto);
         public Task<int> DeleteBooking(int bookingid);
         public Task<int> UpdateBooking(int bookingid, BookingUpdateDto bookingUpdateDto);
         public Task<int> UpdateBookingStatusAsync(int bookingId, BookingStatusUpdateDto bookingStatusUpdateDto);
