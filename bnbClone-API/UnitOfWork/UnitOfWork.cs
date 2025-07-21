@@ -182,6 +182,11 @@ namespace bnbClone_API.UnitOfWork
             await _transaction.DisposeAsync();
         }
 
+        public async Task<int> CompleteAsync()
+        {
+            return await dbContext.SaveChangesAsync();
+        }
+
 
     }
 

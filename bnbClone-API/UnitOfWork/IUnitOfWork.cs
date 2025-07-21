@@ -41,6 +41,7 @@ namespace bnbClone_API.UnitOfWork
 
 
         Task <int>SaveAsync();
+        Task<int> CompleteAsync();
 
 
 

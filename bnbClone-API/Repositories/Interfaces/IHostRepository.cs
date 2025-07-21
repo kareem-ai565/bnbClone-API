@@ -11,5 +11,7 @@ namespace bnbClone_API.Repositories.Interfaces
         Task<Models.Host> GetHostByUserIdAsync(int userId);
         Task<Models.Host> GetHostWithUserAsync(int hostId);
         Task<Models.Host> GetHostWithPropertiesAsync(int hostId);
+
+        Task<Models.Host?> GetHostWithUserByIdAsync(int id);
     }
 }

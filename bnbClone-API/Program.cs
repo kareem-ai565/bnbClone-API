@@ -99,6 +99,12 @@ namespace bnbClone_API
 
             builder.Services.AddScoped<IProfileService, ProfileService>();
 
+
+            // ----------------------
+            // host Repository Registrations
+            // ----------------------
+            builder.Services.AddScoped<IHostService, HostService>();
+
             //==================================== DataBase ================================
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
