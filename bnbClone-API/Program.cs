@@ -1,35 +1,33 @@
 
+
 ﻿using bnbClone_API.Data;
-using bnbClone_API.Infrastructure;
+using bnbClone_API.Data;
 using bnbClone_API.Models;
 using bnbClone_API.Repositories;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Impelementations.admin;
+using bnbClone_API.Repositories.Implementations;
 using bnbClone_API.Repositories.Implementations.admin;
 using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Repositories.Interfaces.admin;
 using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Implementations;
 using bnbClone_API.Services.Interfaces;
+using bnbClone_API.Stripe;
+using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-
-
-using bnbClone_API.Data;
-using bnbClone_API.Repositories.Impelementations;
-using bnbClone_API.Repositories.Interfaces;
-using bnbClone_API.Services.Impelementations;
-using bnbClone_API.Services.Interfaces;
-
 using bnbClone_API.Stripe;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.EntityFrameworkCore;
 using Stripe;
+using TokenService = bnbClone_API.Services.Impelementations.TokenService;
+
 
 namespace bnbClone_API
 {
@@ -42,9 +40,9 @@ namespace bnbClone_API
 
             // ----------------------
             // Database Configuration
-            // ----------------------
-            builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            //// ----------------------
+            //builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            //    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // ----------------------
             // Identity & Auth Setup
@@ -70,7 +68,7 @@ namespace bnbClone_API
             // ----------------------
             // Repository Registrations
             // ----------------------
-            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IHostRepository, HostRepository>();
             builder.Services.AddScoped<IGenericRepository<ApplicationUser>, GenericRepository<ApplicationUser>>();
@@ -91,7 +89,7 @@ namespace bnbClone_API
             // Service Registrations
             // ----------------------
             builder.Services.AddScoped<IAuthService, AuthService>();
-            builder.Services.AddScoped<ITokenService, TokenService>();
+            builder.Services.AddScoped<ITokenService, Services.Impelementations.TokenService>();
             builder.Services.AddScoped<IAdminUserService, AdminUserService>();
             builder.Services.AddScoped<IAdminPropertyService, AdminPropertyService>();
             builder.Services.AddScoped<IAdminViolationService, AdminViolationService>();
@@ -102,11 +100,11 @@ namespace bnbClone_API
             builder.Services.AddScoped<IProfileService, ProfileService>();
 
             //==================================== DataBase ================================
-          //  builder.Services.AddDbContext<ApplicationDbContext>(options =>
-   // options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             //==============================================================================
 
-            
+
 
             builder.Services.Configure<FormOptions>(options =>
             {
@@ -126,11 +124,12 @@ namespace bnbClone_API
 
 
 
-          //  builder.Services.AddScoped<IUnitOfWork , UnitOfWork.UnitOfWork>();
+            builder.Services.AddScoped<UnitOfWork.IUnitOfWork, UnitOfWork.UnitOfWork>();
             builder.Services.AddScoped<IPropertyAmenityService ,  PropertyAmenityService>();
             builder.Services.AddScoped<IAmenityService, AmenityService>();
             builder.Services.AddScoped<IPropertyCategoryService, PropertyCategoryService>();
             builder.Services.AddScoped<IhostVerificationService, hostVerificationService>();
+
 
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
@@ -140,11 +139,22 @@ namespace bnbClone_API
 
 
 
+    
+            // Repositories and Unit of Work
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+            //builder.Services.AddOpenApi();
+
             builder.Services.AddOpenApi();
-            builder.Services.AddScoped<IUnitOfWork, bnbClone_API.UnitOfWork.UnitOfWork>();
+            builder.Services.AddScoped<IFavouriteRepo, FavouriteRepo>();
+            builder.Services.AddScoped<IAvailabilityRepo, AvailabilityRepo>();
+            builder.Services.AddScoped<IViolationRepo, ViolationRepo>();
+
             builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
             builder.Services.AddScoped<IBookingService, BookingService>();
+
+
+            builder.Services.AddScoped<IUserUsedPromotionService, UserUsedPromotionService>();
 
             //===============Stripe=========================
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
@@ -153,10 +163,14 @@ namespace bnbClone_API
 
 
             builder.Services.AddEndpointsApiExplorer();
+            //builder.Services.AddSwaggerGen();
 
+
+            //swagger
+            builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
+                c.SwaggerDoc("v2", new OpenApiInfo
                 {
                     Title = "bnbClone API",
                     Version = "v1"
@@ -201,14 +215,28 @@ namespace bnbClone_API
 
 
             // Configure the HTTP request pipeline.
+
+            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
-                app.MapOpenApi();
+                app.UseSwagger();
+
+                app.UseSwaggerUI();
+            } 
+            app.UseHttpsRedirection();
+
+               // app.UseSwaggerUI(options =>
+               // {
+                 //   options.SwaggerEndpoint("/swagger/v1/swagger.json", "bnbClone API v1");
+                 //   options.RoutePrefix = "swagger"; 
+                //});
+               // app.MapOpenApi();
        
-                app.UseSwaggerUI(option => option.SwaggerEndpoint("/openapi/v1.json", "v1"));
-            }
+              //  app.UseSwaggerUI(option => option.SwaggerEndpoint("/openapi/v1.json", "v1"));
+           // }
 
                 app.UseHttpsRedirection();
+
 
 
             app.UseAuthentication();

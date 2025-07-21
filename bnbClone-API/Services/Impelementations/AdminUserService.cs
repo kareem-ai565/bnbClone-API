@@ -1,7 +1,7 @@
 ﻿using bnbClone_API.DTOs.AdminDTOs;
-using bnbClone_API.Infrastructure;
 using bnbClone_API.Models;
 using bnbClone_API.Services.Interfaces;
+using bnbClone_API.UnitOfWork;
 
 namespace bnbClone_API.Services.Implementations
 {
@@ -75,7 +75,7 @@ namespace bnbClone_API.Services.Implementations
 
             await _unitOfWork.Notifications.AddAsync(notification);
 
-            var result = await _unitOfWork.CompleteAsync();
+            var result = await _unitOfWork.SaveAsync();
             return result > 0;
         }
 
@@ -89,7 +89,7 @@ namespace bnbClone_API.Services.Implementations
 
             _unitOfWork.Users.Update(user);
 
-            var result = await _unitOfWork.CompleteAsync();
+            var result = await _unitOfWork.SaveAsync();
             return result > 0;
         }
 
@@ -100,7 +100,7 @@ namespace bnbClone_API.Services.Implementations
 
             _unitOfWork.Users.Remove(user);
 
-            var result = await _unitOfWork.CompleteAsync();
+            var result = await _unitOfWork.SaveAsync();
             return result > 0;
         }
     }

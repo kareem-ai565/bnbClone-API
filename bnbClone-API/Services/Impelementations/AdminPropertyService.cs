@@ -1,6 +1,6 @@
 ﻿using bnbClone_API.DTOs.Admin;
-using bnbClone_API.Infrastructure;
 using bnbClone_API.Services.Interfaces;
+using bnbClone_API.UnitOfWork;
 
 namespace bnbClone_API.Services.Implementations
 {
@@ -63,7 +63,7 @@ namespace bnbClone_API.Services.Implementations
         public async Task<bool> UpdatePropertyStatusAsync(int propertyId, PropertyStatusUpdateDto request)
         {
             await _unitOfWork.Properties.UpdateStatusAsync(propertyId, request.Status, request.AdminNotes);
-            var result = await _unitOfWork.CompleteAsync();
+            var result = await _unitOfWork.SaveAsync();
             return result > 0;
         }
 
@@ -73,7 +73,7 @@ namespace bnbClone_API.Services.Implementations
             if (property == null) return false;
 
             _unitOfWork.Properties.Remove(property);
-            var result = await _unitOfWork.CompleteAsync();
+            var result = await _unitOfWork.SaveAsync();
             return result > 0;
         }
 
