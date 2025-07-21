@@ -43,6 +43,7 @@ namespace bnbClone_API.UnitOfWork
         ICancellationPolicyRepo CancellationPolicies { get; }
 
         Task <int>SaveAsync();
+        Task<int> CompleteAsync();
 
 
 

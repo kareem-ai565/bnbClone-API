@@ -186,6 +186,12 @@ namespace bnbClone_API.UnitOfWork
             await _transaction.DisposeAsync();
         }
 
+
+        public async Task<int> CompleteAsync()
+        {
+            return await dbContext.SaveChangesAsync();
+        }
+
         public IPropertyRepo PropertyRepo => _PropertyRepo ??= new PropertyRepo(dbContext);
         public IPropertyImageRepo PropertyImageRepo => _PropertyImageRepo ??= new PropertyImageRepo(dbContext);
         public ICancellationPolicyRepo CancellationPolicies => _CancellationPolicyRepo ??= new CancellationPolicyRepo(dbContext);
