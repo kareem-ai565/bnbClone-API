@@ -1,7 +1,8 @@
-﻿using bnbClone_API.Models;
+﻿using bnbClone_API.DTOs;
+
+using bnbClone_API.Models;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace bnbClone_API.Controllers
@@ -19,19 +20,46 @@ namespace bnbClone_API.Controllers
 
         // GET: /api/promotions
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Promotion>>> GetActivePromotions()
+        public async Task<ActionResult<IEnumerable<PromotionReadDto>>> GetActivePromotions()
         {
-            var promos = await _unitOfWork.Promotions.GetActivePromotionsAsync();
-            return Ok(promos);
+            var promotions = await _unitOfWork.Promotions.GetActivePromotionsAsync();
+
+            var result = promotions.Select(p => new PromotionReadDto
+            {
+                Id = p.Id,
+                Code = p.Code,
+                DiscountType = p.DiscountType,
+                Amount = p.Amount,
+                StartDate = p.StartDate,
+                EndDate = p.EndDate,
+                MaxUses = p.MaxUses,
+                UsedCount = p.UsedCount,
+                IsActive = p.IsActive,
+                CreatedAt = p.CreatedAt
+            });
+
+            return Ok(result);
         }
 
         // POST: /api/promotions
         [HttpPost]
         [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<Promotion>> CreatePromotion([FromBody] Promotion promotion)
+        public async Task<ActionResult> CreatePromotion(PromotionCreateDto dto)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var promotion = new Promotion
+            {
+                Code = dto.Code,
+                DiscountType = dto.DiscountType,
+                Amount = dto.Amount,
+                StartDate = dto.StartDate,
+                EndDate = dto.EndDate,
+                MaxUses = dto.MaxUses,
+                UsedCount = 0,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
 
             await _unitOfWork.Promotions.AddAsync(promotion);
             await _unitOfWork.SaveAsync();
@@ -42,21 +70,20 @@ namespace bnbClone_API.Controllers
         // PUT: /api/promotions/{id}
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdatePromotion(int id, [FromBody] Promotion updatedPromotion)
+        public async Task<IActionResult> UpdatePromotion(int id, PromotionUpdateDto dto)
         {
-            var promo = await _unitOfWork.Promotions.GetByIdAsync(id);
-            if (promo == null) return NotFound();
+            var promotion = await _unitOfWork.Promotions.GetByIdAsync(id);
+            if (promotion == null) return NotFound();
 
-            // update fields
-            promo.Code = updatedPromotion.Code;
-            promo.DiscountType = updatedPromotion.DiscountType;
-            promo.Amount = updatedPromotion.Amount;
-            promo.StartDate = updatedPromotion.StartDate;
-            promo.EndDate = updatedPromotion.EndDate;
-            promo.MaxUses = updatedPromotion.MaxUses;
-            promo.IsActive = updatedPromotion.IsActive;
+            promotion.Code = dto.Code;
+            promotion.DiscountType = dto.DiscountType;
+            promotion.Amount = dto.Amount;
+            promotion.StartDate = dto.StartDate;
+            promotion.EndDate = dto.EndDate;
+            promotion.MaxUses = dto.MaxUses;
+            promotion.IsActive = dto.IsActive;
 
-            await _unitOfWork.Promotions.UpdateAsync(promo);
+            await _unitOfWork.Promotions.UpdateAsync(promotion);
             await _unitOfWork.SaveAsync();
 
             return NoContent();
@@ -67,8 +94,8 @@ namespace bnbClone_API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeletePromotion(int id)
         {
-            var promo = await _unitOfWork.Promotions.GetByIdAsync(id);
-            if (promo == null) return NotFound();
+            var promotion = await _unitOfWork.Promotions.GetByIdAsync(id);
+            if (promotion == null) return NotFound();
 
             await _unitOfWork.Promotions.DeleteAsync(id);
             await _unitOfWork.SaveAsync();
@@ -76,5 +103,4 @@ namespace bnbClone_API.Controllers
             return NoContent();
         }
     }
-
 }
