@@ -40,6 +40,9 @@ namespace bnbClone_API.UnitOfWork
         ICancellationPolicyRepo CancellationPolicies { get; }
         IReviewRepo Reviews { get; }
         IPromotionRepository Promotions { get; }
+        IMessageRepo MessageRepo { get; }
+        IConversationRepo ConversationRepo { get; }
+        INotificationRepo NotificationRepo { get; }
 
         Task <int>SaveAsync();
 

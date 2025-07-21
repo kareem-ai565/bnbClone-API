@@ -161,6 +161,15 @@ namespace bnbClone_API
             builder.Services.AddScoped<ICancellationPolicyService, CancellationPolicyService>();
             builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
             builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
+            //AOsama
+            builder.Services.AddScoped<IMessageRepo, MessageRepo>();
+            builder.Services.AddScoped<IMessageService, MessageService>();
+            builder.Services.AddScoped<IConversationRepo, ConversationRepo>();
+            builder.Services.AddScoped<INotificationRepo, NotificationRepo>();
+            builder.Services.AddScoped<INotificationService, NotificationService>();
+            builder.Services.AddScoped<IConversationService, ConversationService>();
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
+
 
             //===============Stripe=========================
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
