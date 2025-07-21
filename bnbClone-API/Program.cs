@@ -27,6 +27,7 @@ using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http.Features;
 using Stripe;
 using TokenService = bnbClone_API.Services.Impelementations.TokenService;
+using bnbClone_API.Helpers.MappingProfiles;
 
 
 namespace bnbClone_API
@@ -152,6 +153,12 @@ namespace bnbClone_API
 
             builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
             builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped<IPropertyRepo, PropertyRepo>();
+            builder.Services.AddScoped<IPropertyImageRepo, PropertyImageRepo>();
+            builder.Services.AddScoped<ICancellationPolicyRepo, CancellationPolicyRepo>();
+            builder.Services.AddScoped<IPropertyService, PropertyService>();
+            builder.Services.AddScoped<IPropertyImageService, PropertyImageService>();
+            builder.Services.AddScoped<ICancellationPolicyService, CancellationPolicyService>();
 
             //===============Stripe=========================
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
@@ -161,6 +168,11 @@ namespace bnbClone_API
 
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
+
+            // AutoMapper
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<PropertyProfile>());
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<PropertyImageProfile>());
+            builder.Services.AddAutoMapper(cfg => cfg.AddProfile<CancellationPolicyProfile>());
 
 
             //swagger

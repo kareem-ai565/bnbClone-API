@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using bnbClone_API.Repositories.Interfaces.admin;
 using bnbClone_API.Repositories.Impelementations.admin;
 using bnbClone_API.Repositories.Implementations.admin;
+using bnbClone_API.Repositories.Implementations;
 
 
 
@@ -32,6 +33,9 @@ namespace bnbClone_API.UnitOfWork
         private NotificationRepository _NotificationRepository;
         private PropertyRepository _PropertyRepository;
         private ViolationRepository _ViolationRepository;
+        private PropertyRepo  _PropertyRepo;
+        private PropertyImageRepo _PropertyImageRepo;
+        private CancellationPolicyRepo _CancellationPolicyRepo;
 
 
         private IDbContextTransaction _transaction;
@@ -172,6 +176,9 @@ namespace bnbClone_API.UnitOfWork
             await _transaction.DisposeAsync();
         }
 
+        public IPropertyRepo PropertyRepo => _PropertyRepo ??= new PropertyRepo(dbContext);
+        public IPropertyImageRepo PropertyImageRepo => _PropertyImageRepo ??= new PropertyImageRepo(dbContext);
+        public ICancellationPolicyRepo CancellationPolicies => _CancellationPolicyRepo ??= new CancellationPolicyRepo(dbContext);
 
     }
 
