@@ -159,6 +159,8 @@ namespace bnbClone_API
             builder.Services.AddScoped<IPropertyService, PropertyService>();
             builder.Services.AddScoped<IPropertyImageService, PropertyImageService>();
             builder.Services.AddScoped<ICancellationPolicyService, CancellationPolicyService>();
+            builder.Services.AddScoped<IReviewRepo, ReviewRepo>();
+            builder.Services.AddScoped<IPromotionRepository, PromotionRepository>();
 
             //===============Stripe=========================
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));

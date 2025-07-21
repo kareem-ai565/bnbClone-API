@@ -110,5 +110,11 @@ namespace bnbClone_API.Repositories.Impelementations
         {
             return await dbContext.Set<Booking>().AnyAsync(predicate);
         }
+
+        public virtual async Task<T?> FindFirstAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await dbContext.Set<T>().FirstOrDefaultAsync(predicate);
+        }
+
     }
 }

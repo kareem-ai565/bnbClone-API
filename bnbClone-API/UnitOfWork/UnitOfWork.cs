@@ -36,6 +36,8 @@ namespace bnbClone_API.UnitOfWork
         private PropertyRepo  _PropertyRepo;
         private PropertyImageRepo _PropertyImageRepo;
         private CancellationPolicyRepo _CancellationPolicyRepo;
+        private ReviewRepo _ReviewRepo;
+        private PromotionRepository _PromotionRepository;
 
 
         private IDbContextTransaction _transaction;
@@ -179,6 +181,8 @@ namespace bnbClone_API.UnitOfWork
         public IPropertyRepo PropertyRepo => _PropertyRepo ??= new PropertyRepo(dbContext);
         public IPropertyImageRepo PropertyImageRepo => _PropertyImageRepo ??= new PropertyImageRepo(dbContext);
         public ICancellationPolicyRepo CancellationPolicies => _CancellationPolicyRepo ??= new CancellationPolicyRepo(dbContext);
+        public IReviewRepo Reviews => _ReviewRepo ??= new ReviewRepo(dbContext);
+        public IPromotionRepository Promotions => _PromotionRepository ??= new PromotionRepository(dbContext);
 
     }
 
