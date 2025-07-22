@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
+        public string City { get; set; }
         public decimal PricePerNight { get; set; }
         public int MaxGuests { get; set; }
         public int NumOfBedrooms { get; set; }
