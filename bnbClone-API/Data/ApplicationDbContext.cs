@@ -476,6 +476,11 @@ namespace bnbClone_API.Data
                     .WithMany(u => u.Reviews)
                     .HasForeignKey(r => r.ReviewerId)
                     .OnDelete(DeleteBehavior.NoAction);
+
+                entity.HasOne(r => r.Property)
+                    .WithMany(p => p.Reviews)
+                    .HasForeignKey(r => r.PropertyId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // ===== HOST PAYOUT CONFIGURATION =====

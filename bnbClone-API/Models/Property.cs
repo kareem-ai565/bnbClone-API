@@ -95,5 +95,9 @@ namespace bnbClone_API.Models
 
         // New navigation property for the join table
         public virtual ICollection<PropertyAmenity> PropertyAmenities { get; set; } = new List<PropertyAmenity>();
+
+
+        //////new added 
+        public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }
