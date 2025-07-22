@@ -13,5 +13,18 @@ public class BookingPayoutRepo : GenericRepo<BookingPayout>, IBookingPayoutRepo
         {
         this.dbContext = dbContext;
     }
-    
+    public override async Task<IEnumerable<BookingPayout>> GetAllAsync()
+    {
+        return await dbContext.BookingPayouts
+        .Include(bp => bp.Booking)
+            .ThenInclude(b => b.Property)
+                .ThenInclude(p => p.Host)
+                    .ThenInclude(h => h.User) // Load Host's User info
+        .Include(bp => bp.Booking)
+            .ThenInclude(b => b.Guest)
+        .ToListAsync();
+
+
+    }
+
 }

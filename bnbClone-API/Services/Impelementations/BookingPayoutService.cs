@@ -1,4 +1,5 @@
-﻿using bnbClone_API.Models;
+﻿using bnbClone_API.DTOs;
+using bnbClone_API.Models;
 using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
 
@@ -13,8 +14,24 @@ namespace bnbClone_API.Services.Impelementations
             _unitOfWork = unitOfWork;
         }
 
-       
-            public async Task<bool> ReleasePayoutToHostAsync(int bookingId)
+        public async Task<IEnumerable<BookingPayoutResponseDto>> GetAllPayoutsToHostAsync()
+        {
+            var payouts = await _unitOfWork.BookingPayoutRepo.GetAllAsync();
+            return payouts.Select(p => new BookingPayoutResponseDto
+            {
+                Id = p.Id,
+                Amount = p.Amount,
+                Status = p.Status,
+                CreatedAt = p.CreatedAt,
+                BookingId = p.BookingId,
+                PropertyTitle = p.Booking?.Property?.Title ?? "N/A",
+                GuestFullName = $"{p.Booking?.Guest?.FirstName} {p.Booking?.Guest?.LastName}",
+                HostFullName = $"{p.Booking?.Property?.Host?.User?.FirstName} {p.Booking?.Property?.Host?.User?.LastName}"
+            });
+
+        }
+
+        public async Task<bool> ReleasePayoutToHostAsync(int bookingId)
             {
                 var booking = await _unitOfWork.BookingRepo.GetGuestByBookingIdAsync(bookingId);
                 if (booking == null || booking.CheckInStatus.ToLower() != "completed")
@@ -44,5 +61,6 @@ namespace bnbClone_API.Services.Impelementations
 
                 return true;
             }
+
     }
 }
