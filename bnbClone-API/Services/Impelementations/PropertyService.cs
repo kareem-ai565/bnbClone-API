@@ -25,7 +25,7 @@ namespace bnbClone_API.Services.Implementations
 
         public async Task<Property?> GetByIdAsync(int id)
         {
-            return await _propertyRepo.GetByIdAsync(id);
+            return await _propertyRepo.GetDetailsByIdAsync(id);
         }
 
         public async Task<Property> AddAsync(Property property)

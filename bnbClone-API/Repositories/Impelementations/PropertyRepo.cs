@@ -101,6 +101,33 @@ namespace bnbClone_API.Repositories.Implementations
             int skip = (dto.Page - 1) * dto.PageSize;
             return await query.Skip(skip).Take(dto.PageSize).ToListAsync();
         }
+        public async Task<Property?> GetDetailsByIdAsync(int id)
+        {
+            return await _context.Properties
+                .Include(p => p.PropertyImages)
+                .Include(p => p.PropertyAmenities)
+                    .ThenInclude(pa => pa.Amenity)
+                .Include(p => p.Host)
+                    .ThenInclude(h => h.User) 
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public override async Task<IEnumerable<Property>> GetAllAsync()
+        {
+            return await _context.Properties
+                .Include(p => p.PropertyImages)
+                .Include(p => p.PropertyAmenities)
+                    .ThenInclude(pa => pa.Amenity)
+                .Include(p => p.Availabilities)
+                .Include(p => p.Host)
+                    .ThenInclude(h => h.User) 
+                .Include(p => p.Category)
+                .ToListAsync();
+        }
+
+
+
 
     }
 }

@@ -15,6 +15,12 @@
         public string HostName { get; set; } // From Host (or User)
 
         public List<string> AmenityNames { get; set; } = new(); // From many-to-many table
+
+        public List<PropertyImageDto> Images { get; set; } = new();
+
+        public List<PropertyAvailabilityDto> AvailabilityDates { get; set; } = new();
+
+
     }
 
 }

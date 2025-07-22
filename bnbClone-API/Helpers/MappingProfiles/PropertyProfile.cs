@@ -17,9 +17,15 @@ namespace bnbClone_API.Helpers.MappingProfiles
             CreateMap<UpdatePropertyDto, Property>();
             CreateMap<Property, UpdatePropertyDto>();
 
-            // Details (only Property ➝ DTO)
-            CreateMap<Property, PropertyDetailsDto>();
+            CreateMap<PropertyAvailability, PropertyAvailabilityDto>();
+            CreateMap<Property, PropertyDetailsDto>()
+                .ForMember(dest => dest.Images, opt => opt.MapFrom(src => src.PropertyImages))
+                .ForMember(dest => dest.AmenityNames, opt => opt.MapFrom(src => src.PropertyAmenities.Select(pa => pa.Amenity.Name)))
+                .ForMember(dest => dest.HostName, opt => opt.MapFrom(src => src.Host.User.FirstName + " " + src.Host.User.LastName))
+                .ForMember(dest => dest.PropertyTypeName, opt => opt.MapFrom(src => src.PropertyType))
+                .ForMember(dest => dest.AvailabilityDates, opt => opt.MapFrom(src => src.Availabilities));
+
         }
-        
+
     }
 }
