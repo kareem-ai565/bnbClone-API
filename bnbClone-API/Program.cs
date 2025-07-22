@@ -169,6 +169,10 @@ namespace bnbClone_API
 
             builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
             builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped<IBookingPaymentService, BookingPaymentService>();
+            builder.Services.AddScoped<IBookingPayoutService, BookingPayoutService>();
+            builder.Services.AddScoped<IHostPayoutService,HostPayoutService>();
+
             builder.Services.AddScoped<IPropertyRepo, PropertyRepo>();
             builder.Services.AddScoped<IPropertyImageRepo, PropertyImageRepo>();
             builder.Services.AddScoped<ICancellationPolicyRepo, CancellationPolicyRepo>();
