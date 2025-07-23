@@ -22,6 +22,7 @@
 
         public List<PropertyAvailabilityDto> AvailabilityDates { get; set; } = new();
 
+        public List<ReviewDto> Reviews { get; set; } = new();
 
     }
 
