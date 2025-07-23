@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
 namespace bnbClone_API.Models
@@ -21,6 +22,10 @@ namespace bnbClone_API.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
+
+        // new added
+        public int PropertyId { get; set; }
+        public virtual Property Property { get; set; } = null!;
     }
 
 }
