@@ -19,6 +19,7 @@ namespace bnbClone_API.Repositories.Impelementations
             return await _context.Reviews
                 .Include(r => r.Reviewer)
                 .Include(r => r.Booking)
+                .ThenInclude(b => b.Property)   
                 .Where(r => r.Booking.PropertyId == propertyId)
                 .ToListAsync();
         }
