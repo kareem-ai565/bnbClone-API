@@ -76,5 +76,13 @@ namespace bnbClone_API.Services.Impelementations
             var saved = await unitOfWork.SaveAsync();
             return saved > 0;
         }
+
+
+
+        public Task<List<Notification>> GetAdminNotifications()
+        {
+            return unitOfWork.NotificationRepo.GetAdminNotifications();
+
+        }
     }
 }
