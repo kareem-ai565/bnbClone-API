@@ -9,8 +9,8 @@
         public string Country { get; set; }
         public decimal PricePerNight { get; set; }
         public int MaxGuests { get; set; }
-        public int NumOfBedrooms { get; set; }
-        public int NumOfBathrooms { get; set; }
+        public int Bedrooms { get; set; }
+        public int Bathrooms { get; set; }
         public string Address { get; set; }
 
         public string PropertyTypeName { get; set; } // From PropertyType
@@ -22,6 +22,7 @@
 
         public List<PropertyAvailabilityDto> AvailabilityDates { get; set; } = new();
 
+        public List<ReviewDto> Reviews { get; set; } = new();
 
     }
 

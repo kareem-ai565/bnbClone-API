@@ -110,6 +110,10 @@ namespace bnbClone_API.Repositories.Implementations
                 .Include(p => p.Host)
                     .ThenInclude(h => h.User) 
                 .Include(p => p.Category)
+                .Include(p => p.Bookings)
+                    .ThenInclude(b=>b.Review)
+                        .ThenInclude(r => r.Reviewer)
+                 .Include(p => p.Availabilities)
                 .FirstOrDefaultAsync(p => p.Id == id);
         }
 
@@ -123,6 +127,10 @@ namespace bnbClone_API.Repositories.Implementations
                 .Include(p => p.Host)
                     .ThenInclude(h => h.User) 
                 .Include(p => p.Category)
+                .Include(p => p.Bookings)
+                    .ThenInclude(b => b.Review)
+                        .ThenInclude(r => r.Reviewer)
+                .Include(p => p.Availabilities)
                 .ToListAsync();
         }
 
