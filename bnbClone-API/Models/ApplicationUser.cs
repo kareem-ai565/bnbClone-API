@@ -50,4 +50,11 @@ namespace bnbClone_API.Models
         Admin
     }
 
+    public class UserRoleConstants
+    {
+        public const string Guest = "Guest";
+        public const string Host = "Host";
+        public const string Admin = "Admin";
+    }
+
 }
