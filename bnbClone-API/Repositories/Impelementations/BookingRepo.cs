@@ -31,6 +31,7 @@ namespace bnbClone_API.Repositories.Impelementations
         public async Task<IEnumerable<Booking>> GetByGuestIdAsync(int id)
         {
             return await _dbContext.Bookings
+                .AsNoTracking()
                 .Include(b => b.Guest)
                 .Include(b => b.Property)
                 .Where(b => b.GuestId == id)

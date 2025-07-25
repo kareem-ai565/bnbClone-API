@@ -18,7 +18,7 @@ namespace bnbClone_API.Controllers
         
         /// Create Stripe Payment Intent
         
-        [HttpPost("create-intent")]
+       /* [HttpPost("create-intent")]
         public async Task<IActionResult> CreatePaymentIntent([FromBody] PaymentCreateDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -32,11 +32,28 @@ namespace bnbClone_API.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }*/
+
+
+        [HttpPost("create-checkout-session")]
+        public async Task<IActionResult> CreateCheckoutSession([FromBody] PaymentCreateDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                var sessionUrl = await _bookingPaymentService.CreateCheckoutSessionAsync(dto);
+                return Ok(new { url = sessionUrl });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-        
+
         /// Stripe webhook handler (no auth)
-        
+
         [HttpPost("webhook")]
         public async Task<IActionResult> StripeWebhook()
         {

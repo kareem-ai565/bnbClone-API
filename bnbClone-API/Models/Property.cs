@@ -73,7 +73,7 @@ namespace bnbClone_API.Models
         public string Status { get; set; } = PropertyStatus.Pending.ToString();
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public int? CancellationPolicyId { get; set; }
 

@@ -4,16 +4,19 @@ using bnbClone_API.DTOs.PropertyDtos;
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Services.Interfaces;
+using bnbClone_API.UnitOfWork;
 
 namespace bnbClone_API.Services.Implementations
 {
     public class PropertyService : IPropertyService
     {
+        private readonly IUnitOfWork unitOfWork;
         private readonly IPropertyRepo _propertyRepo;
         private readonly IMapper _mapper;
 
-        public PropertyService(IPropertyRepo propertyRepo, IMapper mapper)
+        public PropertyService(IUnitOfWork unitOfWork , IPropertyRepo propertyRepo, IMapper mapper)
         {
+            this.unitOfWork = unitOfWork;
             _propertyRepo = propertyRepo;
             _mapper = mapper;
         }
@@ -31,12 +34,14 @@ namespace bnbClone_API.Services.Implementations
         public async Task<Property> AddAsync(Property property)
         {
             await _propertyRepo.AddAsync(property);
+            await unitOfWork.SaveAsync();
             return property;
         }
 
         public async Task<bool> UpdateAsync(Property property)
         {
             var updated = await _propertyRepo.UpdateAsync(property);
+            await unitOfWork.SaveAsync();
             return updated != null;
         }
 
