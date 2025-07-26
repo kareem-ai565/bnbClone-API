@@ -31,16 +31,25 @@ namespace bnbClone_API.Repositories.Implementations
                 query = query.Where(p =>
                     p.City.Contains(dto.Location) ||
                     p.Address.Contains(dto.Location) ||
+                    p.Country.Contains(dto.Location) ||
                     p.Title.Contains(dto.Location));
             }
 
             if (dto.StartDate.HasValue && dto.EndDate.HasValue)
             {
-                query = query.Where(p =>
-                    !p.Bookings.Any(b =>
-                        (dto.StartDate < b.EndDate && dto.EndDate > b.StartDate)
-                    ));
+                var today = DateTime.Today;
+
+                if (dto.StartDate.Value.Date >= today)
+                {
+                    query = query.Where(p =>
+                        !p.Bookings.Any(b =>
+                            (dto.StartDate < b.EndDate && dto.EndDate > b.StartDate)
+                        )
+                    );
+                }
             }
+
+
 
             if (dto.Guests.HasValue)
             {
@@ -98,8 +107,9 @@ namespace bnbClone_API.Repositories.Implementations
             }
 
             // Pagination
-            int skip = (dto.Page - 1) * dto.PageSize;
-            return await query.Skip(skip).Take(dto.PageSize).ToListAsync();
+            //int skip = (dto.Page - 1) * dto.PageSize;
+            //return await query.Skip(skip).Take(dto.PageSize).ToListAsync();
+            return await query.ToListAsync();
         }
         public async Task<Property?> GetDetailsByIdAsync(int id)
         {
