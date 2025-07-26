@@ -9,5 +9,7 @@ namespace bnbClone_API.Repositories.Interfaces.admin
         Task<IEnumerable<Property>> GetByHostIdAsync(int hostId);
         Task<IEnumerable<Property>> GetByStatusAsync(string status);
         Task UpdateStatusAsync(int id, string status, string adminNotes = null);
+        Task<bool> SoftDeleteAsync(int id, string adminNotes = null);
+
     }
 }
