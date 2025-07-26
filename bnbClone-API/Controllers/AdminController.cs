@@ -172,22 +172,46 @@ namespace bnbClone_API.Controllers
             }
         }
 
-        [HttpDelete("properties/{id}")]
-        public async Task<ActionResult> DeleteProperty(int id)
+        //[HttpDelete("properties/{id}")]
+        //public async Task<ActionResult> DeleteProperty(int id)
+        //{
+        //    try
+        //    {
+        //        Console.WriteLine($"Attempting to delete property with ID: {id}");
+        //        var result = await _adminPropertyService.DeletePropertyAsync(id);
+        //        Console.WriteLine($"Delete result: {result}");
+
+        //        if (!result)
+        //            return NotFound($"Property with ID {id} not found.");
+
+        //        return Ok(new { message = "Property deleted successfully." });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine($"Error: {ex.Message}");
+        //        return StatusCode(500, $"Internal server error: {ex.Message}");
+        //    }
+        //}
+
+        [HttpPut("properties/{id}/soft-delete")]
+        public async Task<ActionResult> SoftDeleteProperty(int id, [FromBody] PropertySoftDeleteDto request = null)
         {
             try
             {
-                var result = await _adminPropertyService.DeletePropertyAsync(id);
+                var adminNotes = request?.AdminNotes ?? "Property soft deleted by admin";
+                var result = await _adminPropertyService.SoftDeletePropertyAsync(id, adminNotes);
+
                 if (!result)
                     return NotFound($"Property with ID {id} not found.");
 
-                return Ok(new { message = "Property deleted successfully." });
+                return Ok(new { message = "Property suspended successfully." });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
+
 
         // Violation Management Endpoints
         [HttpGet("violations")]

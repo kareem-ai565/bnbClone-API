@@ -94,5 +94,16 @@ namespace bnbClone_API.Services.Implementations
                 HostEmail = p.Host.User.Email
             });
         }
+        // ADD THIS NEW METHOD
+        public async Task<bool> SoftDeletePropertyAsync(int propertyId, string adminNotes = null)
+        {
+            var result = await _unitOfWork.Properties.SoftDeleteAsync(propertyId, adminNotes);
+            if (!result) return false;
+
+            var saveResult = await _unitOfWork.SaveAsync();
+            return saveResult > 0;
+        }
+
+
     }
 }

@@ -56,5 +56,19 @@ namespace bnbClone_API.Repositories.Impelementations.admin
                 Update(property);
             }
         }
+        // ADD THIS NEW METHOD
+        public async Task<bool> SoftDeleteAsync(int id, string adminNotes = null)
+        {
+            var property = await GetByIdAsync(id);
+            if (property == null) return false;
+
+            property.Status = "Suspended";
+            property.UpdatedAt = DateTime.UtcNow;
+            // If you have an AdminNotes field, uncomment this:
+            // property.AdminNotes = adminNotes;
+
+            Update(property);
+            return true;
+        }
     }
 }
