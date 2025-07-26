@@ -216,6 +216,50 @@ namespace bnbClone_API.Controllers
             var violations = await _unitOfWork.ViolationRepo.GetViolationsByStatusAsync("Pending");
             return Ok(violations);
         }
+        // [Authorize(Roles = "host")]
+        [HttpGet("host/{hostId}")]
+        public async Task<IActionResult> GetByHost(int hostId)
+        {
+            var results = await _unitOfWork.ViolationRepo.GetViolationsByHostAsync(hostId);
+            var formatted = results.Select(v => new ViolationDetailsDTO
+            {
+                Id = v.Id,
+                ViolationType = v.ViolationType,
+                Status = v.Status,
+                Description = v.Description,
+                CreatedAt = v.CreatedAt,
+                UpdatedAt = v.UpdatedAt,
+                ResolvedAt = v.ResolvedAt,
+                AdminNotes = v.AdminNotes,
+                Reporter = new ReportedUserDTO
+                {
+                    Id = v.ReportedBy.Id,
+                    FullName = $"{v.ReportedBy.FirstName} {v.ReportedBy.LastName}",
+                    ProfilePictureUrl = v.ReportedBy.ProfilePictureUrl ?? "",
+                    Role = v.ReportedBy.Role,
+                    EmailVerified = v.ReportedBy.EmailVerified
+                },
+                Host = v.ReportedHost != null ? new ReportedHostDTO
+                {
+                    Id = v.ReportedHost.Id,
+                    FullName = $"{v.ReportedHost.User.FirstName} {v.ReportedHost.User.LastName}",
+                    LivesIn = v.ReportedHost.LivesIn,
+                    IsVerified = v.ReportedHost.IsVerified,
+                    Rating = v.ReportedHost.Rating,
+                    StripeAccountId = v.ReportedHost.StripeAccountId
+                } : null,
+                Property = v.ReportedProperty != null ? new ReportedPropertyDTO
+                {
+                    Id = v.ReportedProperty.Id,
+                    Title = v.ReportedProperty.Title,
+                    City = v.ReportedProperty.City,
+                    Country = v.ReportedProperty.Country,
+                    Status = v.ReportedProperty.Status,
+                    PrimaryImage = v.ReportedProperty.PropertyImages.FirstOrDefault()?.ImageUrl ?? ""
+                } : null
+            });
+            return Ok(formatted);
+        }
 
     }
 }

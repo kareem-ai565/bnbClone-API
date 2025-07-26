@@ -331,5 +331,33 @@ namespace bnbClone_API.Services.Impelementations
             await unitOfWork.SaveAsync();
             return booking.Id;
         }
+        public async Task<IEnumerable<BookingResponseDto>> GetBookingsByHostAsync(int hostId)
+        {
+            var bookings = await unitOfWork.BookingRepo.GetByHostIdAsync(hostId);
+            var result = new List<BookingResponseDto>();
+
+            foreach (var booking in bookings)
+            {
+                result.Add(new BookingResponseDto
+                {
+                    Id = booking.Id,
+                    GuestName = booking.Guest?.FirstName + " " + booking.Guest?.LastName,
+                    TotalGuests = booking.TotalGuests,
+                    PropertyTitle = booking.Property?.Title ?? "N/A",
+                    PropertyAddress = booking.Property?.Address ?? "N/A",
+                    StartDate = booking.StartDate,
+                    EndDate = booking.EndDate,
+                    CheckInStatus = booking.CheckInStatus,
+                    CheckOutStatus = booking.CheckOutStatus,
+                    TotalAmount = booking.TotalAmount,
+                    PromotionId = booking.PromotionId == 0 ? null : booking.PromotionId,
+                    Status = Enum.TryParse<BookingStatus>(booking.Status, out var statusEnum) ? statusEnum : BookingStatus.Pending,
+                    CreatedAt = booking.CreatedAt
+                });
+            }
+
+            return result;
+        }
+
     }
 }
