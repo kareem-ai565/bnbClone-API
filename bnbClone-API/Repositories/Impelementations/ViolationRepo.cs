@@ -2,6 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.ML;
 
 namespace bnbClone_API.Repositories.Impelementations
 {
@@ -67,6 +68,18 @@ namespace bnbClone_API.Repositories.Impelementations
             db.Violations.Remove(violation);
             return true;
         }
+        public async Task<IEnumerable<Violation>> GetViolationsByHostAsync(int hostId)
+        {
+            return await db.Violations
+                .Include(v => v.ReportedBy)
+                .Include(v => v.ReportedHost)
+                    .ThenInclude(h => h.User)
+                .Include(v => v.ReportedProperty)
+                    .ThenInclude(p => p.PropertyImages)
+                .Where(v => v.ReportedHostId == hostId)
+                .ToListAsync();
+        }
+
     }
 
 }
