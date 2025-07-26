@@ -20,7 +20,7 @@ namespace bnbClone_API.Services.Interfaces
         Task<IEnumerable<BookingResponseDto>> SearchBookingsAsync(BookingSearchDto searchDto);
         Task<BookingStatsDto> GetBookingStatsAsync();
         Task<Booking> GetGuestByBookingIdAsync(int bookingId);
-
+        Task<IEnumerable<BookingResponseDto>> GetBookingsByHostAsync(int hostId);
 
 
     }

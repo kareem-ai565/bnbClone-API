@@ -162,6 +162,17 @@ namespace bnbClone_API.Controllers
             }
             return NotFound($"Booking with ID {id} not found.");
         }
+        [HttpGet("host/{hostId}")]
+        public async Task<ActionResult<IEnumerable<BookingResponseDto>>> GetByHostId(int hostId)
+        {
+            var bookings = await _bookingService.GetBookingsByHostAsync(hostId);
+
+            if (bookings == null || !bookings.Any())
+                return NotFound($"No bookings found for host ID {hostId}");
+
+            return Ok(bookings);
+        }
+
     }
 
 }
