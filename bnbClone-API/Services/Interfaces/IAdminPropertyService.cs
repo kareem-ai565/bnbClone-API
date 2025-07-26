@@ -9,5 +9,8 @@ namespace bnbClone_API.Services.Interfaces
         Task<bool> UpdatePropertyStatusAsync(int propertyId, PropertyStatusUpdateDto request);
         Task<bool> DeletePropertyAsync(int propertyId);
         Task<IEnumerable<AdminPropertyListDto>> GetPropertiesByStatusAsync(string status);
+
+        Task<bool> SoftDeletePropertyAsync(int propertyId, string adminNotes = null);
+
     }
 }
