@@ -23,18 +23,41 @@ namespace bnbClone_API.Controllers
             var bookings = await _bookingService.GetAllBookingsAsync();
             return Ok(bookings);
         }
+        /* [HttpPost("CreateBookingByUserId{id:int}")]
+         public async Task<IActionResult> CreateBooking(int id,[FromBody] BookingCreateDto bookingCreateDto)
+         {
+             if (bookingCreateDto == null)
+             {
+                 return BadRequest("Booking data is required.");
+             }
+             var bookingid = await _bookingService.AddBooking(id,bookingCreateDto);
+             if (bookingid > 0)
+             {
+                 return CreatedAtAction(nameof(GetBookings), new { id = bookingid }, bookingid);
+             }
+             return BadRequest("Failed to create booking.");
+         }*/
+
         [HttpPost("CreateBookingByUserId{id:int}")]
-        public async Task<IActionResult> CreateBooking(int id,[FromBody] BookingCreateDto bookingCreateDto)
+        public async Task<IActionResult> CreateBooking(int id, [FromBody] BookingCreateDto bookingCreateDto)
         {
             if (bookingCreateDto == null)
             {
                 return BadRequest("Booking data is required.");
             }
-            var bookingid = await _bookingService.AddBooking(id,bookingCreateDto);
-            if (bookingid > 0)
+
+            var bookingId = await _bookingService.AddBooking(id, bookingCreateDto);
+
+            if (bookingId > 0)
             {
-                return CreatedAtAction(nameof(GetBookings), new { id = bookingid }, bookingid);
+                // Retrieve the full booking details after creation
+                var createdBooking = await _bookingService.GetBookingByIdAsync(bookingId);
+                if (createdBooking != null)
+                {
+                    return CreatedAtAction(nameof(GetBookings), new { id = bookingId }, createdBooking);
+                }
             }
+
             return BadRequest("Failed to create booking.");
         }
         [HttpGet("{id:int}")]

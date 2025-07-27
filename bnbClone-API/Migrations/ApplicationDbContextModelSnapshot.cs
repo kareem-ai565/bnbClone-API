@@ -602,6 +602,9 @@ namespace bnbClone_API.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("status");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
                     b.HasIndex("BookingId")
@@ -1320,6 +1323,15 @@ namespace bnbClone_API.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)")
                         .HasColumnName("description");
+
+                    b.Property<bool>("HasNoiseMonitor")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasSecurityCamera")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasWeapons")
+                        .HasColumnType("bit");
 
                     b.Property<int>("HostId")
                         .HasColumnType("int")

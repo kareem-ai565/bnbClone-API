@@ -11,6 +11,7 @@
         public string PropertyTitle { get; set; }
         public string GuestFullName { get; set; }
         public string HostFullName { get; set; }
-        
+
+
     }
 }

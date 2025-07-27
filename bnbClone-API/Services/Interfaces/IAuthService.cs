@@ -18,9 +18,9 @@ namespace bnbClone_API.Services.Interfaces
         //Task<bool> SendPasswordResetAsync(string email);
         //Task<bool> ResetPasswordAsync(string email, string token, string newPassword);
         //// New methods for the additional endpoints
-        //Task<HostRegistrationResponseDto> RegisterHostAsync(int userId, RegisterHostDto registerHostDto);
+        Task<HostRegistrationResponseDto> RegisterHostAsync(int userId, RegisterHostDto registerHostDto);
         //Task<UserProfileDto> GetUserProfileAsync(int userId);
         //Task<UserProfileDto> UpdateUserProfileAsync(int userId, UpdateProfileDto updateProfileDto);
-       
+
     }
 }
