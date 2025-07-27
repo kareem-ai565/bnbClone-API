@@ -15,18 +15,35 @@ namespace bnbClone_API.Controllers
         {
             _bookingPaymentService = bookingPaymentService;
         }
-        
+
         /// Create Stripe Payment Intent
-        
-        [HttpPost("create-intent")]
-        public async Task<IActionResult> CreatePaymentIntent([FromBody] PaymentCreateDto dto)
+
+        /* [HttpPost("create-intent")]
+         public async Task<IActionResult> CreatePaymentIntent([FromBody] PaymentCreateDto dto)
+         {
+             if (!ModelState.IsValid) return BadRequest(ModelState);
+
+             try
+             {
+                 var response = await _bookingPaymentService.CreatePaymentIntentAsync(dto);
+                 return Ok(response);
+             }
+             catch (Exception ex)
+             {
+                 return BadRequest(new { message = ex.Message });
+             }
+         }*/
+
+
+        [HttpPost("create-checkout-session")]
+        public async Task<IActionResult> CreateCheckoutSession([FromBody] PaymentCreateDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
             try
             {
-                var response = await _bookingPaymentService.CreatePaymentIntentAsync(dto);
-                return Ok(response);
+                var sessionUrl = await _bookingPaymentService.CreateCheckoutSessionAsync(dto);
+                return Ok(new { url = sessionUrl });
             }
             catch (Exception ex)
             {
@@ -34,24 +51,27 @@ namespace bnbClone_API.Controllers
             }
         }
 
-        
+
         /// Stripe webhook handler (no auth)
-        
         [HttpPost("webhook")]
         public async Task<IActionResult> StripeWebhook()
         {
             using var reader = new StreamReader(HttpContext.Request.Body);
             var json = await reader.ReadToEndAsync();
 
-            var stripeSignature = Request.Headers["Stripe-Signature"];
+            if (!Request.Headers.TryGetValue("Stripe-Signature", out var stripeSignature))
+            {
+                return BadRequest(new { error = "Missing Stripe-Signature header" });
+            }
 
             try
             {
-                await _bookingPaymentService.HandleStripeWebhookAsync(json, stripeSignature!);
-                return Ok(); // Must return 200 OK to Stripe
+                await _bookingPaymentService.HandleStripeWebhookAsync(json, stripeSignature);
+                return Ok(); // Stripe requires 200 OK
             }
             catch (Exception ex)
             {
+                // Log the exception here if needed
                 return BadRequest(new { error = ex.Message });
             }
         }

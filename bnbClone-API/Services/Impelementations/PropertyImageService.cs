@@ -1,28 +1,26 @@
 ﻿using AutoMapper;
-using bnbClone_API.DTOs;
+using bnbClone_API.DTOs.PropertyDtos;
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Services.Interfaces;
-using bnbClone_API.DTOs.PropertyDtos;
-using bnbClone_API.DTOs.PropertyDtos;
-
+using bnbClone_API.UnitOfWork;
 
 namespace bnbClone_API.Services.Implementations
 {
     public class PropertyImageService : IPropertyImageService
     {
-        private readonly IPropertyImageRepo _imageRepo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public PropertyImageService(IPropertyImageRepo imageRepo, IMapper mapper)
+        public PropertyImageService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _imageRepo = imageRepo;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
         public async Task<IEnumerable<PropertyImageDto>> GetImagesByPropertyIdAsync(int propertyId)
         {
-            var images = await _imageRepo.GetImagesByPropertyIdAsync(propertyId);
+            var images = await _unitOfWork.PropertyImageRepo.GetImagesByPropertyIdAsync(propertyId);
             return _mapper.Map<IEnumerable<PropertyImageDto>>(images);
         }
 
@@ -30,13 +28,21 @@ namespace bnbClone_API.Services.Implementations
         {
             var image = _mapper.Map<PropertyImage>(dto);
             image.PropertyId = propertyId;
-            var added = await _imageRepo.AddAsync(image);
+
+            var added = await _unitOfWork.PropertyImageRepo.AddAsync(image);
+            await _unitOfWork.SaveAsync();  
+
             return _mapper.Map<PropertyImageDto>(added);
         }
 
         public async Task<bool> DeleteImageAsync(int imageId)
         {
-            return await _imageRepo.DeleteAsync(imageId);
+            var success = await _unitOfWork.PropertyImageRepo.DeleteAsync(imageId);
+
+            if (success)
+                await _unitOfWork.SaveAsync(); 
+
+            return success;
         }
     }
 }

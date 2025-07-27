@@ -12,5 +12,6 @@ namespace bnbClone_API.Services.Interfaces
         Task<NotificationResponseDTO?> CreateNotificationAsync(CreateNotificationDTO dto);
         //Task<List<NotificationResponseDTO>> BroadcastNotificationAsync(BroadcastNotificationDTO dto);
 
+        Task<List<Notification>> GetAdminNotifications();
     }
 }

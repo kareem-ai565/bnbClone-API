@@ -73,7 +73,7 @@ namespace bnbClone_API.Models
         public string Status { get; set; } = PropertyStatus.Pending.ToString();
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime UpdatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         public int? CancellationPolicyId { get; set; }
 
@@ -99,5 +99,12 @@ namespace bnbClone_API.Models
 
         //////new added 
         public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+
+        //////////////////////////////////////////////////////////////////////////////////////////
+        public bool HasSecurityCamera { get; set; } = false;
+        public bool HasNoiseMonitor { get; set; } = false;
+        public bool HasWeapons { get; set; } = false;
+
     }
 }
