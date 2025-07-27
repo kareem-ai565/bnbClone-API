@@ -5,7 +5,9 @@ using bnbClone_API.Models;
 using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
+
 using Microsoft.EntityFrameworkCore;
+
 
 namespace bnbClone_API.Services.Implementations
 {
@@ -15,7 +17,9 @@ namespace bnbClone_API.Services.Implementations
         private readonly IPropertyRepo _propertyRepo;
         private readonly IMapper _mapper;
 
+
         public PropertyService(IUnitOfWork unitOfWork, IPropertyRepo propertyRepo, IMapper mapper)
+
         {
             this.unitOfWork = unitOfWork;
             _propertyRepo = propertyRepo;

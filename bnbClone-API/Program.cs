@@ -11,7 +11,7 @@ using bnbClone_API.Repositories.Interfaces.admin;
 using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Implementations;
 using bnbClone_API.Services.Interfaces;
-using bnbClone_API.Stripe;
+using bnbClone_API.StripeConfig;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
@@ -20,7 +20,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
-using bnbClone_API.Stripe;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http.Features;
 using Stripe;
@@ -254,6 +253,7 @@ namespace bnbClone_API
                     }
                 });
             });
+           
 
             // ----------------------
             // App Pipeline
@@ -263,7 +263,6 @@ namespace bnbClone_API
             app.UseStaticFiles(); // ⬅️ مهم جدًا لعرض الصور من wwwroot
 
             app.UseCors("AllowAll");
-
 
             // Configure the HTTP request pipeline.
 
