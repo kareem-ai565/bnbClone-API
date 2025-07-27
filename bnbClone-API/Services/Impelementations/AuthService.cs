@@ -17,71 +17,87 @@ namespace bnbClone_API.Services.Impelementations
         private readonly IPasswordHasher<ApplicationUser> _passwordHasher;
         private readonly ITokenService _tokenService;
         private readonly ILogger<AuthService> _logger;
-        private readonly UserManager<ApplicationUser> userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public AuthService(
             IUnitOfWork unitOfWork,
             IPasswordHasher<ApplicationUser> passwordHasher,
             ITokenService tokenService,
             ILogger<AuthService> logger,
-            UserManager<ApplicationUser> _userManager
+            UserManager<ApplicationUser> userManager
             )
         {
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
             _tokenService = tokenService;
             _logger = logger;
-            userManager = _userManager;
+            _userManager = userManager;
         }
 
         public async Task<bool> UserFound(string email)
         {
-            ApplicationUser user1 = await _unitOfWork.Users.GetByEmailAsync(email);
-            if (user1 == null)
+            ApplicationUser user = await _unitOfWork.Users.GetByEmailAsync(email);
+            if (user == null)
             {
                 return false;
             }
             return true;
         }
 
-        public async Task<ApplicationUser> RegisterAsync(RegisterDto registerDto)
+        public class Response<T> where T : class
+        {
+            public bool IsSucceed { get; set; }
+            public List<string>? Errors { get; set; }
+            public T? Data { get; set; }
+        }
+
+        public async Task<Response<ApplicationUser>> RegisterAsync(RegisterDto registerDto)
         {
 
             ApplicationUser user = new ApplicationUser()
-                {
-                    Email = registerDto.Email,
-                    UserName=Guid.NewGuid().ToString(),
-                    FirstName = registerDto.FirstName,
-                    LastName = registerDto.LastName,
-                    PhoneNumber = registerDto.PhoneNumber,
-                    DateOfBirth = registerDto.DateOfBirth,
-                    Gender = registerDto.Gender,
-                };
+            {
+                Email = registerDto.Email,
+                FirstName = registerDto.FirstName,
+                LastName = registerDto.LastName,
+                PhoneNumber = registerDto.PhoneNumber,
+                DateOfBirth = registerDto.DateOfBirth,
+                Gender = registerDto.Gender,
+                UserName = $"{registerDto.FirstName}_{registerDto}",
+            };
 
-            await userManager.CreateAsync(user, registerDto.Password);
-            return user;
+            var result = await _userManager.CreateAsync(user, registerDto.Password);
 
+            if (result.Succeeded)
+            {
+                var addToRoleResult = await _userManager.AddToRoleAsync(user, UserRole.Guest.ToString());
+
+                if(addToRoleResult.Succeeded)
+                    return new Response<ApplicationUser> { IsSucceed = true, Data = user };
+            }
+
+            var errors = new List<string>();
+
+            foreach (var item in result.Errors)
+            {
+                errors.Add(item.Description);
+            }
+
+            return new Response<ApplicationUser> { IsSucceed = false, Errors = errors };
         }
-    
+
         public async Task<ApplicationUser?> LoginAsync(LoginDto loginDto)
         {
-           
-                ApplicationUser user = await userManager.FindByEmailAsync(loginDto.Email);
 
-                if (await userManager.CheckPasswordAsync(user, loginDto.Password))
-                {
-                 return user;
+            ApplicationUser user = await _userManager.FindByEmailAsync(loginDto.Email);
 
-                 }
-              return null;
-            
+            if (await _userManager.CheckPasswordAsync(user, loginDto.Password))
+            {
+                var role = await _userManager.GetRolesAsync(user);
 
-           
-
-
-
-
-
+                user.Role = role?.FirstOrDefault() ?? string.Empty;
+                return user;
+            }
+            return null;
         }
 
 
@@ -149,67 +165,67 @@ namespace bnbClone_API.Services.Impelementations
 
         //// NEW METHODS
 
-        //public async Task<HostRegistrationResponseDto> RegisterHostAsync(int userId, RegisterHostDto registerHostDto)
-        //{
-        //    try
-        //    {
-        //        var user = await _unitOfWork.Users.GetByIdAsync(userId);
-        //        if (user == null)
-        //        {
-        //            throw new InvalidOperationException("User not found");
-        //        }
+        public async Task<HostRegistrationResponseDto> RegisterHostAsync(int userId, RegisterHostDto registerHostDto)
+        {
+            try
+            {
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    throw new InvalidOperationException("User not found");
+                }
 
-        //        // Check if user is already a host
-        //        var existingHost = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
-        //        if (existingHost != null)
-        //        {
-        //            throw new InvalidOperationException("User is already registered as a host");
-        //        }
+                // Check if user is already a host
+                var existingHost = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
+                if (existingHost != null)
+                {
+                    throw new InvalidOperationException("User is already registered as a host");
+                }
 
-        //        // Create host record
-        //        var host = new Models.Host
-        //        {
-        //            UserId = userId,
-        //            StartDate = DateTime.UtcNow,
-        //            AboutMe = registerHostDto.AboutMe,
-        //            Work = registerHostDto.Work,
-        //            Education = registerHostDto.Education,
-        //            Languages = registerHostDto.Languages,
-        //            LivesIn = registerHostDto.LivesIn,
-        //            DreamDestination = registerHostDto.DreamDestination,
-        //            FunFact = registerHostDto.FunFact,
-        //            Pets = registerHostDto.Pets,
-        //            ObsessedWith = registerHostDto.ObsessedWith,
-        //            SpecialAbout = registerHostDto.SpecialAbout,
-        //            Rating = 0,
-        //            TotalReviews = 0,
-        //            IsVerified = false,
-        //            TotalEarnings = 0,
-        //            AvailableBalance = 0
-        //        };
+                // Create host record
+                var host = new Models.Host
+                {
+                    UserId = userId,
+                    StartDate = DateTime.UtcNow,
+                    AboutMe = registerHostDto.AboutMe,
+                    Work = registerHostDto.Work,
+                    Education = registerHostDto.Education,
+                    Languages = registerHostDto.Languages,
+                    LivesIn = registerHostDto.LivesIn,
+                    DreamDestination = registerHostDto.DreamDestination,
+                    FunFact = registerHostDto.FunFact,
+                    Pets = registerHostDto.Pets,
+                    ObsessedWith = registerHostDto.ObsessedWith,
+                    SpecialAbout = registerHostDto.SpecialAbout,
+                    Rating = 0,
+                    TotalReviews = 0,
+                    IsVerified = false,
+                    TotalEarnings = 0,
+                    AvailableBalance = 0
+                };
 
-        //        // Update user role to host
-        //        user.Role = "host";
-        //        user.UpdatedAt = DateTime.UtcNow;
+                // Update user role to host
+                user.Role = UserRole.Host.ToString();
+                user.UpdatedAt = DateTime.UtcNow;
 
-        //        await _unitOfWork.Hosts.AddAsync(host);
-        //        _unitOfWork.Users.Update(user);
-        //        await _unitOfWork.SaveAsync();
+                await _unitOfWork.Hosts.AddAsync(host);
+                _unitOfWork.Users.Update(user);
+                await _unitOfWork.SaveAsync();
 
-        //        return new HostRegistrationResponseDto
-        //        {
-        //            HostId = host.Id,
-        //            Message = "Successfully registered as a host",
-        //            NewRole = user.Role,
-        //            StartDate = host.StartDate
-        //        };
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError(ex, "Error occurred during host registration");
-        //        throw;
-        //    }
-        //}
+                return new HostRegistrationResponseDto
+                {
+                    HostId = host.Id,
+                    Message = "Successfully registered as a host",
+                    NewRole = UserRole.Host.ToString(),
+                    StartDate = host.StartDate
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during host registration");
+                throw;
+            }
+        }
 
         //public async Task<UserProfileDto> GetUserProfileAsync(int userId)
         //{
@@ -378,7 +394,7 @@ namespace bnbClone_API.Services.Impelementations
         //    // Implementation for password reset
         //    throw new NotImplementedException();
         //}
-    
-    
+
+
     }
 }

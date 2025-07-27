@@ -47,7 +47,15 @@ namespace bnbClone_API
             // Identity & Auth Setup
             // ----------------------
             builder.Services
-    .AddIdentity<ApplicationUser, IdentityRole<int>>()
+    .AddIdentity<ApplicationUser, IdentityRole<int>>(o =>
+    {
+        o.Password.RequiredLength = 6;
+        o.Password.RequireNonAlphanumeric = false;
+        o.Password.RequireUppercase = false;
+        o.Password.RequireLowercase = false;
+        o.Password.RequireDigit = false;
+        o.Password.RequiredUniqueChars = 0;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 

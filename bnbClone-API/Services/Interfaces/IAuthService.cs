@@ -1,11 +1,12 @@
 ﻿using bnbClone_API.DTOs.Auth;
 using bnbClone_API.Models;
+using static bnbClone_API.Services.Impelementations.AuthService;
 
 namespace bnbClone_API.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<ApplicationUser> RegisterAsync(RegisterDto registerDto);
+        Task<Response<ApplicationUser>> RegisterAsync(RegisterDto registerDto);
         Task<bool> UserFound(string email);
         Task<ApplicationUser?> LoginAsync(LoginDto loginDto);
 
