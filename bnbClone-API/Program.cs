@@ -25,16 +25,15 @@ using Microsoft.AspNetCore.Http.Features;
 using Stripe;
 using TokenService = bnbClone_API.Services.Impelementations.TokenService;
 using bnbClone_API.Helpers.MappingProfiles;
-
+using System.Security.Claims;
 
 namespace bnbClone_API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
 
             // ----------------------
             // Database Configuration
@@ -60,24 +59,64 @@ namespace bnbClone_API
 
             builder.Services.AddScoped<UserManager<ApplicationUser>>();
             builder.Services.AddScoped<SignInManager<ApplicationUser>>();
-
-
+            builder.Services.AddScoped<RoleManager<IdentityRole<int>>>();
 
             builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            // JWT Authentication with enhanced debugging
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
                 .AddJwtBearer(options =>
                 {
+                    options.SaveToken = true;
+                    options.RequireHttpsMetadata = false;
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"])),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
                         ValidateIssuer = true,
                         ValidIssuer = builder.Configuration["JWT:Issuer"],
                         ValidateAudience = true,
                         ValidAudience = builder.Configuration["JWT:Audience"],
                         ValidateLifetime = true,
-                        ClockSkew = TimeSpan.Zero
+                        ClockSkew = TimeSpan.Zero,
+                        NameClaimType = ClaimTypes.NameIdentifier,
+                        RoleClaimType = ClaimTypes.Role
+                    };
+
+                    // Add event logging for debugging with Console.WriteLine
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            Console.WriteLine($"[DEBUG] JWT Authentication failed: {context.Exception.Message}");
+                            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                            {
+                                context.Response.Headers.Add("Token-Expired", "true");
+                            }
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            Console.WriteLine("[DEBUG] JWT Token validated successfully");
+                            var userIdClaim = context.Principal.FindFirst("UserID")?.Value;
+                            Console.WriteLine($"[DEBUG] UserID from token: {userIdClaim}");
+                            return Task.CompletedTask;
+                        },
+                        OnMessageReceived = context =>
+                        {
+                            Console.WriteLine("[DEBUG] JWT Token received");
+                            return Task.CompletedTask;
+                        },
+                        OnChallenge = context =>
+                        {
+                            Console.WriteLine($"[DEBUG] JWT Challenge: {context.Error}, {context.ErrorDescription}");
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
@@ -89,9 +128,6 @@ namespace bnbClone_API
             builder.Services.AddScoped<IHostRepository, HostRepository>();
             builder.Services.AddScoped<IGenericRepository<ApplicationUser>, GenericRepository<ApplicationUser>>();
             builder.Services.AddScoped<IGenericRepository<Models.Host>, GenericRepository<Models.Host>>();
-
-
-
 
             // ----------------------
             // Admin Repository Registrations
@@ -115,7 +151,6 @@ namespace bnbClone_API
 
             builder.Services.AddScoped<IProfileService, ProfileService>();
 
-
             // ----------------------
             // host Repository Registrations
             // ----------------------
@@ -126,13 +161,10 @@ namespace bnbClone_API
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
             //==============================================================================
 
-
-
             builder.Services.Configure<FormOptions>(options =>
             {
                 options.ValueCountLimit = int.MaxValue;
             });
-
 
             builder.Services.AddCors(options =>
             {
@@ -144,23 +176,17 @@ namespace bnbClone_API
                 });
             });
 
-
-
             builder.Services.AddScoped<UnitOfWork.IUnitOfWork, UnitOfWork.UnitOfWork>();
             builder.Services.AddScoped<IPropertyAmenityService, PropertyAmenityService>();
             builder.Services.AddScoped<IAmenityService, AmenityService>();
             builder.Services.AddScoped<IPropertyCategoryService, PropertyCategoryService>();
             builder.Services.AddScoped<IhostVerificationService, hostVerificationService>();
 
-
             builder.Services.AddControllers()
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
                 }); ;
-
-
-
 
             // Repositories and Unit of Work
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -195,8 +221,6 @@ namespace bnbClone_API
             builder.Services.AddScoped<IConversationService, ConversationService>();
             builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
 
-
-
             builder.Services.AddScoped<IUserUsedPromotionService, UserUsedPromotionService>();
 
 
@@ -205,7 +229,6 @@ namespace bnbClone_API
 
             StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 
-
             builder.Services.AddEndpointsApiExplorer();
             //builder.Services.AddSwaggerGen();
 
@@ -213,7 +236,6 @@ namespace bnbClone_API
             builder.Services.AddAutoMapper(cfg => cfg.AddProfile<PropertyProfile>());
             builder.Services.AddAutoMapper(cfg => cfg.AddProfile<PropertyImageProfile>());
             builder.Services.AddAutoMapper(cfg => cfg.AddProfile<CancellationPolicyProfile>());
-
 
             //swagger
             builder.Services.AddEndpointsApiExplorer();
@@ -260,35 +282,71 @@ namespace bnbClone_API
             // ----------------------
             var app = builder.Build();
 
-            app.UseStaticFiles(); // ⬅️ مهم جدًا لعرض الصور من wwwroot
+
+            // ----------------------
+            // Seed Roles
+            // ----------------------
+            try
+            {
+                using (var scope = app.Services.CreateScope())
+                {
+                    await SeedRolesAsync(scope.ServiceProvider);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Failed to seed roles: {ex.Message}");
+            }
 
             app.UseCors("AllowAll");
 
+
+            app.UseStaticFiles(); // ⬅️ مهم جدًا لعرض الصور من wwwroot
+
+           
+
             // Configure the HTTP request pipeline.
+
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-
                 app.UseSwaggerUI();
             }
-            app.UseHttpsRedirection();
 
-            // app.UseSwaggerUI(options =>
-            // {
-            //   options.SwaggerEndpoint("/swagger/v1/swagger.json", "bnbClone API v1");
-            //   options.RoutePrefix = "swagger"; 
-            //});
-            // app.MapOpenApi();
-
-            //  app.UseSwaggerUI(option => option.SwaggerEndpoint("/openapi/v1.json", "v1"));
-            // }
 
             app.UseHttpsRedirection();
 
+            // Debug middleware for JWT debugging - ADD THIS BEFORE UseAuthentication
+            app.Use(async (context, next) =>
+            {
+                if (context.Request.Headers.ContainsKey("Authorization"))
+                {
+                    var authHeader = context.Request.Headers["Authorization"].ToString();
+                    Console.WriteLine($"[DEBUG] Authorization header: {authHeader}");
+
+                    if (authHeader.StartsWith("Bearer "))
+                    {
+                        var token = authHeader.Substring(7);
+                        Console.WriteLine($"[DEBUG] Extracted token: {token.Substring(0, Math.Min(50, token.Length))}...");
+                    }
+                    else
+                    {
+                        Console.WriteLine("[DEBUG] Authorization header doesn't start with 'Bearer '");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("[DEBUG] No Authorization header found");
+                }
 
 
+                await next();
+
+                // Check authentication result
+                Console.WriteLine($"[DEBUG] After authentication - IsAuthenticated: {context.User?.Identity?.IsAuthenticated ?? false}, Identity: {context.User?.Identity?.Name ?? "null"}");
+            });
 
             app.UseAuthentication();
             app.UseAuthorization();
@@ -297,5 +355,30 @@ namespace bnbClone_API
 
             app.Run();
         }
+
+
+        // Method to seed roles
+        public static async Task SeedRolesAsync(IServiceProvider serviceProvider)
+        {
+            using var scope = serviceProvider.CreateScope();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+
+            string[] roleNames = { UserRoleConstants.Guest, UserRoleConstants.Host, UserRoleConstants.Admin };
+
+            foreach (var roleName in roleNames)
+            {
+                var roleExist = await roleManager.RoleExistsAsync(roleName);
+                if (!roleExist)
+                {
+                    await roleManager.CreateAsync(new IdentityRole<int>(roleName));
+                    Console.WriteLine($"[DEBUG] Created role: {roleName}");
+                }
+                else
+                {
+                    Console.WriteLine($"[DEBUG] Role already exists: {roleName}");
+                }
+            }
+        }
     }
 }
+
