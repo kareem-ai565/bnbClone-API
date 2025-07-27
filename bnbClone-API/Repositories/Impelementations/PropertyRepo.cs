@@ -59,7 +59,7 @@ namespace bnbClone_API.Repositories.Implementations
                 query = query.Where(p =>
                     p.Availabilities.Count(a =>
                         a.Date >= start &&
-                        a.Date < end &&
+                        a.Date <= end &&
                         a.IsAvailable
                     ) == totalDays
                 );
