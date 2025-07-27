@@ -50,11 +50,6 @@ namespace bnbClone_API.Repositories.Implementations
             //    }
             //}
 
-
-
-
-
-
             if (dto.StartDate.HasValue && dto.EndDate.HasValue)
             {
                 var start = dto.StartDate.Value.Date;
@@ -64,7 +59,7 @@ namespace bnbClone_API.Repositories.Implementations
                 query = query.Where(p =>
                     p.Availabilities.Count(a =>
                         a.Date >= start &&
-                        a.Date < end &&
+                        a.Date <= end &&
                         a.IsAvailable
                     ) == totalDays
                 );
