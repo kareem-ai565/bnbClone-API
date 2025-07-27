@@ -201,7 +201,7 @@ namespace bnbClone_API
 
 
             //===============Stripe=========================
-            builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
+            builder.Services.Configure<StripeConfig.Stripe>(builder.Configuration.GetSection("Stripe"));
 
             StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 

@@ -34,7 +34,7 @@ namespace bnbClone_API.Models
         public decimal TotalAmount { get; set; }
         public int PromotionId { get; set; } = 0;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public DateTime? UpdatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation Properties
         public virtual Review Review { get; set; }

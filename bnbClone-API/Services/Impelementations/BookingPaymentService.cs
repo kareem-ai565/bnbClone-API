@@ -172,8 +172,6 @@ namespace bnbClone_API.Services.Impelementations
             return session.Url;
         }
 
-
-
         public async Task HandleStripeWebhookAsync(string json, string stripeSignature)
         {
             var endpointSecret = _configuration["Stripe:WebhookSecret"];
@@ -190,80 +188,143 @@ namespace bnbClone_API.Services.Impelementations
 
             switch (stripeEvent.Type)
             {
-                case "checkout.session.completed":
+                case EventTypes.CheckoutSessionCompleted:
+                    var session = stripeEvent.Data.Object as Stripe.Checkout.Session;
+                    if (session == null) return;
+
+                    var sessionId = session.Id;
+
+                    var payment = await _unitOfWork.BookingPaymentRepo.GetByTransactionIdAsync(sessionId);
+                    if (payment == null) return;
+
+                    payment.Status = "completed";
+                    payment.UpdatedAt = DateTime.UtcNow;
+                    await _unitOfWork.BookingPaymentRepo.UpdateAsync(payment);
+                    await _unitOfWork.SaveAsync();
+
+                    var booking = payment.Booking;
+                    if (booking == null) return;
+
+                    var payout = new BookingPayout
                     {
-                        var session = stripeEvent.Data.Object as Stripe.Checkout.Session;
-                        if (session == null || session.PaymentIntent == null)
-                            return;
+                        BookingId = booking.Id,
+                        Amount = payment.Amount,
+                        Status = "pending",
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
 
-                        var paymentIntentId = session.PaymentIntent.Id;
-                        if (string.IsNullOrEmpty(paymentIntentId))
-                            return;
+                    await _unitOfWork.BookingPayoutRepo.AddAsync(payout);
+                    await _unitOfWork.SaveAsync();
+                    break;
 
-                        var payment = await _unitOfWork.BookingPaymentRepo.GetByTransactionIdAsync(paymentIntentId);
-                        if (payment == null)
-                            return;
+                case EventTypes.CheckoutSessionExpired:
+                case EventTypes.CheckoutSessionAsyncPaymentFailed:
+                    var failedSession = stripeEvent.Data.Object as Stripe.Checkout.Session;
+                    if (failedSession == null) return;
 
-                        payment.Status = "Completed";
-                        payment.UpdatedAt = DateTime.UtcNow;
-                        await _unitOfWork.BookingPaymentRepo.UpdateAsync(payment);
-                        await _unitOfWork.SaveAsync();
+                    var failedPayment = await _unitOfWork.BookingPaymentRepo.GetByTransactionIdAsync(failedSession.Id);
+                    if (failedPayment == null) return;
 
-                        var booking = payment.Booking;
-                        if (booking == null)
-                        {
-                            Console.WriteLine("Booking is NULL. Cannot create payout.");
-                            return;
-                        }
-
-                        var payout = new BookingPayout
-                        {
-                            BookingId = booking.Id,
-                            Amount = payment.Amount,
-                            Status = "Pending",
-                            CreatedAt = DateTime.UtcNow,
-                            UpdatedAt = DateTime.UtcNow
-                        };
-
-                        await _unitOfWork.BookingPayoutRepo.AddAsync(payout);
-                        await _unitOfWork.SaveAsync();
-
-                        break;
-                    }
-
-                case "checkout.session.expired":
-                case "payment_intent.payment_failed":
-                    {
-                        var session = stripeEvent.Data.Object as Stripe.Checkout.Session;
-                        if (session == null || session.PaymentIntent == null)
-                            return;
-
-                        var sessionId = session.Id;
-                        if (string.IsNullOrEmpty(sessionId))
-                            return;
-
-                        var payment = await _unitOfWork.BookingPaymentRepo.GetByTransactionIdAsync(sessionId);
-                        if (payment == null)
-                            return;
-
-                        payment.Status = "Failed"; // or "Refunded" or "Expired"
-                        payment.UpdatedAt = DateTime.UtcNow;
-
-                        await _unitOfWork.BookingPaymentRepo.UpdateAsync(payment);
-                        await _unitOfWork.SaveAsync();
-
-                        break;
-                    }
+                    failedPayment.Status = "Failed";
+                    failedPayment.UpdatedAt = DateTime.UtcNow;
+                    await _unitOfWork.BookingPaymentRepo.UpdateAsync(failedPayment);
+                    await _unitOfWork.SaveAsync();
+                    break;
 
                 default:
-                    Console.WriteLine($"Unhandled Stripe event type: {stripeEvent.Type}");
+                    Console.WriteLine($"Unhandled event type: {stripeEvent.Type}");
                     break;
             }
         }
 
 
+        //--------------------------------------7777---------------------------------
+        /*
+                public async Task HandleStripeWebhookAsync(string json, string stripeSignature)
+                {
+                    var endpointSecret = _configuration["Stripe:WebhookSecret"];
+                    Event stripeEvent;
+
+                    try
+                    {
+                        stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, endpointSecret);
+                    }
+                    catch (StripeException)
+                    {
+                        throw new Exception("Invalid webhook signature.");
+                    }
 
 
+
+                    switch (stripeEvent.Type)
+
+                    {
+                        case EventTypes.CheckoutSessionCompleted:
+                            {
+                                var session = stripeEvent.Data.Object as Stripe.Checkout.Session;
+                                if (session == null)
+                                    return;
+
+                                var sessionId = session.Id; // 
+
+                                var payment = await _unitOfWork.BookingPaymentRepo.GetByTransactionIdAsync(sessionId);
+                                if (payment == null)
+                                    return;
+
+                                payment.Status = "completed"; // or "Paid" if that matches your enum/string values
+                                payment.UpdatedAt = DateTime.UtcNow;
+                                await _unitOfWork.BookingPaymentRepo.UpdateAsync(payment);
+                                await _unitOfWork.SaveAsync();
+
+                                var booking = payment.Booking;
+                                if (booking == null)
+                                    return;
+
+                                var payout = new BookingPayout
+                                {
+                                    BookingId = booking.Id,
+                                    Amount = payment.Amount,
+                                    Status = "pending",
+                                    CreatedAt = DateTime.UtcNow,
+                                    UpdatedAt = DateTime.UtcNow
+                                };
+
+                                await _unitOfWork.BookingPayoutRepo.AddAsync(payout);
+                                await _unitOfWork.SaveAsync();
+
+                                break;
+                            }
+
+
+                        case EventTypes.CheckoutSessionExpired:
+                        case EventTypes.CheckoutSessionAsyncPaymentFailed:
+                            {
+                                var session = stripeEvent.Data.Object as Stripe.Checkout.Session;
+                                if (session == null)
+                                    return;
+
+                                var sessionId = session.Id; // not session.PaymentIntent.Id
+                                var payment = await _unitOfWork.BookingPaymentRepo.GetByTransactionIdAsync(sessionId);
+                                if (payment == null)
+                                    return;
+
+                                payment.Status = "Failed";
+                                payment.UpdatedAt = DateTime.UtcNow;
+                                await _unitOfWork.BookingPaymentRepo.UpdateAsync(payment);
+                                await _unitOfWork.SaveAsync();
+
+                                break;
+                            }
+                        default:
+                            Console.WriteLine($"Unhandled Stripe event type: {stripeEvent.Type}");
+                            break;
+                    }
+                }
+        */
+
+
+        //------------------------------------------777777------------------------------
 
 
 
