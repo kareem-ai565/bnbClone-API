@@ -1,4 +1,5 @@
-﻿using bnbClone_API.DTOs.Auth;
+﻿using Azure.Core;
+using bnbClone_API.DTOs.Auth;
 using bnbClone_API.Models;
 using bnbClone_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 
 namespace bnbClone_API.Controllers
@@ -92,8 +94,20 @@ namespace bnbClone_API.Controllers
 
                     string Token = new JwtSecurityTokenHandler().WriteToken(token);
 
+                    var cookieOptions = new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                        Expires = DateTimeOffset.UtcNow.AddDays(10)
+                    };
 
-                    return Ok(new { message = Token });
+
+                    Response.Cookies.Append("access_token", Token, cookieOptions);
+
+                    return Ok(new { message = "Login successful" });
+
+                   
 
                 }
 
@@ -103,6 +117,22 @@ namespace bnbClone_API.Controllers
             return BadRequest("Enter Valid email or signup");
 
         }
+
+
+
+
+        [HttpPost("LogOut")]
+        public IActionResult LogOut()
+        {
+            Response.Cookies.Delete("access_token");
+            return Ok(new { message = "Logout Successfully" });
+
+        }
+        
+        
+        
+        
+        
         [HttpPost("register-host")]
         [Authorize]
         public async Task<ActionResult> RegisterHost([FromBody] RegisterHostDto registerHostDto)
