@@ -1,7 +1,9 @@
 ﻿using bnbClone_API.DTOs.NotificationsDTOs;
+using bnbClone_API.Models;
 using bnbClone_API.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace bnbClone_API.Controllers
 {
@@ -57,6 +59,19 @@ namespace bnbClone_API.Controllers
         //        SentNotifications = notifications
         //    });
         //}
+
+
+        [HttpGet("GetAdminNotifications")]
+        public async Task<IActionResult> GetAdminController() {
+            List<Notification> AdminNotifications = await notificationService.GetAdminNotifications();
+            if(AdminNotifications == null)
+            {
+                return NotFound(new { error = "No Notification" });
+            }
+            return Ok(AdminNotifications);
+        
+        
+        }
 
     }
 }

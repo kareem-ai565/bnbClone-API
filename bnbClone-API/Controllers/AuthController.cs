@@ -19,7 +19,7 @@ namespace bnbClone_API.Controllers
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IConfiguration configuration;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger ,UserManager<ApplicationUser> userManager , IConfiguration configuration)
+        public AuthController(IAuthService authService, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager, IConfiguration configuration)
         {
             _authService = authService;
             _logger = logger;
@@ -27,34 +27,31 @@ namespace bnbClone_API.Controllers
             this.configuration = configuration;
         }
 
+        /*
+            1-default admin when the project run create it in the database like the migration
+         */
 
-
+        //service => call endpoints => addpend for the jwt token in the header auth
         //Registeration
 
         [HttpPost("register")]
         public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterDto registerDto)
         {
-            if(registerDto == null)
+            if (registerDto == null)
             {
                 return BadRequest(new { error = "Enter All Required Data" });
             }
 
-            bool found =await _authService.UserFound(registerDto.Email);
+            bool isUserExsits = await _authService.UserFound(registerDto.Email);
 
-            if (!found)
-            {
-                await  _authService.RegisterAsync(registerDto);
-                return Ok(registerDto);
-            }
-            else
-            {
+
+            if (isUserExsits)
                 return BadRequest(new { error = "Change Email , U Register By it Before" });
-            }
 
 
 
-
-
+            var registrationResult = await _authService.RegisterAsync(registerDto);
+            return registrationResult.IsSucceed ? Ok(registrationResult.Data) : Ok(registrationResult.Errors);
         }
 
 
@@ -63,42 +60,39 @@ namespace bnbClone_API.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto loginDto)
         {
-            
-            bool found=  await _authService.UserFound(loginDto.Email);
+
+            bool found = await _authService.UserFound(loginDto.Email);
             if (found)
             {
                 ApplicationUser user = await userManager.FindByEmailAsync(loginDto.Email);
                 if (await _authService.LoginAsync(loginDto) != null)
                 {
-                   
-
-
-                    var Tokenclaims = new []{
-                        new Claim(ClaimTypes.Email,loginDto.Email ),
-                        new Claim(ClaimTypes.Name ,user.FirstName),
-                        new Claim(ClaimTypes.NameIdentifier ,user.Id.ToString()),
-                        new Claim(ClaimTypes.Role ,user.Role)
+                    var Tokenclaims = new[]{
+                        new Claim("Email",user.Email ),
+                        new Claim("UserName" ,user.UserName),
+                        new Claim("Role" ,user.Role),
+                        new Claim("UserID" , user.Id.ToString())
                     };
 
                     SymmetricSecurityKey key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(configuration["JWT:SecretKey"]));
-                    SigningCredentials signingCredentials = new SigningCredentials(key,SecurityAlgorithms.HmacSha256);
+                    SigningCredentials signingCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
 
 
 
-                   JwtSecurityToken token = new JwtSecurityToken(  
+                    JwtSecurityToken token = new JwtSecurityToken(
 
-                        issuer: configuration["JWT:Issuer"],
-                        audience: configuration["JWT:Audience"],
-                        claims: Tokenclaims,
-                        signingCredentials: signingCredentials
+                         issuer: configuration["JWT:Issuer"],
+                         audience: configuration["JWT:Audience"],
+                         claims: Tokenclaims,
+                         signingCredentials: signingCredentials
 
-                        );
+                         );
 
-                 string Token=new JwtSecurityTokenHandler().WriteToken(token);
+                    string Token = new JwtSecurityTokenHandler().WriteToken(token);
 
 
-                    return Ok(new { message  = Token} );
+                    return Ok(new { message = Token });
 
                 }
 
@@ -201,35 +195,35 @@ namespace bnbClone_API.Controllers
 
         // NEW ENDPOINTS
 
-        // [HttpPost("register-host")]
-        //// [Authorize] // User must be logged in to become a host
-        // public async Task<ActionResult> RegisterHost([FromBody] RegisterHostDto registerHostDto)
-        // {
-        //     if (!ModelState.IsValid)
-        //         return BadRequest(ModelState);
+        //[HttpPost("register-host")]
+        //[Authorize(Roles = UserRoleConstants.Guest)] // User must be logged in to become a host
+        //public async Task<ActionResult> RegisterHost([FromBody] RegisterHostDto registerHostDto)
+        //{
+        //    if (!ModelState.IsValid)
+        //        return BadRequest(ModelState);
 
-        //     try
-        //     {
-        //         var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-        //         var result = await _authService.RegisterHostAsync(userId, registerHostDto);
+        //    try
+        //    {
+        //        var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        //        var result = await _authService.RegisterHostAsync(userId, registerHostDto);
 
-        //         return Ok(new
-        //         {
-        //             success = true,
-        //             message = "Successfully promoted to host",
-        //             data = result
-        //         });
-        //     }
-        //     catch (InvalidOperationException ex)
-        //     {
-        //         return BadRequest(new { success = false, message = ex.Message });
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         _logger.LogError(ex, "Error occurred during host registration");
-        //         return StatusCode(500, new { success = false, message = "Internal server error" });
-        //     }
-        // }
+        //        return Ok(new
+        //        {
+        //            success = true,
+        //            message = "Successfully promoted to host",
+        //            data = result
+        //        });
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return BadRequest(new { success = false, message = ex.Message });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error occurred during host registration");
+        //        return StatusCode(500, new { success = false, message = "Internal server error" });
+        //    }
+        //}
 
         // [HttpGet("profile")]
         //// [Authorize]

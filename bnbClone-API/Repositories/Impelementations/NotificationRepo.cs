@@ -2,6 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace bnbClone_API.Repositories.Impelementations
 {
@@ -46,6 +47,14 @@ namespace bnbClone_API.Repositories.Impelementations
             notification.IsRead = true;
             dbContext.Notifications.Update(notification);
             return true;
+        }
+
+
+
+        public async Task<List<Notification>> GetAdminNotifications()
+        {
+            List<Notification> AdminNotifications= await dbContext.Notifications.Include(x=>x.User).Where(x=>x.SenderId==5).ToListAsync();
+            return AdminNotifications;
         }
     }
 }

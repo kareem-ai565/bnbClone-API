@@ -2,6 +2,7 @@
 {
     public class CreatePropertyDto
     {
+
         public int HostId { get; set; }
         public int? CategoryId { get; set; }
         public string Title { get; set; } = null!;

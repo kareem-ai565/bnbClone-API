@@ -6,6 +6,9 @@ using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
 
+using Microsoft.EntityFrameworkCore;
+
+
 namespace bnbClone_API.Services.Implementations
 {
     public class PropertyService : IPropertyService
@@ -14,7 +17,9 @@ namespace bnbClone_API.Services.Implementations
         private readonly IPropertyRepo _propertyRepo;
         private readonly IMapper _mapper;
 
-        public PropertyService(IUnitOfWork unitOfWork , IPropertyRepo propertyRepo, IMapper mapper)
+
+        public PropertyService(IUnitOfWork unitOfWork, IPropertyRepo propertyRepo, IMapper mapper)
+
         {
             this.unitOfWork = unitOfWork;
             _propertyRepo = propertyRepo;
@@ -48,13 +53,51 @@ namespace bnbClone_API.Services.Implementations
 
         public async Task<bool> DeleteAsync(int id)
         {
-            return await _propertyRepo.DeleteAsync(id);
+            var result = await _propertyRepo.DeleteAsync(id);
+            await unitOfWork.SaveAsync();
+            return result;
         }
 
         public async Task<List<Property>> SearchAsync(PropertySearchDto dto)
         {
             return await _propertyRepo.SearchAsync(dto);
         }
+
+        public async Task<Property?> GetByIdWithAmenitiesAsync(int id)
+        {
+            return await unitOfWork.Context.Properties
+                .Include(p => p.PropertyAmenities)
+                .ThenInclude(pa => pa.Amenity)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+
+        public async Task<bool> UpdateStep5AmenitiesAsync(int propertyId, List<int> amenityIds)
+        {
+            var property = await unitOfWork.Context.Properties
+                .Include(p => p.PropertyAmenities)
+                .FirstOrDefaultAsync(p => p.Id == propertyId);
+
+            if (property == null)
+                return false;
+
+            // Clear old
+            property.PropertyAmenities.Clear();
+
+            // Add new
+            foreach (var amenityId in amenityIds)
+            {
+                property.PropertyAmenities.Add(new PropertyAmenity
+                {
+                    PropertyId = propertyId,
+                    AmenityId = amenityId
+                });
+            }
+
+            await unitOfWork.Context.SaveChangesAsync();
+            return true;
+        }
+
 
 
     }

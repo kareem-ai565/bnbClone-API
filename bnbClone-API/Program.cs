@@ -1,6 +1,4 @@
-
-
-﻿using bnbClone_API.Data;
+using bnbClone_API.Data;
 using bnbClone_API.Data;
 using bnbClone_API.Models;
 using bnbClone_API.Repositories;
@@ -48,7 +46,15 @@ namespace bnbClone_API
             // Identity & Auth Setup
             // ----------------------
             builder.Services
-    .AddIdentity<ApplicationUser, IdentityRole<int>>()
+    .AddIdentity<ApplicationUser, IdentityRole<int>>(o =>
+    {
+        o.Password.RequiredLength = 6;
+        o.Password.RequireNonAlphanumeric = false;
+        o.Password.RequireUppercase = false;
+        o.Password.RequireLowercase = false;
+        o.Password.RequireDigit = false;
+        o.Password.RequiredUniqueChars = 0;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
@@ -141,7 +147,7 @@ namespace bnbClone_API
 
 
             builder.Services.AddScoped<UnitOfWork.IUnitOfWork, UnitOfWork.UnitOfWork>();
-            builder.Services.AddScoped<IPropertyAmenityService ,  PropertyAmenityService>();
+            builder.Services.AddScoped<IPropertyAmenityService, PropertyAmenityService>();
             builder.Services.AddScoped<IAmenityService, AmenityService>();
             builder.Services.AddScoped<IPropertyCategoryService, PropertyCategoryService>();
             builder.Services.AddScoped<IhostVerificationService, hostVerificationService>();
@@ -170,7 +176,7 @@ namespace bnbClone_API
             builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped<IBookingPaymentService, BookingPaymentService>();
             builder.Services.AddScoped<IBookingPayoutService, BookingPayoutService>();
-            builder.Services.AddScoped<IHostPayoutService,HostPayoutService>();
+            builder.Services.AddScoped<IHostPayoutService, HostPayoutService>();
 
             builder.Services.AddScoped<IPropertyRepo, PropertyRepo>();
             builder.Services.AddScoped<IPropertyImageRepo, PropertyImageRepo>();
@@ -192,7 +198,7 @@ namespace bnbClone_API
 
 
             builder.Services.AddScoped<IUserUsedPromotionService, UserUsedPromotionService>();
-          
+
 
             //===============Stripe=========================
             builder.Services.Configure<StripeSettings>(builder.Configuration.GetSection("Stripe"));
@@ -254,6 +260,7 @@ namespace bnbClone_API
             // ----------------------
             var app = builder.Build();
 
+            app.UseStaticFiles(); // ⬅️ مهم جدًا لعرض الصور من wwwroot
 
             app.UseCors("AllowAll");
 
@@ -265,20 +272,21 @@ namespace bnbClone_API
                 app.UseSwagger();
 
                 app.UseSwaggerUI();
-            } 
+            }
             app.UseHttpsRedirection();
 
-               // app.UseSwaggerUI(options =>
-               // {
-                 //   options.SwaggerEndpoint("/swagger/v1/swagger.json", "bnbClone API v1");
-                 //   options.RoutePrefix = "swagger"; 
-                //});
-               // app.MapOpenApi();
-       
-              //  app.UseSwaggerUI(option => option.SwaggerEndpoint("/openapi/v1.json", "v1"));
-           // }
+            // app.UseSwaggerUI(options =>
+            // {
+            //   options.SwaggerEndpoint("/swagger/v1/swagger.json", "bnbClone API v1");
+            //   options.RoutePrefix = "swagger"; 
+            //});
+            // app.MapOpenApi();
 
-                app.UseHttpsRedirection();
+            //  app.UseSwaggerUI(option => option.SwaggerEndpoint("/openapi/v1.json", "v1"));
+            // }
+
+            app.UseHttpsRedirection();
+
 
 
 
@@ -291,4 +299,3 @@ namespace bnbClone_API
         }
     }
 }
-
