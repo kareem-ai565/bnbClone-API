@@ -17,6 +17,7 @@ namespace bnbClone_API.UnitOfWork
 {
     public class UnitOfWork : IUnitOfWork
     {
+        public ApplicationDbContext Context => dbContext;
 
         private readonly ApplicationDbContext dbContext;
         private BookingRepo _BookingRepo;

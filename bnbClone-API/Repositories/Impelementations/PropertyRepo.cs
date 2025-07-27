@@ -134,6 +134,33 @@ namespace bnbClone_API.Repositories.Implementations
                 .ToListAsync();
         }
 
+        public override async Task<Property> AddAsync(Property property)
+        {
+            await _context.Properties.AddAsync(property);
+
+            return property;
+        }
+
+        public override async Task<bool> DeleteAsync(int id)
+        {
+            var property = await _context.Properties
+                .Include(p => p.PropertyImages)
+                .Include(p => p.PropertyAmenities)
+                .Include(p => p.Bookings)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (property == null)
+                return false;
+
+            _context.PropertyImages.RemoveRange(property.PropertyImages);
+            _context.PropertyAmenities.RemoveRange(property.PropertyAmenities);
+            _context.Bookings.RemoveRange(property.Bookings); 
+
+            _context.Properties.Remove(property);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
 
 
 
