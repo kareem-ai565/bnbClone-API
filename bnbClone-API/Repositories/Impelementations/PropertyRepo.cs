@@ -50,11 +50,6 @@ namespace bnbClone_API.Repositories.Implementations
             //    }
             //}
 
-
-
-
-
-
             if (dto.StartDate.HasValue && dto.EndDate.HasValue)
             {
                 var start = dto.StartDate.Value.Date;
