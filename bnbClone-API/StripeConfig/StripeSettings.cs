@@ -1,4 +1,4 @@
-﻿namespace bnbClone_API.Stripe
+﻿namespace bnbClone_API.StripeConfig
 {
     public class StripeSettings
     {

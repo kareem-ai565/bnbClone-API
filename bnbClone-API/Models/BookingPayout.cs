@@ -12,6 +12,7 @@ namespace bnbClone_API.Models
         public decimal Amount { get; set; }
         public string Status { get; set; }  
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
         // Navigation Property
         public virtual Booking Booking { get; set; }
