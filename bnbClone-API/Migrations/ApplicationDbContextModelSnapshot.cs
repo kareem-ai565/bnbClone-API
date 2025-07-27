@@ -1321,6 +1321,15 @@ namespace bnbClone_API.Migrations
                         .HasColumnType("nvarchar(1000)")
                         .HasColumnName("description");
 
+                    b.Property<bool>("HasNoiseMonitor")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasSecurityCamera")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("HasWeapons")
+                        .HasColumnType("bit");
+
                     b.Property<int>("HostId")
                         .HasColumnType("int")
                         .HasColumnName("host_id");

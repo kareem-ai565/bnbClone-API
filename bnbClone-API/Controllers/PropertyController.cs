@@ -55,6 +55,186 @@ namespace bnbClone_API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
+
+
+        [HttpPost("{id}/place-type")]
+        public async Task<IActionResult> SetPlaceType(int id, [FromBody] SetPlaceTypeDto dto)
+        {
+            var property = await _propertyService.GetByIdAsync(id);
+            if (property == null)
+                return NotFound();
+
+            property.PropertyType = dto.PlaceType;
+            var updated = await _propertyService.UpdateAsync(property);
+
+            if (!updated)
+                return StatusCode(500, "Failed to update place type");
+
+            return NoContent();
+        }
+
+        [HttpPost("{id}/location")]
+        public async Task<IActionResult> SetLocation(int id, [FromBody] SetLocationDto dto)
+        {
+            var property = await _propertyService.GetByIdAsync(id);
+            if (property == null)
+                return NotFound();
+
+            property.Latitude = dto.Latitude;
+            property.Longitude = dto.Longitude;
+            property.Address = dto.Address;
+
+            var updated = await _propertyService.UpdateAsync(property);
+            if (!updated)
+                return StatusCode(500, "Failed to update location");
+
+            return NoContent();
+        }
+
+        [HttpPost("{id}/step4")]
+        public async Task<IActionResult> UpdateStep4(int id, [FromBody] Step4Dto dto)
+        {
+            var property = await _propertyService.GetByIdAsync(id);
+            if (property == null)
+                return NotFound();
+
+            property.MaxGuests = dto.MaxGuests;
+            property.Bedrooms = dto.Bedrooms;
+            property.Bathrooms = dto.Bathrooms;
+
+            var updated = await _propertyService.UpdateAsync(property);
+            if (!updated)
+                return StatusCode(500, "Failed to update step 4 data");
+
+            return NoContent();
+        }
+
+
+        [HttpPost("update-step5/{id}")]
+        public async Task<IActionResult> UpdateStep5(int id, [FromBody] PropertyStep5Dto dto)
+        {
+            var success = await _propertyService.UpdateStep5AmenitiesAsync(id, dto.AmenityIds);
+
+            if (!success)
+                return NotFound();
+
+            return Ok();
+        }
+
+        // ✅ POST: /api/property/{id}/title
+        [HttpPost("{id}/title")]
+        public async Task<IActionResult> SetTitle(int id, [FromBody] SetTitleDto dto)
+        {
+            var property = await _propertyService.GetByIdAsync(id);
+            if (property == null)
+                return NotFound();
+
+            property.Title = dto.Title;
+            var updated = await _propertyService.UpdateAsync(property);
+            if (!updated)
+                return StatusCode(500, "Failed to update title");
+
+            return NoContent();
+        }
+
+
+
+        [HttpPost("{id}/description")]
+        public async Task<IActionResult> SetDescription(int id, [FromBody] SetDescriptionDto dto)
+        {
+            var property = await _propertyService.GetByIdAsync(id);
+            if (property == null)
+                return NotFound();
+
+            property.Description = dto.Description;
+            var updated = await _propertyService.UpdateAsync(property);
+
+            if (!updated)
+                return StatusCode(500, "Failed to update description");
+
+            return NoContent();
+        }
+
+        [HttpPost("{id}/booking-setting")]
+        public async Task<IActionResult> SetBookingSetting(int id, [FromBody] SetBookingSettingDto dto)
+        {
+            var property = await _propertyService.GetByIdAsync(id);
+            if (property == null)
+                return NotFound();
+
+            property.InstantBook = dto.BookingSetting == "instant";
+
+            var updated = await _propertyService.UpdateAsync(property);
+            if (!updated)
+                return StatusCode(500, "Failed to update booking setting");
+
+            return NoContent();
+        }
+
+
+        // POST: api/Property/{id}/pricing
+        [HttpPost("{id}/pricing")]
+        public async Task<IActionResult> SetPricing(int id, [FromBody] SetPricingDto dto)
+        {
+            var property = await _propertyService.GetByIdAsync(id);
+            if (property == null)
+                return NotFound();
+
+            property.PricePerNight = dto.BasePrice;
+            property.ServiceFee = Math.Round(dto.BasePrice * 0.125m, 2); 
+            property.CleaningFee = 0;
+            property.UpdatedAt = DateTime.UtcNow;
+
+            var updated = await _propertyService.UpdateAsync(property);
+            if (!updated)
+                return StatusCode(500, "Failed to update pricing");
+
+            return NoContent();
+        }
+
+        [HttpPost("{id}/safety-details")]
+        public async Task<IActionResult> SetSafetyDetails(int id, [FromBody] SafetyDetailsDto dto)
+        {
+            var property = await _propertyService.GetByIdAsync(id);
+            if (property == null)
+                return NotFound();
+
+            property.HasSecurityCamera = dto.HasSecurityCamera;
+            property.HasNoiseMonitor = dto.HasNoiseMonitor;
+            property.HasWeapons = dto.HasWeapons;
+
+            var updated = await _propertyService.UpdateAsync(property);
+            if (!updated)
+                return StatusCode(500, "Failed to update safety details");
+
+            return NoContent();
+        }
+
+
+        [HttpPost("{id}/address")]
+        public async Task<IActionResult> SetAddress(int id, [FromBody] SetAddressDto dto)
+        {
+            var property = await _propertyService.GetByIdAsync(id);
+            if (property == null)
+                return NotFound();
+
+            property.Country = dto.Country;
+            property.Address = dto.Address;
+            property.City = dto.City;
+            property.PostalCode = dto.PostalCode;
+
+            var updated = await _propertyService.UpdateAsync(property);
+            if (!updated)
+                return StatusCode(500, "Failed to update address");
+
+            return NoContent();
+        }
+
+
+
+
+
+
         // PUT: api/Property/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdatePropertyDto dto)
