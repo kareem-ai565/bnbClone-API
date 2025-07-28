@@ -3,6 +3,8 @@ using bnbClone_API.DTOs.MessagesDTOs;
 using bnbClone_API.Models;
 using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
+using Microsoft.AspNetCore.SignalR;
+using System.Text.RegularExpressions;
 using static bnbClone_API.DTOs.MessagesDTOs.MessageDTO;
 using static bnbClone_API.DTOs.MessagesDTOs.SendMessageDTO;
 
@@ -13,11 +15,13 @@ namespace bnbClone_API.Services.Impelementations
     {
         private readonly IUnitOfWork unitOfWork;
         private readonly IMapper mapper;
+        private readonly IHubContext<ChatHub> hubContext;
 
-        public MessageService(IUnitOfWork unitOfWork , IMapper mapper)
+        public MessageService(IUnitOfWork unitOfWork , IMapper mapper , IHubContext<ChatHub> hubContext)
         {
             this.unitOfWork = unitOfWork;
             this.mapper = mapper;
+            this.hubContext = hubContext;
         }
         public async Task<List<MessageDTO>> GetMessagesByConversationIdAsync(int ConversationId)
         {
@@ -38,12 +42,11 @@ namespace bnbClone_API.Services.Impelementations
         }
         public async Task<bool> SendMessageAsync(SendMessageDTO messageDTO)
         {
-
             var message = mapper.Map<bnbClone_API.Models.Message>(messageDTO);
             await unitOfWork.MessageRepo.AddAsync(message);
             var result = await unitOfWork.SaveAsync();
+            await hubContext.Clients.Group($"conversation-{messageDTO.ConversationId}").SendAsync("ReceiveMessage", message);
             return result > 0;
-           
         }
         public async Task<bool> MarkMessageAsReadAsync(int messageId)
         {
