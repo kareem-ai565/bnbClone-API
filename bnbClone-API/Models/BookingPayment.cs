@@ -13,6 +13,8 @@ namespace bnbClone_API.Models
         public string PaymentMethodType { get; set; }
         public string Status { get; set; }
         public string TransactionId { get; set; }
+        public string PaymentIntentId { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
         public decimal RefundedAmount { get; set; } = 0;
