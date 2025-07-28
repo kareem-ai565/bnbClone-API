@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using bnbClone_API.DTOs.MessagesDTOs;
+using System.ComponentModel.DataAnnotations;
 
 namespace bnbClone_API.DTOs.ConversationsDTOs
 {
@@ -19,5 +20,6 @@ namespace bnbClone_API.DTOs.ConversationsDTOs
 
         [MaxLength(100)]
         public string? Subject { get; set; }
+        public List<MessageDTO>? Messages { get; set; }
     }
 }

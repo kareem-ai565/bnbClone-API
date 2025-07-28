@@ -1,5 +1,6 @@
 using bnbClone_API.Data;
 using bnbClone_API.Data;
+using bnbClone_API.Helpers.MappingProfiles;
 using bnbClone_API.Models;
 using bnbClone_API.Repositories;
 using bnbClone_API.Repositories.Impelementations;
@@ -11,9 +12,11 @@ using bnbClone_API.Repositories.Interfaces.admin;
 using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Implementations;
 using bnbClone_API.Services.Interfaces;
-using bnbClone_API.StripeConfig;
+using bnbClone_API.Stripe;
 using bnbClone_API.UnitOfWork;
+using bnbClone_API.StripeConfig;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +26,7 @@ using System.Text;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Http.Features;
 using Stripe;
+using System.Text;
 using TokenService = bnbClone_API.Services.Impelementations.TokenService;
 using bnbClone_API.Helpers.MappingProfiles;
 using System.Security.Claims;
@@ -176,7 +180,7 @@ namespace bnbClone_API
             {
                 options.AddPolicy("DevelopmentCorsPolicy", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200") // Your Angular app URL
+                    policy.WithOrigins("http://localhost:4200", "https://localhost:4200") // Your Angular app URL
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials() // Required for cookies
@@ -228,6 +232,9 @@ namespace bnbClone_API
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<IConversationService, ConversationService>();
             builder.Services.AddAutoMapper(cfg => cfg.AddProfile<MappingProfile>());
+
+          
+            builder.Services.AddSignalR();
 
             builder.Services.AddScoped<IUserUsedPromotionService, UserUsedPromotionService>();
 
@@ -322,8 +329,11 @@ namespace bnbClone_API
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
-
+                app.MapHub<ChatHub>("/chatHub", options =>
+                {
+                    options.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
+                });
+            } 
 
             app.UseHttpsRedirection();
 
