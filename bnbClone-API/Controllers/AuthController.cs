@@ -97,7 +97,7 @@ namespace bnbClone_API.Controllers
                     var cookieOptions = new CookieOptions
                     {
                         HttpOnly = true,
-                        Secure = true,
+                        Secure = true, 
                         SameSite = SameSiteMode.Strict,
                         Expires = DateTimeOffset.UtcNow.AddDays(10)
                     };
