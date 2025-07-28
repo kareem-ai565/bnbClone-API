@@ -89,6 +89,10 @@ namespace bnbClone_API.DTOs.Admin
         public string HostName { get; set; }
         public string HostEmail { get; set; }
     }
+    public class PropertySoftDeleteDto
+    {
+        public string AdminNotes { get; set; } = "Property suspended by admin";
+    }
 }
 
 // DTOs/Admin/ViolationManagementDtos.cs

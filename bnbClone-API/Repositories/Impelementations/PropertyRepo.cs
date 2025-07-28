@@ -21,6 +21,7 @@ namespace bnbClone_API.Repositories.Implementations
         {
             var query = _context.Properties
                 .Include(p => p.PropertyImages)
+                .Include(p => p.Availabilities)
                 .Include(p => p.PropertyAmenities)
                     .ThenInclude(pa => pa.Amenity)
                 .Include(p => p.Bookings)
@@ -31,16 +32,39 @@ namespace bnbClone_API.Repositories.Implementations
                 query = query.Where(p =>
                     p.City.Contains(dto.Location) ||
                     p.Address.Contains(dto.Location) ||
+                    p.Country.Contains(dto.Location) ||
                     p.Title.Contains(dto.Location));
             }
 
+            //if (dto.StartDate.HasValue && dto.EndDate.HasValue)
+            //{
+            //    var today = DateTime.Today;
+
+            //    if (dto.StartDate.Value.Date >= today)
+            //    {
+            //        query = query.Where(p =>
+            //            p.Bookings.Any(b =>
+            //                (dto.StartDate < b.EndDate && dto.EndDate > b.StartDate)
+            //            )
+            //        );
+            //    }
+            //}
+
             if (dto.StartDate.HasValue && dto.EndDate.HasValue)
             {
+                var start = dto.StartDate.Value.Date;
+                var end = dto.EndDate.Value.Date;
+                var totalDays = (end - start).Days;
+
                 query = query.Where(p =>
-                    !p.Bookings.Any(b =>
-                        (dto.StartDate < b.EndDate && dto.EndDate > b.StartDate)
-                    ));
+                    p.Availabilities.Count(a =>
+                        a.Date >= start &&
+                        a.Date <= end &&
+                        a.IsAvailable
+                    ) == totalDays
+                );
             }
+
 
             if (dto.Guests.HasValue)
             {
@@ -98,8 +122,9 @@ namespace bnbClone_API.Repositories.Implementations
             }
 
             // Pagination
-            int skip = (dto.Page - 1) * dto.PageSize;
-            return await query.Skip(skip).Take(dto.PageSize).ToListAsync();
+            //int skip = (dto.Page - 1) * dto.PageSize;
+            //return await query.Skip(skip).Take(dto.PageSize).ToListAsync();
+            return await query.ToListAsync();
         }
         public async Task<Property?> GetDetailsByIdAsync(int id)
         {
@@ -134,6 +159,33 @@ namespace bnbClone_API.Repositories.Implementations
                 .ToListAsync();
         }
 
+        public override async Task<Property> AddAsync(Property property)
+        {
+            await _context.Properties.AddAsync(property);
+
+            return property;
+        }
+
+        public override async Task<bool> DeleteAsync(int id)
+        {
+            var property = await _context.Properties
+                .Include(p => p.PropertyImages)
+                .Include(p => p.PropertyAmenities)
+                .Include(p => p.Bookings)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (property == null)
+                return false;
+
+            _context.PropertyImages.RemoveRange(property.PropertyImages);
+            _context.PropertyAmenities.RemoveRange(property.PropertyAmenities);
+            _context.Bookings.RemoveRange(property.Bookings); 
+
+            _context.Properties.Remove(property);
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
 
 
 

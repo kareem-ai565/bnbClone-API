@@ -42,7 +42,6 @@
 
     <Folder Include="MLModels\" />
     <Folder Include="UnitOfWork\" />
-    <Folder Include="wwwroot\Images\" />
 
   </ItemGroup>
 

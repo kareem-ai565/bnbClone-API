@@ -16,6 +16,7 @@ public class BookingPayoutRepo : GenericRepo<BookingPayout>, IBookingPayoutRepo
     public override async Task<IEnumerable<BookingPayout>> GetAllAsync()
     {
         return await dbContext.BookingPayouts
+         .AsNoTracking()
         .Include(bp => bp.Booking)
             .ThenInclude(b => b.Property)
                 .ThenInclude(p => p.Host)

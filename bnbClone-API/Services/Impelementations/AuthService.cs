@@ -100,6 +100,158 @@ namespace bnbClone_API.Services.Impelementations
             return null;
         }
 
+        public async Task<HostRegistrationResponseDto> RegisterHostAsync(int userId, RegisterHostDto registerHostDto)
+        {
+            try
+            {
+                var user = await _unitOfWork.Users.GetByIdAsync(userId);
+                if (user == null)
+                {
+                    throw new InvalidOperationException("User not found");
+                }
+
+                // Check if user is already a host
+                var existingHost = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
+                if (existingHost != null)
+                {
+                    throw new InvalidOperationException("User is already registered as a host");
+                }
+
+                // Get user from UserManager to work with Identity
+                var identityUser = await _userManager.FindByIdAsync(userId.ToString());
+                if (identityUser == null)
+                {
+                    throw new InvalidOperationException("User not found in Identity system");
+                }
+
+                // Get current roles
+                var currentRoles = await _userManager.GetRolesAsync(identityUser);
+
+                // Remove from current role (Guest)
+                if (currentRoles.Any())
+                {
+                    var removeResult = await _userManager.RemoveFromRolesAsync(identityUser, currentRoles);
+                    if (!removeResult.Succeeded)
+                    {
+                        var errors = string.Join(", ", removeResult.Errors.Select(e => e.Description));
+                        throw new InvalidOperationException($"Failed to remove user from current role: {errors}");
+                    }
+                }
+
+                // Add to Host role using your constants
+                var addRoleResult = await _userManager.AddToRoleAsync(identityUser, UserRoleConstants.Host);
+                if (!addRoleResult.Succeeded)
+                {
+                    var errors = string.Join(", ", addRoleResult.Errors.Select(e => e.Description));
+                    throw new InvalidOperationException($"Failed to add user to Host role: {errors}");
+                }
+
+                // Create host record
+                var host = new Models.Host
+                {
+                    UserId = userId,
+                    StartDate = DateTime.UtcNow,
+                    AboutMe = registerHostDto.AboutMe,
+                    Work = registerHostDto.Work,
+                    Education = registerHostDto.Education,
+                    Languages = registerHostDto.Languages,
+                    LivesIn = registerHostDto.LivesIn,
+                    DreamDestination = registerHostDto.DreamDestination,
+                    FunFact = registerHostDto.FunFact,
+                    Pets = registerHostDto.Pets,
+                    ObsessedWith = registerHostDto.ObsessedWith,
+                    SpecialAbout = registerHostDto.SpecialAbout,
+                    Rating = 0,
+                    TotalReviews = 0,
+                    IsVerified = false,
+                    TotalEarnings = 0,
+                    AvailableBalance = 0
+                };
+
+                // Update user role property and timestamp
+                user.Role = UserRoleConstants.Host;
+                user.UpdatedAt = DateTime.UtcNow;
+
+                await _unitOfWork.Hosts.AddAsync(host);
+                _unitOfWork.Users.Update(user);
+                await _unitOfWork.SaveAsync();
+
+                return new HostRegistrationResponseDto
+                {
+                    HostId = host.Id,
+                    Message = "Successfully registered as a host",
+                    NewRole = UserRoleConstants.Host,
+                    StartDate = host.StartDate
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred during host registration for userId: {UserId}", userId);
+                throw;
+            }
+        }
+        //   public async Task<HostRegistrationResponseDto> RegisterHostAsync(int userId, RegisterHostDto registerHostDto)
+        //{
+        //    try
+        //    {
+        //        var user = await _unitOfWork.Users.GetByIdAsync(userId);
+        //        if (user == null)
+        //        {
+        //            throw new InvalidOperationException("User not found");
+        //        }
+
+        //        // Check if user is already a host
+        //        var existingHost = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
+        //        if (existingHost != null)
+        //        {
+        //            throw new InvalidOperationException("User is already registered as a host");
+        //        }
+
+        //        // Create host record
+        //        var host = new Models.Host
+        //        {
+        //            UserId = userId,
+        //            StartDate = DateTime.UtcNow,
+        //            AboutMe = registerHostDto.AboutMe,
+        //            Work = registerHostDto.Work,
+        //            Education = registerHostDto.Education,
+        //            Languages = registerHostDto.Languages,
+        //            LivesIn = registerHostDto.LivesIn,
+        //            DreamDestination = registerHostDto.DreamDestination,
+        //            FunFact = registerHostDto.FunFact,
+        //            Pets = registerHostDto.Pets,
+        //            ObsessedWith = registerHostDto.ObsessedWith,
+        //            SpecialAbout = registerHostDto.SpecialAbout,
+        //            Rating = 0,
+        //            TotalReviews = 0,
+        //            IsVerified = false,
+        //            TotalEarnings = 0,
+        //            AvailableBalance = 0
+        //        };
+
+        //        // Update user role to host
+        //        user.Role = UserRole.Host.ToString();
+        //        user.UpdatedAt = DateTime.UtcNow;
+
+        //        await _unitOfWork.Hosts.AddAsync(host);
+        //        _unitOfWork.Users.Update(user);
+        //        await _unitOfWork.SaveAsync();
+
+        //        return new HostRegistrationResponseDto
+        //        {
+        //            HostId = host.Id,
+        //            Message = "Successfully registered as a host",
+        //            NewRole = UserRole.Host.ToString(),
+        //            StartDate = host.StartDate
+        //        };
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error occurred during host registration");
+        //        throw;
+        //    }
+        //}
+
 
 
 
@@ -165,67 +317,6 @@ namespace bnbClone_API.Services.Impelementations
 
         //// NEW METHODS
 
-        public async Task<HostRegistrationResponseDto> RegisterHostAsync(int userId, RegisterHostDto registerHostDto)
-        {
-            try
-            {
-                var user = await _unitOfWork.Users.GetByIdAsync(userId);
-                if (user == null)
-                {
-                    throw new InvalidOperationException("User not found");
-                }
-
-                // Check if user is already a host
-                var existingHost = await _unitOfWork.Hosts.GetByUserIdAsync(userId);
-                if (existingHost != null)
-                {
-                    throw new InvalidOperationException("User is already registered as a host");
-                }
-
-                // Create host record
-                var host = new Models.Host
-                {
-                    UserId = userId,
-                    StartDate = DateTime.UtcNow,
-                    AboutMe = registerHostDto.AboutMe,
-                    Work = registerHostDto.Work,
-                    Education = registerHostDto.Education,
-                    Languages = registerHostDto.Languages,
-                    LivesIn = registerHostDto.LivesIn,
-                    DreamDestination = registerHostDto.DreamDestination,
-                    FunFact = registerHostDto.FunFact,
-                    Pets = registerHostDto.Pets,
-                    ObsessedWith = registerHostDto.ObsessedWith,
-                    SpecialAbout = registerHostDto.SpecialAbout,
-                    Rating = 0,
-                    TotalReviews = 0,
-                    IsVerified = false,
-                    TotalEarnings = 0,
-                    AvailableBalance = 0
-                };
-
-                // Update user role to host
-                user.Role = UserRole.Host.ToString();
-                user.UpdatedAt = DateTime.UtcNow;
-
-                await _unitOfWork.Hosts.AddAsync(host);
-                _unitOfWork.Users.Update(user);
-                await _unitOfWork.SaveAsync();
-
-                return new HostRegistrationResponseDto
-                {
-                    HostId = host.Id,
-                    Message = "Successfully registered as a host",
-                    NewRole = UserRole.Host.ToString(),
-                    StartDate = host.StartDate
-                };
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred during host registration");
-                throw;
-            }
-        }
 
         //public async Task<UserProfileDto> GetUserProfileAsync(int userId)
         //{

@@ -12,5 +12,7 @@ namespace bnbClone_API.Repositories.Interfaces
                                                                 int? guestId = null,
                                                                 int? propertyId = null);
         Task<Booking> GetGuestByBookingIdAsync(int bookingId);
+        Task<IEnumerable<Booking>> GetByHostIdAsync(int hostId);
+
     }
 }

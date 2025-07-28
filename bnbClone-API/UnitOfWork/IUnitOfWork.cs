@@ -1,4 +1,5 @@
-﻿using bnbClone_API.Repositories.Impelementations;
+﻿using bnbClone_API.Data;
+using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Repositories.Interfaces.admin;
 
@@ -7,7 +8,8 @@ namespace bnbClone_API.UnitOfWork
     public interface IUnitOfWork : IDisposable
     {
 
-       
+        ApplicationDbContext Context { get; }
+
         IBookingRepo BookingRepo { get; }
         IFavouriteRepo FavouriteRepo { get; }
         IAvailabilityRepo AvailabilityRepo { get; }

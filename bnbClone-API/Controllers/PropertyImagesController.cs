@@ -18,14 +18,30 @@ namespace bnbClone_API.Controllers
 
         // ✅ POST: /api/properties/{id}/images
         [HttpPost("properties/{id}/images")]
-        public async Task<IActionResult> UploadImage(int id, [FromBody] CreatePropertyImageDto dto)
+        public async Task<IActionResult> UploadImage(int id, IFormFile image)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            if (image == null || image.Length == 0)
+                return BadRequest("No image uploaded");
+
+            var fileName = Guid.NewGuid() + Path.GetExtension(image.FileName);
+            var filePath = Path.Combine("wwwroot/images", fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await image.CopyToAsync(stream);
+            }
+
+            // 🟢 خزّن فقط اسم الصورة وليس الـ URL الكامل
+            var dto = new CreatePropertyImageDto
+            {
+                ImageUrl = fileName // فقط الاسم
+            };
 
             var result = await _propertyImageService.AddImageAsync(id, dto);
-            return CreatedAtAction(nameof(GetImagesByPropertyId), new { id = id }, result);
+            return Ok(new { fileName }); // رجّع الاسم فقط
         }
+
+
 
         // ✅ GET: /api/properties/{id}/images
         [HttpGet("properties/{id}/images")]
@@ -45,5 +61,19 @@ namespace bnbClone_API.Controllers
 
             return Ok("Image deleted successfully.");
         }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }
