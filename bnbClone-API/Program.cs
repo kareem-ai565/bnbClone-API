@@ -174,11 +174,13 @@ namespace bnbClone_API
 
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAll", policy =>
+                options.AddPolicy("DevelopmentCorsPolicy", policy =>
                 {
-                    policy.AllowAnyOrigin()
+                    policy.WithOrigins("http://localhost:4200") // Your Angular app URL
+                          .AllowAnyHeader()
                           .AllowAnyMethod()
-                          .AllowAnyHeader();
+                          .AllowCredentials() // Required for cookies
+                          .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
                 });
             });
 
@@ -304,8 +306,9 @@ namespace bnbClone_API
                 Console.WriteLine($"[ERROR] Failed to seed roles: {ex.Message}");
             }
 
-            app.UseCors("AllowAll");
-
+            //app.UseCors("AllowAll");
+            //app.UseCors("DevelopmentCorsPolicy");
+            app.UseCors("StrictPolicy");
 
             app.UseStaticFiles(); // ⬅️ مهم جدًا لعرض الصور من wwwroot
 
@@ -357,7 +360,8 @@ namespace bnbClone_API
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.MapControllers();
+            //app.MapControllers();
+            app.MapControllers().RequireCors("DevelopmentCorsPolicy");
 
             app.Run();
         }
