@@ -119,13 +119,23 @@ namespace bnbClone_API.Services.Impelementations
 
         public async Task<string> CreateCheckoutSessionAsync(PaymentCreateDto dto)
         {
-            var booking = await _unitOfWork.BookingRepo.GetByIdAsync(dto.BookingId);
-            if (booking == null)
-                throw new ArgumentException("Booking not found");
+            /*  var booking = await _unitOfWork.BookingRepo.GetByIdAsync(dto.BookingId);
+              if (booking == null)
+                  throw new ArgumentException("Booking not found");
 
-            var property = await _unitOfWork.PropertyRepo.GetByIdAsync(booking.PropertyId);
+              var property = await _unitOfWork.PropertyRepo.GetByIdAsync(booking.PropertyId);
+              if (property == null)
+                  throw new ArgumentException("Property not found");
+              */
+            var bookingcreateDto = dto.Booking;
+
+
+            var property = await _unitOfWork.PropertyRepo.GetByIdAsync(bookingcreateDto.PropertyId); // dto.BookingId is misused, should be fixed
             if (property == null)
                 throw new ArgumentException("Property not found");
+
+            // FOR THIS TO WORK — you must actually pass BookingCreateDto as part of the request
+            // This example assumes you receive it as part of your frontend logic
 
             // 1. Create Stripe Checkout Session
             var options = new Stripe.Checkout.SessionCreateOptions
@@ -148,14 +158,25 @@ namespace bnbClone_API.Services.Impelementations
             }
         },
                 Mode = "payment",
-                SuccessUrl = $"https://your-client-url.com/payment-success?bookingId={dto.BookingId}",
-                CancelUrl = "https://your-client-url.com/payment-cancelled"
+                SuccessUrl = $"https://your-client-url.com/payment-success?bookingId",
+                CancelUrl = "https://your-client-url.com/payment-cancelled",
+                Metadata = new Dictionary<string, string>
+                {
+                    { "propertyId", bookingcreateDto.PropertyId.ToString() },
+                    { "startDate", bookingcreateDto.StartDate.ToString("o") },
+                    { "endDate", bookingcreateDto.EndDate.ToString("o") },
+                    { "totalGuests", bookingcreateDto.TotalGuests.ToString() },
+                    { "promotionId", bookingcreateDto.PromotionId?.ToString() ?? "" },
+                    { "amount", dto.Amount.ToString("F2") },
+                    { "userId", "123" } // pass actual user ID from your context
+                }
             };
+
 
             var sessionService = new Stripe.Checkout.SessionService();
             var session = await sessionService.CreateAsync(options);
 
-            // ✅ 2. Save the Stripe Checkout Session Id (not the PaymentIntent)
+           /* // ✅ 2. Save the Stripe Checkout Session Id (not the PaymentIntent)
             var payment = new BookingPayment
             {
                 BookingId = dto.BookingId,
@@ -167,12 +188,193 @@ namespace bnbClone_API.Services.Impelementations
             };
 
             await _unitOfWork.BookingPaymentRepo.AddAsync(payment);
-            await _unitOfWork.SaveAsync();
+            await _unitOfWork.SaveAsync();*/
+
 
             return session.Url;
         }
 
+
+
+
+
+
+
+
+
+
         public async Task HandleStripeWebhookAsync(string json, string stripeSignature)
+        {
+            var endpointSecret = _configuration["Stripe:WebhookSecret"];
+            Event stripeEvent;
+
+            try
+            {
+                stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, endpointSecret);
+            }
+            catch (StripeException)
+            {
+                throw new Exception("Invalid webhook signature.");
+            }
+
+            if (stripeEvent.Type == EventTypes.CheckoutSessionCompleted)
+            {
+                var session = stripeEvent.Data.Object as Stripe.Checkout.Session;
+                if (session == null) return;
+
+                var metadata = session.Metadata;
+
+                // 1. Create Booking
+                var booking = new Booking
+                {
+                    PropertyId = int.Parse(metadata["propertyId"]),
+                    StartDate = DateTime.Parse(metadata["startDate"]),
+                    EndDate = DateTime.Parse(metadata["endDate"]),
+                    TotalGuests = int.Parse(metadata["totalGuests"]),
+                    PromotionId = string.IsNullOrEmpty(metadata["promotionId"]) ? 0 : int.Parse(metadata["promotionId"]),
+                    GuestId = int.Parse(metadata["userId"]),
+                    CreatedAt = DateTime.UtcNow,
+                    Status = "Pending"
+                };
+
+                await _unitOfWork.BookingRepo.AddAsync(booking);
+                await _unitOfWork.SaveAsync(); // Booking.Id now available
+
+                // 2. Create BookingPayment
+                var payment = new BookingPayment
+                {
+                    BookingId = booking.Id,
+                    Amount = decimal.Parse(metadata["amount"]),
+                    PaymentMethodType = "card",
+                    Status = session.PaymentStatus, // typically "paid"
+                    TransactionId = session.Id,
+                    PayementGateWayResponse = session.ToJson(),
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.BookingPaymentRepo.AddAsync(payment);
+
+                // 3. Create BookingPayout (pending)
+                var payout = new BookingPayout
+                {
+                    BookingId = booking.Id,
+                    Amount = payment.Amount,
+                    Status = "pending",
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.BookingPayoutRepo.AddAsync(payout);
+
+                // 4. Notify Host and Admin
+                var property = await _unitOfWork.PropertyRepo.GetByIdAsync(booking.PropertyId);
+                if (property != null)
+                {
+                    var hostId = property.HostId;
+                    var guestId = booking.GuestId;
+
+                    var hostNotification = new Notification
+                    {
+                        UserId = hostId,
+                        SenderId = guestId,
+                        Message = $"New booking for '{property.Title}' from {booking.StartDate:yyyy-MM-dd} to {booking.EndDate:yyyy-MM-dd}.",
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    var adminNotification = new Notification
+                    {
+                        UserId = 5, // assuming Admin user ID = 1
+                        SenderId = guestId,
+                        Message = $"Booking confirmed for '{property.Title}' from {booking.StartDate:yyyy-MM-dd} to {booking.EndDate:yyyy-MM-dd}.",
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    await _unitOfWork.NotificationRepo.AddAsync(hostNotification);
+                    await _unitOfWork.NotificationRepo.AddAsync(adminNotification);
+                }
+
+                // Final Save
+                await _unitOfWork.SaveAsync();
+            }
+            else
+            {
+                Console.WriteLine($"Unhandled event type: {stripeEvent.Type}");
+            }
+        }
+
+
+
+
+
+
+        /*  public async Task HandleStripeWebhookAsync(string json, string stripeSignature)
+          {
+              var endpointSecret = _configuration["Stripe:WebhookSecret"];
+              Event stripeEvent;
+
+              try
+              {
+                  stripeEvent = EventUtility.ConstructEvent(json, stripeSignature, endpointSecret);
+              }
+              catch (StripeException)
+              {
+                  throw new Exception("Invalid webhook signature.");
+              }
+
+              if (stripeEvent.Type == EventTypes.CheckoutSessionCompleted)
+              {
+                  var session = stripeEvent.Data.Object as Stripe.Checkout.Session;
+                  if (session == null) return;
+
+                  var sessionId = session.Id;
+
+                  var payment = await _unitOfWork.BookingPaymentRepo.GetByTransactionIdAsync(sessionId);
+                  if (payment == null) return;
+
+                  payment.Status = session.PaymentStatus; // usually "paid"
+                  payment.UpdatedAt = DateTime.UtcNow;
+                  await _unitOfWork.BookingPaymentRepo.UpdateAsync(payment);
+                  await _unitOfWork.SaveAsync(); // <- this must be called after update
+
+                  var booking = payment.Booking;
+                  if (booking == null) return;
+
+                  var payout = new BookingPayout
+                  {
+                      BookingId = booking.Id,
+                      Amount = payment.Amount,
+                      Status = "pending",
+                      CreatedAt = DateTime.UtcNow,
+                      UpdatedAt = DateTime.UtcNow
+                  };
+
+                  await _unitOfWork.BookingPayoutRepo.AddAsync(payout);
+                  await _unitOfWork.SaveAsync();
+              }
+              else
+              {
+                  Console.WriteLine($"Unhandled event type: {stripeEvent.Type}");
+              }
+          }*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /*public async Task HandleStripeWebhookAsync(string json, string stripeSignature)
         {
             var endpointSecret = _configuration["Stripe:WebhookSecret"];
             Event stripeEvent;
@@ -197,10 +399,9 @@ namespace bnbClone_API.Services.Impelementations
                     var payment = await _unitOfWork.BookingPaymentRepo.GetByTransactionIdAsync(sessionId);
                     if (payment == null) return;
 
-                    payment.Status = "completed";
+                    payment.Status = session.PaymentStatus;
                     payment.UpdatedAt = DateTime.UtcNow;
                     await _unitOfWork.BookingPaymentRepo.UpdateAsync(payment);
-                    await _unitOfWork.SaveAsync();
 
                     var booking = payment.Booking;
                     if (booking == null) return;
@@ -236,7 +437,8 @@ namespace bnbClone_API.Services.Impelementations
                     Console.WriteLine($"Unhandled event type: {stripeEvent.Type}");
                     break;
             }
-        }
+
+        }*/
 
 
         //--------------------------------------7777---------------------------------

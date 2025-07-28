@@ -56,7 +56,29 @@ namespace bnbClone_API.Controllers
         [HttpPost("webhook")]
         public async Task<IActionResult> StripeWebhook()
         {
-            using var reader = new StreamReader(HttpContext.Request.Body);
+
+
+
+
+            var json = await new StreamReader(HttpContext.Request.Body).ReadToEndAsync();
+
+            // Get the Stripe-Signature header
+            var stripeSignature = Request.Headers["Stripe-Signature"];
+
+            try
+            {
+                await _bookingPaymentService.HandleStripeWebhookAsync(json, stripeSignature);
+                return Ok(); // Always respond 200 to Stripe if successfully processed
+            }
+            catch (Exception ex)
+            {
+                // Optional: Log the error here
+                Console.WriteLine("Webhook error: " + ex.Message);
+                return BadRequest();
+            }
+
+
+            /*using var reader = new StreamReader(HttpContext.Request.Body);
             var json = await reader.ReadToEndAsync();
 
             if (!Request.Headers.TryGetValue("Stripe-Signature", out var stripeSignature))
@@ -73,7 +95,7 @@ namespace bnbClone_API.Controllers
             {
                 // Log the exception here if needed
                 return BadRequest(new { error = ex.Message });
-            }
+            }*/
         }
     }
 }
