@@ -13,5 +13,9 @@ namespace bnbClone_API.Services.Interfaces
         Task<bool> DeleteAsync(int id);
         Task<List<Property>> SearchAsync(PropertySearchDto dto);
 
+        Task<bool> UpdateStep5AmenitiesAsync(int propertyId, List<int> amenityIds);
+        Task<Property?> GetByIdWithAmenitiesAsync(int id); 
+
+
     }
 }

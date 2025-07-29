@@ -9,6 +9,8 @@ namespace bnbClone_API.Repositories.Interfaces
         Task<IEnumerable<Violation>> GetViolationsByStatusAsync(string status);
         Task<IEnumerable<Violation>> GetViolationsWithDetailsAsync();
         Task<Violation?> GetViolationByIdWithDetailsAsync(int violationId);
+        Task<IEnumerable<Violation>> GetViolationsByHostAsync(int hostId);
+
     }
 
 }

@@ -2,6 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.ML;
 
 namespace bnbClone_API.Repositories.Impelementations
 {
@@ -31,6 +32,7 @@ namespace bnbClone_API.Repositories.Impelementations
         public async Task<IEnumerable<Booking>> GetByGuestIdAsync(int id)
         {
             return await _dbContext.Bookings
+                .AsNoTracking()
                 .Include(b => b.Guest)
                 .Include(b => b.Property)
                 .Where(b => b.GuestId == id)
@@ -79,5 +81,15 @@ namespace bnbClone_API.Repositories.Impelementations
             return await query.ToListAsync();
 
         }
+        public async Task<IEnumerable<Booking>> GetByHostIdAsync(int hostId)
+        {
+            return await _dbContext.Bookings
+                .Include(b => b.Property)
+                .Include(b => b.Guest)
+                .Where(b => b.Property.HostId == hostId)
+                .ToListAsync();
+        }
+
+
     }
 }

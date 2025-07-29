@@ -30,13 +30,16 @@ namespace bnbClone_API.Repositories.Impelementations
                 .ToListAsync();
         }
 
-        public async Task<BookingPayment> GetByPaymentIntentIdAsync(string paymentIntentId)
+
+        public async Task<BookingPayment> GetByTransactionIdAsync(string sessionId)
         {
             return await _dbContext.BookingPayments
-         .Include(p => p.Booking)
-         .ThenInclude(b => b.Property) 
-         .FirstOrDefaultAsync(p => p.TransactionId == paymentIntentId);
+                .Include(p => p.Booking)
+                .ThenInclude(b => b.Property)
+        .FirstOrDefaultAsync(p => p.TransactionId == sessionId); // ✅ MATCH BY TransactionId
         }
+
+
 
         public async Task<IEnumerable<BookingPayment>> GetByPropertyIdAsync(int propertyId)
         {
