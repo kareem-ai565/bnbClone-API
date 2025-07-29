@@ -47,7 +47,7 @@ namespace bnbClone_API.Controllers
             {
                 return StatusCode(500, "Failed to send message");
             }
-            return Ok("Message sent Successfully");
+            return Ok(new { message = "Message sent successfully" });
         }
         [HttpPut("{messageId}/read")]
         public async Task<IActionResult> MarkMessageAsReadAsync(int messageId)

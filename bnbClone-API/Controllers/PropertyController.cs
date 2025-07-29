@@ -233,24 +233,54 @@ namespace bnbClone_API.Controllers
 
 
 
-
-
-        // PUT: api/Property/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] UpdatePropertyDto dto)
+        public async Task<IActionResult> UpdateProperty(int id, UpdatePropertyDto dto)
         {
-            var existing = await _propertyService.GetByIdAsync(id);
-            if (existing == null)
+            var property = await _propertyService.GetByIdAsync(id);
+            if (property == null)
                 return NotFound();
 
-            _mapper.Map(dto, existing);
-            var updated = await _propertyService.UpdateAsync(existing);
+            if (!string.IsNullOrWhiteSpace(dto.Title))
+                property.Title = dto.Title;
 
+            if (!string.IsNullOrWhiteSpace(dto.Description))
+                property.Description = dto.Description;
+
+            if (dto.PricePerNight.HasValue)
+                property.PricePerNight = dto.PricePerNight.Value;
+
+            if (dto.MaxGuests.HasValue)
+                property.MaxGuests = dto.MaxGuests.Value;
+
+            if (dto.Bedrooms.HasValue)
+                property.Bedrooms = dto.Bedrooms.Value;
+
+            if (dto.Bathrooms.HasValue)
+                property.Bathrooms = dto.Bathrooms.Value;
+
+            if (!string.IsNullOrWhiteSpace(dto.Address))
+                property.Address = dto.Address;
+
+            if (!string.IsNullOrWhiteSpace(dto.City))
+                property.City = dto.City;
+
+            if (!string.IsNullOrWhiteSpace(dto.Country))
+                property.Country = dto.Country;
+
+            if (!string.IsNullOrWhiteSpace(dto.PropertyType))
+                property.PropertyType = dto.PropertyType;
+
+            if (dto.HostId.HasValue)
+                property.HostId = dto.HostId.Value;
+
+            var updated = await _propertyService.UpdateAsync(property);
             if (!updated)
-                return StatusCode(500, "Update failed");
+                return StatusCode(500, "Failed to update property");
 
             return NoContent();
         }
+
+
 
         // DELETE: api/Property/5
         [HttpDelete("{id}")]

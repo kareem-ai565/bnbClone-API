@@ -11,13 +11,19 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Message, MessageDTO>();
         CreateMap<MessageDTO, Message>();
-        CreateMap<SendMessageDTO, Message>().ForMember(dest => dest.SentAt, opt => opt.MapFrom(_ => DateTime.UtcNow));
+        CreateMap<Message, MessageDTO>()
+            .ForMember(dest => dest.SenderName, opt => opt.MapFrom(src =>
+                src.Sender != null ? src.Sender.FirstName : null
+            )); 
+        CreateMap<SendMessageDTO, Message>().ForMember(dest => dest.SentAt, opt => opt.MapFrom(_ => DateTime.UtcNow));           
         CreateMap<Conversation, ConversationResponseDTO>()
         .ForMember(dest => dest.PropertyName, opt => opt.MapFrom(src => src.Property != null ? src.Property.Title : null))
         .ForMember(dest => dest.User1Name, opt => opt.MapFrom(src => src.User1.UserName))
-        .ForMember(dest => dest.User2Name, opt => opt.MapFrom(src => src.User2.UserName));
+        .ForMember(dest => dest.User2Name, opt => opt.MapFrom(src => src.User2.UserName))
+         .ForMember(dest => dest.Messages, opt => opt.MapFrom(src =>
+                src.Messages.OrderBy(m => m.SentAt)
+            )); 
         CreateMap<StartConversationDTO, Conversation>();
         CreateMap<CreateNotificationDTO, Notification>();
         CreateMap<BroadcastNotificationDTO, Notification>(); // used inside foreach per user

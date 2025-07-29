@@ -1,4 +1,5 @@
-﻿using bnbClone_API.DTOs.Auth;
+﻿using Azure.Core;
+using bnbClone_API.DTOs.Auth;
 using bnbClone_API.Models;
 using bnbClone_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace bnbClone_API.Controllers
 {
@@ -160,6 +163,7 @@ namespace bnbClone_API.Controllers
                     );
 
                     string Token = new JwtSecurityTokenHandler().WriteToken(token);
+
                     return Ok(new
                     {
                         message = Token,
@@ -172,11 +176,35 @@ namespace bnbClone_API.Controllers
                             roles = userRoles
                         }
                     });
+
+  //                  var cookieOptions = new CookieOptions
+    //                {
+         //               HttpOnly = false,       // Allow JS to read (for debugging)
+           //             Secure = true,          // Keep true for HTTPS
+             //           SameSite = SameSiteMode.None,
+               //         Domain = "localhost",   // Critical for localhost
+                 //       Path = "/",             // Explicit path
+                   //     Expires = DateTimeOffset.UtcNow.AddDays(10),
+                    //    IsEssential = true
+                 //   };
+//
+                  //  Response.Cookies.Append("access_token", Token, cookieOptions);
+//
+                  //  Console.WriteLine($"Cookie set: {token.ToString().Substring(0, 10)}..."); 
+                 //   Console.WriteLine($"Headers: {JsonSerializer.Serialize(Response.Headers)}");
+//
+//
+//
+  //                  return Ok(new { message = "Login successful" });
+//
+ //                  
+
                 }
                 return BadRequest("Invalid password");
             }
             return BadRequest("Enter valid email or signup");
         }
+
         //[HttpPost("register-host")]
         //[Authorize(Roles =UserRoleConstants.Guest)]
         //public async Task<ActionResult> RegisterHost([FromBody] RegisterHostDto registerHostDto)
@@ -219,6 +247,23 @@ namespace bnbClone_API.Controllers
         //        return StatusCode(500, new { success = false, message = "An error occurred while processing your request" });
         //    }
         //}
+
+
+
+
+
+//         [HttpPost("LogOut")]
+//         public IActionResult LogOut()
+//         {
+//             Response.Cookies.Delete("access_token");
+//             return Ok(new { message = "Logout Successfully" });
+
+//         }
+        
+        
+        
+        
+        
         [HttpPost("register-host")]
         [Authorize(Roles = UserRoleConstants.Guest)] // This will still work since users keep Guest role
         public async Task<ActionResult> RegisterHost([FromBody] RegisterHostDto registerHostDto)
