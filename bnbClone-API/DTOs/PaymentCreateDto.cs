@@ -4,6 +4,6 @@
     {
         public int BookingId { get; set; }
         public decimal Amount { get; set; }
-        public string PaymentMethodType { get; set; } = "card";
+        //public string PaymentMethodType { get; set; } = "card";
     }
 }
