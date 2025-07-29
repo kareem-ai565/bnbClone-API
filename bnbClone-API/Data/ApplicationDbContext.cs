@@ -537,7 +537,6 @@ namespace bnbClone_API.Data
 
                 // Check constraints
                 entity.HasCheckConstraint("CK_HostVerifications_Status", "[status] IN ('pending', 'approved', 'rejected')");
-                entity.HasCheckConstraint("CK_HostVerifications_Type", "[type] IN ('identity', 'address', 'phone', 'email', 'government_id')");
 
                 // Indexes
                 entity.HasIndex(hv => hv.HostId).HasDatabaseName("IX_HostVerifications_HostId");

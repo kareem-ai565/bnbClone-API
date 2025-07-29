@@ -7,6 +7,7 @@ namespace bnbClone_API.Models
 {
     using Microsoft.AspNetCore.Identity;
     using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
 
     public class ApplicationUser : IdentityUser<int>
     {
@@ -31,6 +32,9 @@ namespace bnbClone_API.Models
         public string Role { get; set; } = "guest";
         public string? RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiryTime { get; set; }
+
+        [NotMapped]
+        public int HostId { get; set; }
 
         public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
