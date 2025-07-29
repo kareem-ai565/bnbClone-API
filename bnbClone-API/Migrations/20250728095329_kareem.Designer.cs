@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using bnbClone_API.Data;
 
@@ -11,9 +12,11 @@ using bnbClone_API.Data;
 namespace bnbClone_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250728095329_kareem")]
+    partial class kareem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -602,9 +605,6 @@ namespace bnbClone_API.Migrations
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("status");
 
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
                     b.HasKey("Id");
 
                     b.HasIndex("BookingId")
@@ -990,10 +990,6 @@ namespace bnbClone_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AdminNotes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("DocumentUrl1")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1325,15 +1321,6 @@ namespace bnbClone_API.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)")
                         .HasColumnName("description");
-
-                    b.Property<bool>("HasNoiseMonitor")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasSecurityCamera")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasWeapons")
-                        .HasColumnType("bit");
 
                     b.Property<int>("HostId")
                         .HasColumnType("int")

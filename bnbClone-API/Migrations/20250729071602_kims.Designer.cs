@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using bnbClone_API.Data;
 
@@ -11,9 +12,11 @@ using bnbClone_API.Data;
 namespace bnbClone_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250729071602_kims")]
+    partial class kims
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -601,9 +604,6 @@ namespace bnbClone_API.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)")
                         .HasColumnName("status");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -1325,15 +1325,6 @@ namespace bnbClone_API.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)")
                         .HasColumnName("description");
-
-                    b.Property<bool>("HasNoiseMonitor")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasSecurityCamera")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("HasWeapons")
-                        .HasColumnType("bit");
 
                     b.Property<int>("HostId")
                         .HasColumnType("int")
