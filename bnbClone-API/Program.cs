@@ -313,8 +313,8 @@ namespace bnbClone_API
             }
 
             //app.UseCors("AllowAll");
-            //app.UseCors("DevelopmentCorsPolicy");
-            app.UseCors("StrictPolicy");
+            app.UseCors("DevelopmentCorsPolicy");
+            //app.UseCors("StrictPolicy");
 
             app.UseStaticFiles(); // ⬅️ مهم جدًا لعرض الصور من wwwroot
 
@@ -331,8 +331,8 @@ namespace bnbClone_API
                 app.MapHub<ChatHub>("/chatHub", options =>
                 {
                     options.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
-                });
-            } 
+                }).RequireCors("DevelopmentCorsPolicy");
+            }
 
             app.UseHttpsRedirection();
 

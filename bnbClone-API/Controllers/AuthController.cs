@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace bnbClone_API.Controllers
 {
@@ -96,14 +97,21 @@ namespace bnbClone_API.Controllers
 
                     var cookieOptions = new CookieOptions
                     {
-                        HttpOnly = true,
-                        Secure = true, 
-                        SameSite = SameSiteMode.Strict,
-                        Expires = DateTimeOffset.UtcNow.AddDays(10)
+                        HttpOnly = false,       // Allow JS to read (for debugging)
+                        Secure = true,          // Keep true for HTTPS
+                        SameSite = SameSiteMode.None,
+                        Domain = "localhost",   // Critical for localhost
+                        Path = "/",             // Explicit path
+                        Expires = DateTimeOffset.UtcNow.AddDays(10),
+                        IsEssential = true
                     };
 
-
                     Response.Cookies.Append("access_token", Token, cookieOptions);
+
+                    Console.WriteLine($"Cookie set: {token.ToString().Substring(0, 10)}..."); 
+                    Console.WriteLine($"Headers: {JsonSerializer.Serialize(Response.Headers)}");
+
+
 
                     return Ok(new { message = "Login successful" });
 
