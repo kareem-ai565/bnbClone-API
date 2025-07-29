@@ -65,7 +65,7 @@ namespace bnbClone_API.Services.Impelementations
 
 
             await unitOfWork._Amenities.AddAsync(amenity1);
-            unitOfWork.SaveAsync();
+           await unitOfWork.SaveAsync();
 
             return amenity1;
         }

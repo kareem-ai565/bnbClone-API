@@ -94,18 +94,18 @@ namespace bnbClone_API.Controllers
 
                     string Token = new JwtSecurityTokenHandler().WriteToken(token);
 
-                    var cookieOptions = new CookieOptions
-                    {
-                        HttpOnly = true,
-                        Secure = true, 
-                        SameSite = SameSiteMode.Strict,
-                        Expires = DateTimeOffset.UtcNow.AddDays(10)
-                    };
+                    //var cookieOptions = new CookieOptions
+                    //{
+                    //    HttpOnly = true,
+                    //    Secure = true, 
+                    //    SameSite = SameSiteMode.Strict,
+                    //    Expires = DateTimeOffset.UtcNow.AddDays(10)
+                    //};
 
 
-                    Response.Cookies.Append("access_token", Token, cookieOptions);
+                    //Response.Cookies.Append("access_token", Token, cookieOptions);
 
-                    return Ok(new { message = "Login successful" });
+                    return Ok(new { message = "Login successful"  , token=Token });
 
                    
 
@@ -121,13 +121,13 @@ namespace bnbClone_API.Controllers
 
 
 
-        [HttpPost("LogOut")]
-        public IActionResult LogOut()
-        {
-            Response.Cookies.Delete("access_token");
-            return Ok(new { message = "Logout Successfully" });
+        //[HttpPost("LogOut")]
+        //public IActionResult LogOut()
+        //{
+        //    Response.Cookies.Delete("access_token");
+        //    return Ok(new { message = "Logout Successfully" });
 
-        }
+        //}
         
         
         
