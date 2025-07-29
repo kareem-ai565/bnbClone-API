@@ -31,14 +31,13 @@ namespace bnbClone_API.Controllers
                 await image.CopyToAsync(stream);
             }
 
-            // 🟢 خزّن فقط اسم الصورة وليس الـ URL الكامل
             var dto = new CreatePropertyImageDto
             {
-                ImageUrl = fileName // فقط الاسم
+                ImageUrl = fileName 
             };
 
             var result = await _propertyImageService.AddImageAsync(id, dto);
-            return Ok(new { fileName }); // رجّع الاسم فقط
+            return Ok(new { fileName }); 
         }
 
 
