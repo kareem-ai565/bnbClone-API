@@ -9,6 +9,12 @@ namespace bnbClone_API.Services.Interfaces
         Task<IEnumerable<HostVerification>> GetAllHostVerification();
         Task<HostVerification> AddHostVerification([FromForm] HostVerificationDTO hostVerification);
         Task<HostVerification> EditHostVerification(int id, [FromForm] HostVerificationDTO hostVerification);
+        Task<HostVerification> GetHostVerificationById(int id);
+        Task<IEnumerable<HostVerification>> GetHostVerificationsByStatus(string status);
+        Task<IEnumerable<HostVerification>> GetHostVerificationsByHostId(int hostId);
 
+ // New methods for status updates
+        Task<HostVerification> ApproveHostVerification(int id, string adminNotes = null);
+        Task<HostVerification> RejectHostVerification(int id, string adminNotes = null);
     }
 }

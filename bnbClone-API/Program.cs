@@ -350,8 +350,8 @@ namespace bnbClone_API
                 app.MapHub<ChatHub>("/chatHub", options =>
                 {
                     options.Transports = HttpTransportType.WebSockets | HttpTransportType.LongPolling;
-                });
-            } 
+                }).RequireCors("DevelopmentCorsPolicy");
+            }
 
             app.UseHttpsRedirection();
 
