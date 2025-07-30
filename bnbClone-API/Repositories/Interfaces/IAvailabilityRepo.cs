@@ -6,6 +6,8 @@ namespace bnbClone_API.Repositories.Interfaces
     {
         Task<IEnumerable<PropertyAvailability>> FindByPropertyIdAsync(int propertyId);
         Task<IEnumerable<PropertyAvailability>> GetAvailabilityByHostIdAsync(int hostId);
+        Task<PropertyAvailability?> FindByPropertyAndDateAsync(int propertyId, DateTime date);
+
 
     }
 
