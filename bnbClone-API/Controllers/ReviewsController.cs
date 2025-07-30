@@ -32,12 +32,17 @@ namespace bnbClone_API.Controllers
             if (booking == null || booking.GuestId == null)
                 return BadRequest("Invalid booking or not authorized");
             var reviewerId = booking.GuestId;
+            var reviewrImg = booking.Guest.ProfilePictureUrl; // Assuming ProfilePictureUrl is a property in ApplicationUser
             var review = new Review
             {
                 BookingId = dto.BookingId,
                 ReviewerId = reviewerId,
                 Rating = dto.Rating,
                 Comment = dto.Comment,
+                Reviewer = new ApplicationUser
+                {
+                    ProfilePictureUrl = reviewrImg
+                },
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -58,7 +63,9 @@ namespace bnbClone_API.Controllers
                 Rating = r.Rating,
                 Comment = r.Comment,
                 CreatedAt = r.CreatedAt,
-                ReviewerName = $"{r.Reviewer.FirstName} {r.Reviewer.LastName}"
+                ReviewerName = $"{r.Reviewer.FirstName} {r.Reviewer.LastName}",
+                Reviewerimage = r.Reviewer.ProfilePictureUrl // Assuming ImageUrl is a property in ApplicationUser
+
             });
 
             return Ok(result);
@@ -76,8 +83,9 @@ namespace bnbClone_API.Controllers
                 Rating = r.Rating,
                 Comment = r.Comment,
                 CreatedAt = r.CreatedAt,
-                ReviewerName = r.Reviewer.FirstName+" "+r.Reviewer.LastName  // null-safe
-                                                                      // or r.Reviewer.UserName
+                ReviewerName = r.Reviewer.FirstName+" "+r.Reviewer.LastName , // null-safe
+                Reviewerimage =r.Reviewer.ProfilePictureUrl                                                       // or r.Reviewer.UserName
+
             });
             return Ok(reviewDtos);
         }
