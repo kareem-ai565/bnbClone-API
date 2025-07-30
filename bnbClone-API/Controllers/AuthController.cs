@@ -130,7 +130,10 @@ namespace bnbClone_API.Controllers
                     var tokenClaims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, user.Email),
+                new Claim("email", user.Email),
                 new Claim(ClaimTypes.Name, user.UserName),
+                new Claim("firstName", user.FirstName),
+                new Claim("lastName", user.LastName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim("UserID", user.Id.ToString()) // Add this for your controller extraction
             };
