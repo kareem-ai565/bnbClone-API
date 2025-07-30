@@ -96,7 +96,10 @@ namespace bnbClone_API.Services.Implementations
             await unitOfWork.Context.SaveChangesAsync();
             return true;
         }
-
+        public async Task<IEnumerable<Property>> GetPropertiesByHostAsync(int hostId)
+        {
+            return await _propertyRepo.FindByHostIdAsync(hostId);
+        }
 
 
     }
