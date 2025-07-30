@@ -33,7 +33,7 @@ namespace bnbClone_API.Services.Impelementations
 
         public async Task<bool> ReleasePayoutToHostAsync(int bookingId)
             {
-                var booking = await _unitOfWork.BookingRepo.GetGuestByBookingIdAsync(bookingId);
+                var booking = await _unitOfWork.BookingRepo.GetByIdAsync(bookingId);
                 if (booking == null || booking.CheckInStatus.ToLower() != "completed")
                     return false;
 
@@ -56,6 +56,7 @@ namespace bnbClone_API.Services.Impelementations
 
                 payout.Status = "Completed";
 
+                await _unitOfWork.HostPayoutRepo.UpdateAsync(hostPayout);
                 await _unitOfWork.HostPayoutRepo.AddAsync(hostPayout);
                 await _unitOfWork.SaveAsync();
 

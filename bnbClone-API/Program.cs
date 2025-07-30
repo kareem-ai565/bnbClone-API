@@ -113,12 +113,6 @@ namespace bnbClone_API
                         OnMessageReceived = context =>
                         {
                             Console.WriteLine("[DEBUG] JWT Token received");
-                            var token = context.HttpContext.Request.Cookies["access_token"];
-                            if (!string.IsNullOrEmpty(token))
-                            {
-                                context.Token = token;
-                                Console.WriteLine("[DEBUG] Token found in cookie.");
-                            }
                             return Task.CompletedTask;
                         },
                         OnChallenge = context =>
