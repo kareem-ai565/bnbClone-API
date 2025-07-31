@@ -10,6 +10,8 @@
             public string Content { get; set; }
             public DateTime SentAt { get; set; } = DateTime.Now;
             public DateTime? ReadAt { get; set; }
-        
+            public string? SenderName { get; set; }
+            public string? ReceiverName { get; set; }
+
     }
 }

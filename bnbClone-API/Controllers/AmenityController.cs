@@ -5,6 +5,7 @@ using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Interfaces;
 using bnbClone_API.UnitOfWork;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,9 +27,9 @@ namespace bnbClone_API.Controllers
         }
 
 
-        
 
 
+       [Authorize]
 
         [HttpGet]
         public async Task<IActionResult> GetAllAmenities()

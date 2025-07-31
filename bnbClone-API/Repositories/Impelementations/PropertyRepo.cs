@@ -21,6 +21,7 @@ namespace bnbClone_API.Repositories.Implementations
         {
             var query = _context.Properties
                 .Include(p => p.PropertyImages)
+                .Include(p => p.Availabilities)
                 .Include(p => p.PropertyAmenities)
                     .ThenInclude(pa => pa.Amenity)
                 .Include(p => p.Bookings)
@@ -35,20 +36,34 @@ namespace bnbClone_API.Repositories.Implementations
                     p.Title.Contains(dto.Location));
             }
 
+            //if (dto.StartDate.HasValue && dto.EndDate.HasValue)
+            //{
+            //    var today = DateTime.Today;
+
+            //    if (dto.StartDate.Value.Date >= today)
+            //    {
+            //        query = query.Where(p =>
+            //            p.Bookings.Any(b =>
+            //                (dto.StartDate < b.EndDate && dto.EndDate > b.StartDate)
+            //            )
+            //        );
+            //    }
+            //}
+
             if (dto.StartDate.HasValue && dto.EndDate.HasValue)
             {
-                var today = DateTime.Today;
+                var start = dto.StartDate.Value.Date;
+                var end = dto.EndDate.Value.Date;
+                var totalDays = (end - start).Days;
 
-                if (dto.StartDate.Value.Date >= today)
-                {
-                    query = query.Where(p =>
-                        !p.Bookings.Any(b =>
-                            (dto.StartDate < b.EndDate && dto.EndDate > b.StartDate)
-                        )
-                    );
-                }
+                query = query.Where(p =>
+                    p.Availabilities.Count(a =>
+                        a.Date >= start &&
+                        a.Date <= end &&
+                        a.IsAvailable
+                    ) == totalDays
+                );
             }
-
 
 
             if (dto.Guests.HasValue)
@@ -171,8 +186,12 @@ namespace bnbClone_API.Repositories.Implementations
 
             return true;
         }
-
-
+        public async Task<IEnumerable<Property>> FindByHostIdAsync(int hostId)
+        {
+            return await _context.Properties
+                .Where(p => p.HostId == hostId)
+                .ToListAsync();
+        }
 
     }
 }

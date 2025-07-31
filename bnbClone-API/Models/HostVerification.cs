@@ -16,6 +16,8 @@ namespace bnbClone_API.Models
             public string DocumentUrl2 { get; set; }
             public DateTime SubmittedAt { get; set; } = DateTime.Now;
             public DateTime? VerifiedAt { get; set; }
+            public string AdminNotes { get; set; } = string.Empty; // Add this if not present
+
 
 
             public virtual Host Host { get; set; }

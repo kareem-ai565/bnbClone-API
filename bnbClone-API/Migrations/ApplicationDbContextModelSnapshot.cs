@@ -994,6 +994,10 @@ namespace bnbClone_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AdminNotes")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("DocumentUrl1")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1049,8 +1053,6 @@ namespace bnbClone_API.Migrations
                     b.ToTable("host_verifications", null, t =>
                         {
                             t.HasCheckConstraint("CK_HostVerifications_Status", "[status] IN ('pending', 'approved', 'rejected')");
-
-                            t.HasCheckConstraint("CK_HostVerifications_Type", "[type] IN ('identity', 'address', 'phone', 'email', 'government_id')");
                         });
                 });
 

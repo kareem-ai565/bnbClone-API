@@ -32,7 +32,11 @@ namespace bnbClone_API.Services.Impelementations
 
         public async Task<int?> StartConversationAsync(StartConversationDTO startConversation)
         {
-            var existing = await unitOfWork.ConversationRepo.GetExistingBetweenUsersAsync(startConversation.User1Id, startConversation.PropertyId, startConversation.User2Id);
+            var existing = await unitOfWork.ConversationRepo.GetExistingBetweenUsersAsync(
+                startConversation.User1Id,
+                startConversation.User2Id,
+                startConversation.PropertyId
+            );
             if (existing != null) return existing.Id;
             var conversation = mapper.Map<Conversation>(startConversation);
             conversation.CreatedAt = DateTime.UtcNow;

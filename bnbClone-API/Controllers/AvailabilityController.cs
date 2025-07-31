@@ -32,22 +32,39 @@ namespace bnbClone_API.Controllers
         // POST: /api/availability
         [HttpPost]
         //[Authorize(Roles = "host")] // requires user to be authenticated
+        [HttpPost]
         public async Task<IActionResult> AddAvailability(CreateAvailabilityDTO dto)
         {
-            var newSlot = new PropertyAvailability
-            {
-                PropertyId = dto.PropertyId,
-                Date = dto.Date.Date, // normalize to date only: yyyy-mm-dd 00:00:00
-                IsAvailable = dto.IsAvailable,
-                BlockedReason = dto.BlockedReason,
-                Price = dto.Price,
-                MinNights = dto.MinNights
-            };
+            var existingSlot = await _unitOfWork.AvailabilityRepo.FindByPropertyAndDateAsync(dto.PropertyId, dto.Date.Date);
 
-            await _unitOfWork.AvailabilityRepo.AddAsync(newSlot);
-            await _unitOfWork.SaveAsync(); // commit the transaction
-            return Ok("Availability added.");
+            if (existingSlot != null)
+            {
+                // Update existing
+                existingSlot.IsAvailable = dto.IsAvailable;
+                existingSlot.BlockedReason = dto.BlockedReason;
+                existingSlot.Price = dto.Price;
+                existingSlot.MinNights = dto.MinNights;
+            }
+            else
+            {
+                // Create new
+                var newSlot = new PropertyAvailability
+                {
+                    PropertyId = dto.PropertyId,
+                    Date = dto.Date.Date,
+                    IsAvailable = dto.IsAvailable,
+                    BlockedReason = dto.BlockedReason,
+                    Price = dto.Price,
+                    MinNights = dto.MinNights
+                };
+
+                await _unitOfWork.AvailabilityRepo.AddAsync(newSlot);
+            }
+
+            await _unitOfWork.SaveAsync();
+            return Ok("Availability saved.");
         }
+
 
         // DELETE: /api/availability/{id}
         [HttpDelete("{id}")]

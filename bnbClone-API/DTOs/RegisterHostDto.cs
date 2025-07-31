@@ -4,8 +4,8 @@ namespace bnbClone_API.DTOs.Auth
 {
     public class RegisterHostDto
     {
-        [StringLength(500)]
-        public string? AboutMe { get; set; }
+        [Required(ErrorMessage = "About Me is required")]
+        public string AboutMe { get; set; } = string.Empty;
 
         [StringLength(100)]
         public string? Work { get; set; }
@@ -33,6 +33,13 @@ namespace bnbClone_API.DTOs.Auth
 
         [StringLength(300)]
         public string? SpecialAbout { get; set; }
+    }
+    public class HostRegistrationResponseDto
+    {
+        public int HostId { get; set; }
+        public string Message { get; set; }
+        public string NewRole { get; set; }
+        public DateTime StartDate { get; set; }
     }
 
     public class UpdateProfileDto
@@ -128,11 +135,5 @@ namespace bnbClone_API.DTOs.Auth
         public string? SpecialAbout { get; set; }
     }
 
-    public class HostRegistrationResponseDto
-    {
-        public int HostId { get; set; }
-        public string Message { get; set; }
-        public string NewRole { get; set; }
-        public DateTime StartDate { get; set; }
-    }
+
 }
