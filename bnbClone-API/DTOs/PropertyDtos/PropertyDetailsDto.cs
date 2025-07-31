@@ -25,6 +25,7 @@ namespace bnbClone_API.DTOs.PropertyDtos
         public string PropertyTypeName { get; set; } // From PropertyType
         public string HostName { get; set; } // From Host (or User)
 
+        public int HostId { get; set; }
         public List<string> AmenityNames { get; set; } = new(); // From many-to-many table
 
         public List<PropertyImageDto> Images { get; set; } = new();
