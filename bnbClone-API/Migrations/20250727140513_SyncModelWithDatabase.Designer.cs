@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using bnbClone_API.Data;
 
@@ -11,9 +12,11 @@ using bnbClone_API.Data;
 namespace bnbClone_API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250727140513_SyncModelWithDatabase")]
+    partial class SyncModelWithDatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -522,10 +525,6 @@ namespace bnbClone_API.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("payment_gateway_response");
 
-                    b.Property<string>("PaymentIntentId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("PaymentMethodType")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -994,10 +993,6 @@ namespace bnbClone_API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AdminNotes")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("DocumentUrl1")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1053,6 +1048,8 @@ namespace bnbClone_API.Migrations
                     b.ToTable("host_verifications", null, t =>
                         {
                             t.HasCheckConstraint("CK_HostVerifications_Status", "[status] IN ('pending', 'approved', 'rejected')");
+
+                            t.HasCheckConstraint("CK_HostVerifications_Type", "[type] IN ('identity', 'address', 'phone', 'email', 'government_id')");
                         });
                 });
 

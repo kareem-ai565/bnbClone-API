@@ -33,6 +33,7 @@ namespace bnbClone_API.Models
         public string Status { get; set; }
         public decimal TotalAmount { get; set; }
         public int PromotionId { get; set; } = 0;
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
