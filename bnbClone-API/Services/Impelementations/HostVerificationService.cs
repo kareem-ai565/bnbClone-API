@@ -101,7 +101,7 @@ namespace bnbClone_API.Services.Impelementations
                 HostId = hostIdInt,
                 Type = verificationType,
                 Status = VerificationStatus.pending.ToString(),
-                SubmittedAt = hostVerificationDto.SubmittedAt
+                SubmittedAt = hostVerificationDto.SubmittedAt,
             };
 
             // Ensure directory exists
