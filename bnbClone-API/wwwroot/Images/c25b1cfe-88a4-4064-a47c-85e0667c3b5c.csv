@@ -1,0 +1,8 @@
+ID,Host ID,Host Name,Host Email,Status,Submitted Date,Reviewed Date,Reviewed By,Documents Count,Comments
+"1","1","N/A","N/A","approved","Invalid Date","N/A","N/A","",""
+"2","1","N/A","N/A","approved","Invalid Date","N/A","N/A","",""
+"3","2","N/A","N/A","approved","Invalid Date","N/A","N/A","",""
+"4","2","N/A","N/A","rejected","Invalid Date","N/A","N/A","",""
+"16","4","N/A","N/A","approved","Invalid Date","N/A","N/A","",""
+"18","4","N/A","N/A","approved","Invalid Date","N/A","N/A","",""
+"20","4","N/A","N/A","rejected","Invalid Date","N/A","N/A","",""
