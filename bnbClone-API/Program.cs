@@ -113,6 +113,25 @@ namespace bnbClone_API
                         OnMessageReceived = context =>
                         {
                             Console.WriteLine("[DEBUG] JWT Token received");
+                            var token = context.HttpContext.Request.Cookies["access_token"];
+                            if (!string.IsNullOrEmpty(token))
+                            {
+                                context.Token = token;
+                                Console.WriteLine("[DEBUG] Token found in cookie.");
+                                return Task.CompletedTask;
+                            }
+
+                            // Then check SignalR WebSocket query string
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                path.StartsWithSegments("/chatHub"))
+                            {
+                                context.Token = accessToken;
+                                Console.WriteLine("[DEBUG] Token found in SignalR query string.");
+                            }
+
                             return Task.CompletedTask;
                         },
                         OnChallenge = context =>
@@ -177,7 +196,9 @@ namespace bnbClone_API
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials() // Required for cookies
+                          .SetIsOriginAllowed(_ => true)
                           .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+
                 });
             });
 
@@ -192,6 +213,10 @@ namespace bnbClone_API
                 {
                     options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
                 }); ;
+            builder.Services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
 
             // Repositories and Unit of Work
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
