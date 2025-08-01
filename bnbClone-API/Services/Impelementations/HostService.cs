@@ -99,7 +99,11 @@ namespace bnbClone_API.Services.Implementations
                 FunFact = h.FunFact,
                 Pets = h.Pets,
                 ObsessedWith = h.ObsessedWith,
-                SpecialAbout = h.SpecialAbout
+                SpecialAbout = h.SpecialAbout,
+                // Add from ApplicationUser
+                FirstName = h.User?.FirstName,
+                LastName = h.User?.LastName,
+                ProfilePictureUrl = h.User?.ProfilePictureUrl
             };
         }
     }
