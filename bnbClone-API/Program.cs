@@ -29,6 +29,8 @@ using System.Text;
 using TokenService = bnbClone_API.Services.Impelementations.TokenService;
 using bnbClone_API.Helpers.MappingProfiles;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Google;
+
 
 namespace bnbClone_API
 {
@@ -50,7 +52,7 @@ namespace bnbClone_API
             builder.Services
     .AddIdentity<ApplicationUser, IdentityRole<int>>(o =>
     {
-        o.Password.RequiredLength = 6;
+        o.Password.RequiredLength = 0;
         o.Password.RequireNonAlphanumeric = false;
         o.Password.RequireUppercase = false;
         o.Password.RequireLowercase = false;
@@ -66,68 +68,161 @@ namespace bnbClone_API
 
             builder.Services.AddScoped<IPasswordHasher<ApplicationUser>, PasswordHasher<ApplicationUser>>();
 
-            // JWT Authentication with enhanced debugging
+            //// JWT Authentication with enhanced debugging
+            //builder.Services.AddAuthentication(options =>
+            //{
+            //    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            //})
+            //    .AddJwtBearer(options =>
+            //    {
+            //        options.SaveToken = true;
+            //        options.RequireHttpsMetadata = false;
+            //        options.TokenValidationParameters = new TokenValidationParameters
+            //        {
+            //            ValidateIssuerSigningKey = true,
+            //            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
+            //            ValidateIssuer = true,
+            //            ValidIssuer = builder.Configuration["JWT:Issuer"],
+            //            ValidateAudience = true,
+            //            ValidAudience = builder.Configuration["JWT:Audience"],
+            //            ValidateLifetime = true,
+            //            ClockSkew = TimeSpan.Zero,
+            //            NameClaimType = ClaimTypes.NameIdentifier,
+            //            RoleClaimType = ClaimTypes.Role
+            //        };
+
+            //        // Add event logging for debugging with Console.WriteLine
+            //        options.Events = new JwtBearerEvents
+            //        {
+            //            OnAuthenticationFailed = context =>
+            //            {
+            //                Console.WriteLine($"[DEBUG] JWT Authentication failed: {context.Exception.Message}");
+            //                if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+            //                {
+            //                    context.Response.Headers.Add("Token-Expired", "true");
+            //                }
+            //                return Task.CompletedTask;
+            //            },
+            //            OnTokenValidated = context =>
+            //            {
+            //                Console.WriteLine("[DEBUG] JWT Token validated successfully");
+            //                var userIdClaim = context.Principal.FindFirst("UserID")?.Value;
+            //                Console.WriteLine($"[DEBUG] UserID from token: {userIdClaim}");
+            //                return Task.CompletedTask;
+            //            },
+            //            OnMessageReceived = context =>
+            //            {
+            //                Console.WriteLine("[DEBUG] JWT Token received");
+            //                var token = context.HttpContext.Request.Cookies["access_token"];
+            //                if (!string.IsNullOrEmpty(token))
+            //                {
+            //                    context.Token = token;
+            //                    Console.WriteLine("[DEBUG] Token found in cookie.");
+            //                }
+            //                return Task.CompletedTask;
+            //            },
+            //            OnChallenge = context =>
+            //            {
+            //                Console.WriteLine($"[DEBUG] JWT Challenge: {context.Error}, {context.ErrorDescription}");
+            //                return Task.CompletedTask;
+            //            }
+            //        };
+            //    });
             builder.Services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                .AddJwtBearer(options =>
-                {
-                    options.SaveToken = true;
-                    options.RequireHttpsMetadata = false;
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
-                        ValidateIssuer = true,
-                        ValidIssuer = builder.Configuration["JWT:Issuer"],
-                        ValidateAudience = true,
-                        ValidAudience = builder.Configuration["JWT:Audience"],
-                        ValidateLifetime = true,
-                        ClockSkew = TimeSpan.Zero,
-                        NameClaimType = ClaimTypes.NameIdentifier,
-                        RoleClaimType = ClaimTypes.Role
-                    };
+.AddJwtBearer(options =>
+{
+    options.SaveToken = true;
+    options.RequireHttpsMetadata = false;
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["JWT:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["JWT:Audience"],
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero,
+        NameClaimType = ClaimTypes.NameIdentifier,
+        RoleClaimType = ClaimTypes.Role
+    };
 
-                    // Add event logging for debugging with Console.WriteLine
-                    options.Events = new JwtBearerEvents
-                    {
-                        OnAuthenticationFailed = context =>
-                        {
-                            Console.WriteLine($"[DEBUG] JWT Authentication failed: {context.Exception.Message}");
-                            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
-                            {
-                                context.Response.Headers.Add("Token-Expired", "true");
-                            }
-                            return Task.CompletedTask;
-                        },
-                        OnTokenValidated = context =>
-                        {
-                            Console.WriteLine("[DEBUG] JWT Token validated successfully");
-                            var userIdClaim = context.Principal.FindFirst("UserID")?.Value;
-                            Console.WriteLine($"[DEBUG] UserID from token: {userIdClaim}");
-                            return Task.CompletedTask;
-                        },
-                        OnMessageReceived = context =>
-                        {
-                            Console.WriteLine("[DEBUG] JWT Token received");
-                            var token = context.HttpContext.Request.Cookies["access_token"];
-                            if (!string.IsNullOrEmpty(token))
-                            {
-                                context.Token = token;
-                                Console.WriteLine("[DEBUG] Token found in cookie.");
-                            }
-                            return Task.CompletedTask;
-                        },
-                        OnChallenge = context =>
-                        {
-                            Console.WriteLine($"[DEBUG] JWT Challenge: {context.Error}, {context.ErrorDescription}");
-                            return Task.CompletedTask;
-                        }
-                    };
-                });
+    // Your existing event logging
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"[DEBUG] JWT Authentication failed: {context.Exception.Message}");
+            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+            {
+                context.Response.Headers.Add("Token-Expired", "true");
+            }
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("[DEBUG] JWT Token validated successfully");
+            var userIdClaim = context.Principal.FindFirst("UserID")?.Value;
+            Console.WriteLine($"[DEBUG] UserID from token: {userIdClaim}");
+            return Task.CompletedTask;
+        },
+        OnMessageReceived = context =>
+        {
+            Console.WriteLine("[DEBUG] JWT Token received");
+            var token = context.HttpContext.Request.Cookies["access_token"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+                Console.WriteLine("[DEBUG] Token found in cookie.");
+            }
+            return Task.CompletedTask;
+        },
+        OnChallenge = context =>
+        {
+            Console.WriteLine($"[DEBUG] JWT Challenge: {context.Error}, {context.ErrorDescription}");
+            return Task.CompletedTask;
+        }
+    };
+})
+// ADD THIS: Google Authentication
+.AddGoogle(googleOptions =>
+{
+    googleOptions.ClientId = builder.Configuration["GoogleAuth:ClientId"];
+    googleOptions.ClientSecret = builder.Configuration["GoogleAuth:ClientSecret"];
+    googleOptions.CallbackPath = "/api/auth/google-callback";
+
+    // Optional: Add scopes if you need additional user information
+    googleOptions.Scope.Add("profile");
+    googleOptions.Scope.Add("email");
+
+    // Optional: Add events for debugging
+    googleOptions.Events.OnCreatingTicket = context =>
+    {
+        Console.WriteLine($"[DEBUG] Google authentication successful for: {context.Principal?.FindFirst(ClaimTypes.Email)?.Value}");
+        return Task.CompletedTask;
+    };
+
+    googleOptions.Events.OnRemoteFailure = context =>
+    {
+        Console.WriteLine($"[DEBUG] Google authentication failed: {context.Failure?.Message}");
+        context.Response.Redirect("/login?error=google_auth_failed");
+        context.HandleResponse();
+        return Task.CompletedTask;
+    };
+});
+
+            builder.Services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+            });
 
             // ----------------------
             // Repository Registrations
@@ -187,6 +282,7 @@ namespace bnbClone_API
                 });
             });
 
+
             builder.Services.AddScoped<UnitOfWork.IUnitOfWork, UnitOfWork.UnitOfWork>();
             builder.Services.AddScoped<IPropertyAmenityService, PropertyAmenityService>();
             builder.Services.AddScoped<IAmenityService, AmenityService>();
@@ -237,6 +333,13 @@ namespace bnbClone_API
 
             builder.Services.AddScoped<IUserUsedPromotionService, UserUsedPromotionService>();
 
+
+
+
+            builder.Services.Configure<FormOptions>(o =>
+            {
+                o.MultipartBodyLengthLimit = 10 * 1024 * 1024; // 10 MB
+            });
 
             //===============Stripe=========================
             builder.Services.Configure<StripeConfig.Stripe>(builder.Configuration.GetSection("Stripe"));
@@ -291,12 +394,17 @@ namespace bnbClone_API
             });
            
 
+
+
+
             // ----------------------
             // App Pipeline
             // ----------------------
             var app = builder.Build();
 
 
+
+            app.UseCors("AllowAngularApp");
             // ----------------------
             // Seed Roles
             // ----------------------
@@ -375,7 +483,6 @@ namespace bnbClone_API
             app.Run();
         }
 
-
         // Method to seed roles
         public static async Task SeedRolesAsync(IServiceProvider serviceProvider)
         {
@@ -396,8 +503,10 @@ namespace bnbClone_API
                 {
                     Console.WriteLine($"[DEBUG] Role already exists: {roleName}");
                 }
+
             }
         }
+
     }
 }
 

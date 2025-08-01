@@ -59,7 +59,7 @@ namespace bnbClone_API.Data
             builder.Entity<ApplicationUser>(entity =>
             {
                 entity.HasKey(u => u.Id);
-                entity.Property(u => u.Id).ValueGeneratedOnAdd().HasColumnName("id");
+                //entity.Property(u => u.Id).ValueGeneratedOnAdd().HasColumnName("id");
                 entity.Property(u => u.Email).IsRequired().HasMaxLength(255).HasColumnName("email");
                 entity.Property(u => u.PasswordHash).IsRequired().HasMaxLength(255).HasColumnName("password_hash");
                 entity.Property(u => u.FirstName).IsRequired().HasMaxLength(50).HasColumnName("first_name");
