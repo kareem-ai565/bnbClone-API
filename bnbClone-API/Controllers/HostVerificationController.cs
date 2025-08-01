@@ -124,25 +124,64 @@ namespace bnbClone_API.Controllers
         }
 
 
+        //[Consumes("multipart/form-data")]
+        //[HttpPost]
+        ////[Authorize(Roles = "Host")]
+        //public async Task<IActionResult> AddVerifications([FromForm] HostVerificationDTO? hostDto = null)
+        //{
+
+        //    if (hostDto != null)
+        //    {
+
+        //        await _ihostVerification.AddHostVerification(hostDto);
+
+        //        return Ok(hostDto);
+
+        //    }
+
+
+        //    return BadRequest(new { error = "Enter Required Data" });
+
+        //}
         [Consumes("multipart/form-data")]
         [HttpPost]
-        //[Authorize(Roles = "Host")]
         public async Task<IActionResult> AddVerifications([FromForm] HostVerificationDTO? hostDto = null)
         {
 
-            if (hostDto != null)
-            {
+            Console.WriteLine("AddVerifications endpoint hit!");
 
-                await _ihostVerification.AddHostVerification(hostDto);
+            try
+            {
+                Console.WriteLine("AddVerifications endpoint hit!");
+
+                if (hostDto == null)
+                    return BadRequest(new { error = "Enter Required Data" });
+
+                Console.WriteLine("DTO received:");
+                Console.WriteLine("Type: " + hostDto.Type);
+                Console.WriteLine("Doc1: " + hostDto.DocumentUrl1?.FileName);
+                Console.WriteLine("Doc2: " + hostDto.DocumentUrl2?.FileName);
+
+                // Try-catch the service layer too
+                try
+                {
+                    await _ihostVerification.AddHostVerification(hostDto);
+                }
+                catch (Exception innerEx)
+                {
+                    Console.WriteLine("Service error: " + innerEx.Message);
+                    return StatusCode(500, new { error = "Service error: " + innerEx.Message });
+                }
 
                 return Ok(hostDto);
-
             }
-
-
-            return BadRequest(new { error = "Enter Required Data" });
-
+            catch (Exception ex)
+            {
+                Console.WriteLine("Controller error: " + ex.Message);
+                return StatusCode(500, new { error = ex.Message });
+            }
         }
+
         [HttpPut("{id}/approve")]
         //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> ApproveVerification(int id, [FromBody] AdminNotesDto? adminNotesDto = null)
