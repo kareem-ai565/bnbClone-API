@@ -22,26 +22,12 @@ namespace bnbClone_API.DTOs.ProfileDTOs
 
     public class ProfileUpdateUserDto
     {
-        [Required]
-        [StringLength(50)]
-        public string FirstName { get; set; }
-
-        [Required]
-        [StringLength(50)]
+       
+        public string FirstName { get; set; } 
         public string LastName { get; set; }
-
         public DateTime? DateOfBirth { get; set; }
-
         public string Email { get; set; }
-        public string NewPassWord { get; set; }
-        //public string Email { get; set; }
-
-        public string? ProfilePictureUrl { get; set; }
-
-        //[StringLength(10)]
-        //public string? Gender { get; set; }
-
-        [Phone]
+        public string? ProfilePictureUrl { get; set; }     
         public string? PhoneNumber { get; set; }
     }
 
