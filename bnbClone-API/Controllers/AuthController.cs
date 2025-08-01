@@ -298,22 +298,22 @@ namespace bnbClone_API.Controllers
 
 
         [HttpPost("forgotPassword")]
-        public async Task<IActionResult> ForgotPassword([FromBody] string email)
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPassword)
         {
-            var user = await userManager.FindByEmailAsync(email);
+            var user = await userManager.FindByEmailAsync(forgotPassword.Email);
             if (user == null)
                 return BadRequest("User not found");
 
             var token = await userManager.GeneratePasswordResetTokenAsync(user);
 
             // عمل رابط لإعادة التعيين
-            var resetLink = $"{configuration["AppUrl"]}/reset-password?email={Uri.EscapeDataString(email)}&token={Uri.EscapeDataString(token)}";
+            var resetLink = $"{configuration["AppUrl"]}/ResetPassword?email={Uri.EscapeDataString(forgotPassword.Email)}&token={Uri.EscapeDataString(token)}";
 
             // إرسال الإيميل
-            await emailService.SendEmailAsync(email, "Reset Password",
+            await emailService.SendEmailAsync(forgotPassword.Email, "Reset Password",
                 $"Click <a href='{resetLink}'>here</a> to reset your password");
 
-            return Ok("Password reset link has been sent to your email.");
+            return Ok(new {message= "Password reset link has been sent to your email." });
         }
 
 
