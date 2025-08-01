@@ -2,6 +2,7 @@
 using bnbClone_API.DTOs.Auth;
 using bnbClone_API.DTOs.Auth.API.DTOs.Auth;
 using bnbClone_API.Models;
+using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -28,13 +29,15 @@ namespace bnbClone_API.Controllers
         private readonly ILogger<AuthController> _logger;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IConfiguration configuration;
+        private readonly IEmailService emailService;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        public AuthController(IAuthService authService, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager, IConfiguration configuration , IEmailService emailService)
         {
             _authService = authService;
             _logger = logger;
             this.userManager = userManager;
             this.configuration = configuration;
+            this.emailService = emailService;
         }
 
         /*
@@ -61,6 +64,7 @@ namespace bnbClone_API.Controllers
 
 
             var registrationResult = await _authService.RegisterAsync(registerDto);
+
             return registrationResult.IsSucceed ? Ok(registrationResult.Data) : Ok(registrationResult.Errors);
         }
 
@@ -136,7 +140,10 @@ namespace bnbClone_API.Controllers
                     var tokenClaims = new List<Claim>
             {
                 new Claim(ClaimTypes.Email, user.Email),
+                new Claim("email", user.Email),
                 new Claim(ClaimTypes.Name, user.UserName),
+                new Claim("firstName", user.FirstName),
+                new Claim("lastName", user.LastName),
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim("UserID", user.Id.ToString()) // Add this for your controller extraction
             };
@@ -258,18 +265,90 @@ namespace bnbClone_API.Controllers
 
 
 
-//         [HttpPost("LogOut")]
-//         public IActionResult LogOut()
-//         {
-//             Response.Cookies.Delete("access_token");
-//             return Ok(new { message = "Logout Successfully" });
+        //         [HttpPost("LogOut")]
+        //         public IActionResult LogOut()
+        //         {
+        //             Response.Cookies.Delete("access_token");
+        //             return Ok(new { message = "Logout Successfully" });
 
-//         }
-        
-        
-        
-        
-        
+        //         }
+
+
+
+
+        [HttpGet("confirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null) return BadRequest("Invalid User");
+
+
+            var decodedToken = Uri.UnescapeDataString(token);
+            var result = await userManager.ConfirmEmailAsync(user, decodedToken);
+
+            if (!result.Succeeded) return BadRequest("Email confirmation failed");
+
+
+
+
+            user.EmailVerified = true;
+            user.AccountStatus = "active";
+            await userManager.UpdateAsync(user);
+
+            return Ok("Email confirmed successfully!");
+        }
+
+
+
+
+
+        [HttpPost("forgotPassword")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPassword)
+        {
+            var user = await userManager.FindByEmailAsync(forgotPassword.Email);
+            if (user == null)
+                return BadRequest("User not found");
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+            // عمل رابط لإعادة التعيين
+            var resetLink = $"{configuration["AppUrl"]}/ResetPassword?email={Uri.EscapeDataString(forgotPassword.Email)}&token={Uri.EscapeDataString(token)}";
+
+            // إرسال الإيميل
+            await emailService.SendEmailAsync(forgotPassword.Email, "Reset Password",
+                $"Click <a href='{resetLink}'>here</a> to reset your password");
+
+            return Ok(new {message= "Password reset link has been sent to your email." });
+        }
+
+
+
+
+
+        [HttpPost("resetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            var user = await userManager.FindByEmailAsync(resetPasswordDto.Email);
+            if (user == null)
+                return BadRequest("User not found");
+
+            var decodedToken = Uri.UnescapeDataString(resetPasswordDto.Token);
+
+            var result = await userManager.ResetPasswordAsync(user, decodedToken, resetPasswordDto.NewPassword);
+
+
+            if (result.Succeeded)
+                return Ok("Password has been reset successfully!");
+
+            return BadRequest(result.Errors.Select(e => e.Description));
+        }
+
+
+
+
+
+
+
         [HttpPost("register-host")]
         [Authorize(Roles = UserRoleConstants.Guest)] // This will still work since users keep Guest role
         public async Task<ActionResult> RegisterHost([FromBody] RegisterHostDto registerHostDto)

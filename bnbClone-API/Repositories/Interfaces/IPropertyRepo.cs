@@ -9,6 +9,7 @@ namespace bnbClone_API.Repositories.Interfaces
         // Add Property-specific methods here if needed in future
         Task<List<Property>> SearchAsync(PropertySearchDto dto);
         Task<Property?> GetDetailsByIdAsync(int id);
+        Task<IEnumerable<Property>> FindByHostIdAsync(int hostId);
 
 
     }

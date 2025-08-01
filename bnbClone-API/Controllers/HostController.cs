@@ -67,10 +67,11 @@ namespace bnbClone_API.Controllers
 
         private int GetUserId()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            var userIdClaim = User.FindFirst("UserID")?.Value;
             return userIdClaim != null
-                ? int.Parse(userIdClaim.Value)
+                ? int.Parse(userIdClaim)
                 : throw new UnauthorizedAccessException("User ID not found");
+
         }
     }
 }
