@@ -8,11 +8,15 @@ namespace bnbClone_API.Services.Impelementations
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _environment;
+        private readonly IConfiguration configuration;
+        private readonly IEmailService emailService;
 
-        public ProfileService(IUnitOfWork unitOfWork, IWebHostEnvironment environment)
+        public ProfileService(IUnitOfWork unitOfWork, IWebHostEnvironment environment , IConfiguration configuration , IEmailService emailService)
         {
             _unitOfWork = unitOfWork;
             _environment = environment;
+            this.configuration = configuration;
+            this.emailService = emailService;
         }
 
         public async Task<ProfileUserDto> GetUserProfileAsync(int userId)
@@ -79,12 +83,23 @@ namespace bnbClone_API.Services.Impelementations
             if (user == null)
                 throw new ArgumentException("User not found");
 
+
+            if (!string.Equals(user.Email, dto.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                user.Email = dto.Email;
+                user.EmailConfirmed = false;
+                user.EmailVerified= false;
+                var subject = "verify Email";
+                var verificationLink = $"{configuration["AppUrl"]}/verify-email?userId={user.Id}&email={dto.Email}";
+                await emailService.SendEmailAsync(dto.Email, subject, verificationLink);
+            }
+
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
             user.DateOfBirth = dto.DateOfBirth;
             user.Email= dto.Email;
             user.ProfilePictureUrl= dto.ProfilePictureUrl;
-            user.PasswordHash=dto.NewPassWord;
+            //user.PasswordHash=dto.NewPassWord;
             //user.Gender = dto.Gender;
             user.PhoneNumber = dto.PhoneNumber;
             user.UpdatedAt = DateTime.UtcNow;
