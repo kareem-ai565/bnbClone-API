@@ -56,8 +56,8 @@ namespace bnbClone_API.Services.Impelementations
 
                 payout.Status = "Completed";
 
-                await _unitOfWork.HostPayoutRepo.UpdateAsync(hostPayout);
-                await _unitOfWork.HostPayoutRepo.AddAsync(hostPayout);
+            await _unitOfWork.BookingPayoutRepo.UpdateAsync(payout);
+            await _unitOfWork.HostPayoutRepo.AddAsync(hostPayout);
                 await _unitOfWork.SaveAsync();
 
                 return true;
