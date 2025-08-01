@@ -116,10 +116,10 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> GetBookingsByGuest(int guestId)
         {
             var bookings = await _bookingService.GetBookingsByGuestAsync(guestId);
-            if (bookings == null || !bookings.Any())
-            {
-                return NotFound($"No bookings found for guest with ID {guestId}.");
-            }
+            //if (bookings == null || !bookings.Any())
+            //{
+            //    return NotFound($"No bookings found for guest with ID {guestId}.");
+            //}
             return Ok(bookings);
         }
         [HttpGet("ByPropertyId/{propertyId:int}")]

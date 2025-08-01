@@ -82,7 +82,10 @@ namespace bnbClone_API.Services.Impelementations
             user.FirstName = dto.FirstName;
             user.LastName = dto.LastName;
             user.DateOfBirth = dto.DateOfBirth;
-            user.Gender = dto.Gender;
+            user.Email= dto.Email;
+            user.ProfilePictureUrl= dto.ProfilePictureUrl;
+            user.PasswordHash=dto.NewPassWord;
+            //user.Gender = dto.Gender;
             user.PhoneNumber = dto.PhoneNumber;
             user.UpdatedAt = DateTime.UtcNow;
 
