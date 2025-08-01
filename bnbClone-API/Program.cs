@@ -1,6 +1,7 @@
 using bnbClone_API.Data;
 using bnbClone_API.Data;
 using bnbClone_API.Helpers.MappingProfiles;
+using bnbClone_API.Helpers.MappingProfiles;
 using bnbClone_API.Models;
 using bnbClone_API.Repositories;
 using bnbClone_API.Repositories.Impelementations;
@@ -12,23 +13,23 @@ using bnbClone_API.Repositories.Interfaces.admin;
 using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Implementations;
 using bnbClone_API.Services.Interfaces;
-using bnbClone_API.UnitOfWork;
 using bnbClone_API.StripeConfig;
+using bnbClone_API.UnitOfWork;
+using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
-using bnbClone_API.UnitOfWork;
-using Microsoft.AspNetCore.Http.Features;
 using Stripe;
+using System;
+using System.Security.Claims;
+using System.Text;
 using System.Text;
 using TokenService = bnbClone_API.Services.Impelementations.TokenService;
-using bnbClone_API.Helpers.MappingProfiles;
-using System.Security.Claims;
 
 namespace bnbClone_API
 {
@@ -56,9 +57,14 @@ namespace bnbClone_API
         o.Password.RequireLowercase = false;
         o.Password.RequireDigit = false;
         o.Password.RequiredUniqueChars = 0;
+
+
+        //o.SignIn.RequireConfirmedEmail = true;
     })
+
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+       
 
             builder.Services.AddScoped<UserManager<ApplicationUser>>();
             builder.Services.AddScoped<SignInManager<ApplicationUser>>();
@@ -153,7 +159,9 @@ namespace bnbClone_API
             builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
             builder.Services.AddScoped<IProfileService, ProfileService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
+      
             // ----------------------
             // host Repository Registrations
             // ----------------------
@@ -191,7 +199,7 @@ namespace bnbClone_API
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
-                }); ;
+                });
 
             // Repositories and Unit of Work
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
