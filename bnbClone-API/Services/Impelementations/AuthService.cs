@@ -46,9 +46,9 @@ namespace bnbClone_API.Services.Impelementations
             UserManager<ApplicationUser> userManager,
             ApplicationDbContext dbContext,
 //<<<<<<< Kareem-x
-            IConfiguration configuration
+            IConfiguration configuration,
 //=======
-             IEmailService emailService,          // ✅ أضف هذا
+             IEmailService emailService      // ✅ أضف هذا
      //        IConfiguration config
 //>>>>>>> master
             )
@@ -62,7 +62,7 @@ namespace bnbClone_API.Services.Impelementations
 //<<<<<<< Kareem-x
            this._configuration = configuration;
 //=======
-            this.emailService = emailService;
+            this.emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
       //      this.config = config;
 //>>>>>>> master
         }
@@ -111,7 +111,7 @@ namespace bnbClone_API.Services.Impelementations
                     var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
                     // ✅ 2. إنشاء رابط التفعيل (Frontend URL أو API Endpoint)
-                    var confirmationLink = $"{configuration["AppUrl"]}/api/auth/confirmEmail?userId={user.Id}&token={Uri.EscapeDataString(token)}";
+                    var confirmationLink = $"{_configuration["AppUrl"]}/api/auth/confirmEmail?userId={user.Id}&token={Uri.EscapeDataString(token)}";
 
                     // ✅ 3. إرسال البريد الإلكتروني
                     await emailService.SendEmailAsync(user.Email, "Confirm Your Email",
