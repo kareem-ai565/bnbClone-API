@@ -182,36 +182,73 @@ namespace bnbClone_API.Controllers
             }
         }
 
+        //[HttpPut("{id}/approve")]
+        ////[Authorize(Roles = "Admin")]
+        //public async Task<IActionResult> ApproveVerification(int id, [FromBody] AdminNotesDto? adminNotesDto = null)
+        //{
+        //    try
+        //    {
+        //        string adminNotes = adminNotesDto?.AdminNotes;
+        //        var updatedVerification = await _ihostVerification.ApproveHostVerification(id, adminNotes);
+
+        //        return Ok(new
+        //        {
+        //            message = "Host verification approved successfully",
+        //            verification = updatedVerification
+        //        });
+        //    }
+        //    catch (KeyNotFoundException ex)
+        //    {
+        //        return NotFound(new { error = ex.Message });
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        return BadRequest(new { error = ex.Message });
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return BadRequest(new { error = ex.Message });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return StatusCode(500, new { error = "Internal server error", message = ex.Message });
+        //    }
+        //}
+        // PUT: api/admin/hostverification/{id}/approve
         [HttpPut("{id}/approve")]
-        //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> ApproveVerification(int id, [FromBody] AdminNotesDto? adminNotesDto = null)
+        public async Task<IActionResult> ApproveVerification(int id, [FromBody] AdminNotesDto adminNotesDto = null)
         {
             try
             {
-                string adminNotes = adminNotesDto?.AdminNotes;
+                var adminNotes = adminNotesDto?.AdminNotes;
                 var updatedVerification = await _ihostVerification.ApproveHostVerification(id, adminNotes);
 
+                // Return a simplified response to avoid circular references
                 return Ok(new
                 {
-                    message = "Host verification approved successfully",
-                    verification = updatedVerification
+                    message = "Host verification approved successfully and host is now verified",
+                    verificationId = updatedVerification.Id,
+                    hostId = updatedVerification.HostId,
+                    status = updatedVerification.Status,
+                    verifiedAt = updatedVerification.VerifiedAt,
+                    adminNotes = updatedVerification.AdminNotes
                 });
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(new { error = ex.Message });
+                return NotFound(ex.Message);
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return BadRequest(ex.Message);
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { error = ex.Message });
+                return Conflict(ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { error = "Internal server error", message = ex.Message });
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
 
@@ -249,21 +286,6 @@ namespace bnbClone_API.Controllers
         }
 
 
-        //[Consumes("multipart/form-data")]
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> EditVerifications(int id, [FromForm] HostVerificationDTO host)
-        //{
-
-        //    if (id != null && host != null)
-        //    {
-
-        //        await _ihostVerification.EditHostVerification(id, host);
-        //        return Ok(host);
-        //    }
-
-        //    return BadRequest(new { error = "Enter Required Data and u must Enter ID Field" });
-
-        //}
 
     }
 }
