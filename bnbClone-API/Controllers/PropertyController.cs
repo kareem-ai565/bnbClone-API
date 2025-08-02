@@ -300,7 +300,12 @@ namespace bnbClone_API.Controllers
             var mapped = _mapper.Map<List<PropertyDetailsDto>>(result);
             return Ok(mapped);
         }
-
+        [HttpGet("host/{hostId}")]
+        public async Task<IActionResult> GetByHost(int hostId)
+        {
+            var properties = await _propertyService.GetPropertiesByHostAsync(hostId);
+            return Ok(properties);
+        }
 
     }
 }

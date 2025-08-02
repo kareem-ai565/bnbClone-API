@@ -2,6 +2,7 @@
 using bnbClone_API.Models;
 using bnbClone_API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.ML;
 
 namespace bnbClone_API.Repositories.Impelementations
 {
@@ -34,6 +35,13 @@ namespace bnbClone_API.Repositories.Impelementations
                 .Include(a => a.Property)
                 .Where(a => a.Property.HostId == hostId)
                 .ToListAsync();
+        }
+        public async Task<PropertyAvailability?> FindByPropertyAndDateAsync(int propertyId, DateTime date)
+        {
+            return await db.PropertyAvailabilities
+                .FirstOrDefaultAsync(a =>
+                    a.PropertyId == propertyId &&
+                    a.Date.Date == date.Date); // Normalize date
         }
 
     }

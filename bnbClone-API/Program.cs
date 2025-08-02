@@ -1,6 +1,7 @@
 using bnbClone_API.Data;
 using bnbClone_API.Data;
 using bnbClone_API.Helpers.MappingProfiles;
+using bnbClone_API.Helpers.MappingProfiles;
 using bnbClone_API.Models;
 using bnbClone_API.Repositories;
 using bnbClone_API.Repositories.Impelementations;
@@ -12,24 +13,27 @@ using bnbClone_API.Repositories.Interfaces.admin;
 using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Implementations;
 using bnbClone_API.Services.Interfaces;
-using bnbClone_API.UnitOfWork;
 using bnbClone_API.StripeConfig;
+using bnbClone_API.UnitOfWork;
+using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
-using bnbClone_API.UnitOfWork;
-using Microsoft.AspNetCore.Http.Features;
 using Stripe;
+using System;
+using System.Security.Claims;
+using System.Text;
 using System.Text;
 using TokenService = bnbClone_API.Services.Impelementations.TokenService;
 using bnbClone_API.Helpers.MappingProfiles;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Google;
+
 
 
 namespace bnbClone_API
@@ -58,9 +62,14 @@ namespace bnbClone_API
         o.Password.RequireLowercase = false;
         o.Password.RequireDigit = false;
         o.Password.RequiredUniqueChars = 0;
+
+
+        //o.SignIn.RequireConfirmedEmail = true;
     })
+
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+       
 
             builder.Services.AddScoped<UserManager<ApplicationUser>>();
             builder.Services.AddScoped<SignInManager<ApplicationUser>>();
@@ -136,6 +145,7 @@ namespace bnbClone_API
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
+
 .AddJwtBearer(options =>
 {
     options.SaveToken = true;
@@ -223,6 +233,57 @@ namespace bnbClone_API
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
             });
+// solved conflifct
+//                 .AddJwtBearer(options =>
+//                 {
+//                     options.SaveToken = true;
+//                     options.RequireHttpsMetadata = false;
+//                     options.TokenValidationParameters = new TokenValidationParameters
+//                     {
+//                         ValidateIssuerSigningKey = true,
+//                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
+//                         ValidateIssuer = true,
+//                         ValidIssuer = builder.Configuration["JWT:Issuer"],
+//                         ValidateAudience = true,
+//                         ValidAudience = builder.Configuration["JWT:Audience"],
+//                         ValidateLifetime = true,
+//                         ClockSkew = TimeSpan.Zero,
+//                         NameClaimType = ClaimTypes.NameIdentifier,
+//                         RoleClaimType = ClaimTypes.Role
+//                     };
+
+//                     // Add event logging for debugging with Console.WriteLine
+//                     options.Events = new JwtBearerEvents
+//                     {
+//                         OnAuthenticationFailed = context =>
+//                         {
+//                             Console.WriteLine($"[DEBUG] JWT Authentication failed: {context.Exception.Message}");
+//                             if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+//                             {
+//                                 context.Response.Headers.Add("Token-Expired", "true");
+//                             }
+//                             return Task.CompletedTask;
+//                         },
+//                         OnTokenValidated = context =>
+//                         {
+//                             Console.WriteLine("[DEBUG] JWT Token validated successfully");
+//                             var userIdClaim = context.Principal.FindFirst("UserID")?.Value;
+//                             Console.WriteLine($"[DEBUG] UserID from token: {userIdClaim}");
+//                             return Task.CompletedTask;
+//                         },
+//                         OnMessageReceived = context =>
+//                         {
+//                             Console.WriteLine("[DEBUG] JWT Token received");
+//                             return Task.CompletedTask;
+//                         },
+//                         OnChallenge = context =>
+//                         {
+//                             Console.WriteLine($"[DEBUG] JWT Challenge: {context.Error}, {context.ErrorDescription}");
+//                             return Task.CompletedTask;
+//                         }
+//                     };
+//                 });
+
 
             // ----------------------
             // Repository Registrations
@@ -254,7 +315,9 @@ namespace bnbClone_API
             builder.Services.AddScoped<IAdminDashboardService, AdminDashboardService>();
 
             builder.Services.AddScoped<IProfileService, ProfileService>();
+            builder.Services.AddScoped<IEmailService, EmailService>();
 
+      
             // ----------------------
             // host Repository Registrations
             // ----------------------
@@ -293,7 +356,7 @@ namespace bnbClone_API
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
-                }); ;
+                });
 
             // Repositories and Unit of Work
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

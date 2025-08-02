@@ -186,8 +186,12 @@ namespace bnbClone_API.Repositories.Implementations
 
             return true;
         }
-
-
+        public async Task<IEnumerable<Property>> FindByHostIdAsync(int hostId)
+        {
+            return await _context.Properties
+                .Where(p => p.HostId == hostId)
+                .ToListAsync();
+        }
 
     }
 }

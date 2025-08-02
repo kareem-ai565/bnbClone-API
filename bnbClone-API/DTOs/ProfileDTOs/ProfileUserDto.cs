@@ -32,8 +32,14 @@ namespace bnbClone_API.DTOs.ProfileDTOs
 
         public DateTime? DateOfBirth { get; set; }
 
-        [StringLength(10)]
-        public string? Gender { get; set; }
+        public string Email { get; set; }
+        public string NewPassWord { get; set; }
+        //public string Email { get; set; }
+
+        public string? ProfilePictureUrl { get; set; }
+
+        //[StringLength(10)]
+        //public string? Gender { get; set; }
 
         [Phone]
         public string? PhoneNumber { get; set; }

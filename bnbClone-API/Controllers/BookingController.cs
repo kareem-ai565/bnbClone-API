@@ -1,4 +1,5 @@
 ﻿using bnbClone_API.DTOs;
+using bnbClone_API.Models;
 using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -80,7 +81,7 @@ namespace bnbClone_API.Controllers
            var result = await _bookingService.UpdateBooking(id, bookingUpdateDto);
             if(result > 0)
             {
-                return Ok($"Booking with ID {id} Updated successfully.");
+                return Ok(new {message= $"Booking with ID {id} Updated successfully." });
             }
             return NotFound($"Booking with ID {id} not found.");
         }
@@ -96,7 +97,7 @@ namespace bnbClone_API.Controllers
             var result = await _bookingService.UpdateBookingStatusAsync(id, bookingStatusUpdateDto);
             if (result > 0)
             {
-                return Ok($"Booking with ID {id} status updated successfully.");
+                return Ok(new { message = $"Booking with ID {id} status updated successfully." });
             }
             return NotFound($"Booking with ID {id} not found.");
         }
@@ -116,10 +117,10 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> GetBookingsByGuest(int guestId)
         {
             var bookings = await _bookingService.GetBookingsByGuestAsync(guestId);
-            if (bookings == null || !bookings.Any())
-            {
-                return NotFound($"No bookings found for guest with ID {guestId}.");
-            }
+            //if (bookings == null || !bookings.Any())
+            //{
+            //    return NotFound($"No bookings found for guest with ID {guestId}.");
+            //}
             return Ok(bookings);
         }
         [HttpGet("ByPropertyId/{propertyId:int}")]
@@ -167,7 +168,7 @@ namespace bnbClone_API.Controllers
             var result = await _bookingService.UpdateBookingCheckInStatusAsync(id, bookingCheckInStatusUpdate);
             if (result > 0)
             {
-                return Ok($"Booking with ID {id} check-in status updated successfully.");
+                return Ok(new { message = $"Booking with ID {id} check-in status updated successfully." });
             }
             return NotFound($"Booking with ID {id} not found.");
         }
@@ -181,7 +182,7 @@ namespace bnbClone_API.Controllers
             var result = await _bookingService.UpdateBookingCheckOutStatusAsync(id, bookingCheckOutStatusUpdate);
             if (result > 0)
             {
-                return Ok($"Booking with ID {id} check-out status updated successfully.");
+                return Ok(new { message = $"Booking with ID {id} check-out status updated successfully." });
             }
             return NotFound($"Booking with ID {id} not found.");
         }
