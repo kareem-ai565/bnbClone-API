@@ -183,15 +183,50 @@ namespace bnbClone_API
             Console.WriteLine($"[DEBUG] UserID from token: {userIdClaim}");
             return Task.CompletedTask;
         },
+        //OnMessageReceived = context =>
+        //{
+        //    Console.WriteLine("[DEBUG] JWT Token received");
+        //    var token = context.HttpContext.Request.Cookies["access_token"];
+        //    if (!string.IsNullOrEmpty(token))
+        //    {
+        //        context.Token = token;
+        //        Console.WriteLine("[DEBUG] Token found in cookie.");
+        //    }
+        //    return Task.CompletedTask;
+        //},
+
         OnMessageReceived = context =>
         {
-            Console.WriteLine("[DEBUG] JWT Token received");
-            var token = context.HttpContext.Request.Cookies["access_token"];
-            if (!string.IsNullOrEmpty(token))
+            Console.WriteLine("[DEBUG] JWT Token received - checking multiple sources");
+
+            // Method 1: Check Authorization header first (for localStorage approach)
+            var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer "))
             {
-                context.Token = token;
-                Console.WriteLine("[DEBUG] Token found in cookie.");
+                context.Token = authHeader.Substring(7);
+                Console.WriteLine("[DEBUG] Token found in Authorization header (localStorage method).");
+                return Task.CompletedTask;
             }
+
+            // Method 2: Check cookies (existing cookie approach)
+            var cookieToken = context.HttpContext.Request.Cookies["access_token"];
+            if (!string.IsNullOrEmpty(cookieToken))
+            {
+                context.Token = cookieToken;
+                Console.WriteLine("[DEBUG] Token found in cookie.");
+                return Task.CompletedTask;
+            }
+
+            // Method 3: Check query string (useful for SignalR connections)
+            var queryToken = context.Request.Query["access_token"].FirstOrDefault();
+            if (!string.IsNullOrEmpty(queryToken))
+            {
+                context.Token = queryToken;
+                Console.WriteLine("[DEBUG] Token found in query string.");
+                return Task.CompletedTask;
+            }
+
+            Console.WriteLine("[DEBUG] No token found in any source (Authorization header, cookies, or query string).");
             return Task.CompletedTask;
         },
         OnChallenge = context =>
@@ -201,18 +236,18 @@ namespace bnbClone_API
         }
     };
 })
-// ADD THIS: Google Authentication
+// Google Authentication
 .AddGoogle(googleOptions =>
 {
     googleOptions.ClientId = builder.Configuration["GoogleAuth:ClientId"];
     googleOptions.ClientSecret = builder.Configuration["GoogleAuth:ClientSecret"];
     googleOptions.CallbackPath = "/api/auth/google-callback";
 
-    // Optional: Add scopes if you need additional user information
+    //  scopes if you need additional user information
     googleOptions.Scope.Add("profile");
     googleOptions.Scope.Add("email");
 
-    // Optional: Add events for debugging
+    // events for debugging
     googleOptions.Events.OnCreatingTicket = context =>
     {
         Console.WriteLine($"[DEBUG] Google authentication successful for: {context.Principal?.FindFirst(ClaimTypes.Email)?.Value}");
