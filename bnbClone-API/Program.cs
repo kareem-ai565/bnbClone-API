@@ -524,11 +524,11 @@ namespace bnbClone_API
 
             app.UseStaticFiles(); // ⬅️ مهم جدًا لعرض الصور من wwwroot
 
-           
+
 
             // Configure the HTTP request pipeline.
 
-
+            app.UseStaticFiles();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
