@@ -164,6 +164,56 @@ namespace bnbClone_API
         RoleClaimType = ClaimTypes.Role
     };
 
+                    // Add event logging for debugging with Console.WriteLine
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            Console.WriteLine($"[DEBUG] JWT Authentication failed: {context.Exception.Message}");
+                            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                            {
+                                context.Response.Headers.Add("Token-Expired", "true");
+                            }
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            Console.WriteLine("[DEBUG] JWT Token validated successfully");
+                            var userIdClaim = context.Principal.FindFirst("UserID")?.Value;
+                            Console.WriteLine($"[DEBUG] UserID from token: {userIdClaim}");
+                            return Task.CompletedTask;
+                        },
+                        OnMessageReceived = context =>
+                        {
+                            Console.WriteLine("[DEBUG] JWT Token received");
+                            var token = context.HttpContext.Request.Cookies["access_token"];
+                            if (!string.IsNullOrEmpty(token))
+                            {
+                                context.Token = token;
+                                Console.WriteLine("[DEBUG] Token found in cookie.");
+                                return Task.CompletedTask;
+                            }
+
+                            // Then check SignalR WebSocket query string
+                            var accessToken = context.Request.Query["access_token"];
+                            var path = context.HttpContext.Request.Path;
+
+                            if (!string.IsNullOrEmpty(accessToken) &&
+                                path.StartsWithSegments("/chatHub"))
+                            {
+                                context.Token = accessToken;
+                                Console.WriteLine("[DEBUG] Token found in SignalR query string.");
+                            }
+
+                            return Task.CompletedTask;
+                        },
+                        OnChallenge = context =>
+                        {
+                            Console.WriteLine($"[DEBUG] JWT Challenge: {context.Error}, {context.ErrorDescription}");
+                            return Task.CompletedTask;
+                        }
+                    };
+                });
     // Your existing event logging
     options.Events = new JwtBearerEvents
     {
@@ -376,6 +426,7 @@ namespace bnbClone_API
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials() // Required for cookies
+                          .SetIsOriginAllowed(_ => true)
                           .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
                 });
             });
@@ -391,6 +442,11 @@ namespace bnbClone_API
                 .AddJsonOptions(options =>
                 {
                     options.JsonSerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.AllowNamedFloatingPointLiterals;
+                }); ;
+            builder.Services.AddSignalR(options =>
+            {
+                options.EnableDetailedErrors = true;
+            });
                 });
 
             // Repositories and Unit of Work
