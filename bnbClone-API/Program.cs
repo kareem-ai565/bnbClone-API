@@ -422,12 +422,13 @@ namespace bnbClone_API
             {
                 options.AddPolicy("DevelopmentCorsPolicy", policy =>
                 {
-                    policy.WithOrigins("http://localhost:4200", "https://localhost:4200") // Your Angular app URL
+                    policy.WithOrigins("http://localhost:4200", "https://localhost:4200" , "http://airlacasa.runasp.net") // Your Angular app URL
                           .AllowAnyHeader()
                           .AllowAnyMethod()
                           .AllowCredentials() // Required for cookies
                           .SetIsOriginAllowed(_ => true)
                           .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
+
                 });
             });
 
@@ -448,6 +449,7 @@ namespace bnbClone_API
                 options.EnableDetailedErrors = true;
             });
                 });
+
 
             // Repositories and Unit of Work
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
