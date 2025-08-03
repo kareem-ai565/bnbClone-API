@@ -32,14 +32,14 @@ namespace bnbClone_API.Controllers
         public async Task<IActionResult> MarkAsRead(int id) {
             var success = await notificationService.MarkAsReadAsync(id);
             if(!success) return NotFound("Notification Not Found");
-            return Ok("Marked As Read");
+            return Ok(new { message = "Marked As Read" });
         }
         [HttpPut("user/{userId}/mark-all-read")]
         public async Task<IActionResult> MarkAllAsRead(int userId) 
         {
             var success = await notificationService.MarkAllAsReadAsync(userId);
             if (!success) return NotFound("No notifications found to mark as read");
-            return Ok("All marked as read");
+            return Ok(new { message = "All marked as read" });
 
         }
         [HttpPost]
