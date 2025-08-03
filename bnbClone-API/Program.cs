@@ -447,7 +447,6 @@ namespace bnbClone_API
             {
                 options.EnableDetailedErrors = true;
             });
-                });
 
 
             // Repositories and Unit of Work
