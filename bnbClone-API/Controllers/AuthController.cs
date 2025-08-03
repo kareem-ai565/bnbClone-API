@@ -1,7 +1,10 @@
 ﻿using Azure.Core;
 using bnbClone_API.DTOs.Auth;
+using bnbClone_API.DTOs.Auth.API.DTOs.Auth;
 using bnbClone_API.Models;
+using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,6 +14,10 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Security.Claims;
 using System.Text.Json;
+using Microsoft.AspNetCore.Authentication;
+using Google.Apis.Auth;
+using Microsoft.AspNetCore.Authentication.Google;
+using System.Security.Claims;
 
 namespace bnbClone_API.Controllers
 {
@@ -22,13 +29,15 @@ namespace bnbClone_API.Controllers
         private readonly ILogger<AuthController> _logger;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly IConfiguration configuration;
+        private readonly IEmailService emailService;
 
-        public AuthController(IAuthService authService, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager, IConfiguration configuration)
+        public AuthController(IAuthService authService, ILogger<AuthController> logger, UserManager<ApplicationUser> userManager, IConfiguration configuration , IEmailService emailService)
         {
             _authService = authService;
             _logger = logger;
             this.userManager = userManager;
             this.configuration = configuration;
+            this.emailService = emailService;
         }
 
         /*
@@ -55,6 +64,7 @@ namespace bnbClone_API.Controllers
 
 
             var registrationResult = await _authService.RegisterAsync(registerDto);
+
             return registrationResult.IsSucceed ? Ok(registrationResult.Data) : Ok(registrationResult.Errors);
         }
 
@@ -145,7 +155,7 @@ namespace bnbClone_API.Controllers
                     }
 
                     // Add HostId if user has Host role using UserRoleConstants
-                    if (userRoles.Contains(UserRoleConstants.Host))
+                    if (userRoles.Contains(UserRoleConstants.Host) && loggedInUser.HostId>0)
                     {
                         // You can either get it from the logged in user or fetch it directly
                         var loggedUser = await _authService.LoginAsync(loginDto);
@@ -255,18 +265,90 @@ namespace bnbClone_API.Controllers
 
 
 
-//         [HttpPost("LogOut")]
-//         public IActionResult LogOut()
-//         {
-//             Response.Cookies.Delete("access_token");
-//             return Ok(new { message = "Logout Successfully" });
+        //         [HttpPost("LogOut")]
+        //         public IActionResult LogOut()
+        //         {
+        //             Response.Cookies.Delete("access_token");
+        //             return Ok(new { message = "Logout Successfully" });
 
-//         }
-        
-        
-        
-        
-        
+        //         }
+
+
+
+
+        [HttpGet("confirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            if (user == null) return BadRequest("Invalid User");
+
+
+            var decodedToken = Uri.UnescapeDataString(token);
+            var result = await userManager.ConfirmEmailAsync(user, decodedToken);
+
+            if (!result.Succeeded) return BadRequest("Email confirmation failed");
+
+
+
+
+            user.EmailVerified = true;
+            user.AccountStatus = "active";
+            await userManager.UpdateAsync(user);
+
+            return Ok("Email confirmed successfully!");
+        }
+
+
+
+
+
+        [HttpPost("forgotPassword")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto forgotPassword)
+        {
+            var user = await userManager.FindByEmailAsync(forgotPassword.Email);
+            if (user == null)
+                return BadRequest("User not found");
+
+            var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+            // عمل رابط لإعادة التعيين
+            var resetLink = $"{configuration["AppUrl"]}/ResetPassword?email={Uri.EscapeDataString(forgotPassword.Email)}&token={Uri.EscapeDataString(token)}";
+
+            // إرسال الإيميل
+            await emailService.SendEmailAsync(forgotPassword.Email, "Reset Password",
+                $"Click <a href='{resetLink}'>here</a> to reset your password");
+
+            return Ok(new {message= "Password reset link has been sent to your email." });
+        }
+
+
+
+
+
+        [HttpPost("resetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPasswordDto)
+        {
+            var user = await userManager.FindByEmailAsync(resetPasswordDto.Email);
+            if (user == null)
+                return BadRequest("User not found");
+
+            var decodedToken = Uri.UnescapeDataString(resetPasswordDto.Token);
+
+            var result = await userManager.ResetPasswordAsync(user, decodedToken, resetPasswordDto.NewPassword);
+
+
+            if (result.Succeeded)
+                return Ok("Password has been reset successfully!");
+
+            return BadRequest(result.Errors.Select(e => e.Description));
+        }
+
+
+
+
+
+
+
         [HttpPost("register-host")]
         [Authorize(Roles = UserRoleConstants.Guest)] // This will still work since users keep Guest role
         public async Task<ActionResult> RegisterHost([FromBody] RegisterHostDto registerHostDto)
@@ -309,5 +391,222 @@ namespace bnbClone_API.Controllers
                 return StatusCode(500, new { success = false, message = "An error occurred while processing your request" });
             }
         }
+
+        ////google 
+        // Add these methods to your AuthController class
+
+        //[HttpPost("google-auth")]
+        //public async Task<IActionResult> GoogleAuth([FromBody] GoogleAuthRequest googleUser)
+        //{
+        //    try
+        //    {
+        //        _logger.LogInformation("Google auth request received for email: {Email}", googleUser?.Email);
+
+        //        if (googleUser == null || string.IsNullOrEmpty(googleUser.Email))
+        //        {
+        //            _logger.LogWarning("Invalid Google user data received");
+        //            return BadRequest(new { success = false, message = "Invalid Google user data" });
+        //        }
+
+        //        // Optional: Verify the Google ID token here for additional security
+        //        if (!string.IsNullOrEmpty(googleUser.IdToken))
+        //        {
+        //            try
+        //            {
+        //                // Add token verification logic here if needed
+        //                _logger.LogInformation("Google ID token received for verification");
+        //            }
+        //            catch (Exception tokenEx)
+        //            {
+        //                _logger.LogWarning(tokenEx, "Google token verification failed, proceeding without verification");
+        //                // Continue without token verification for now
+        //            }
+        //        }
+
+        //        // Get or create user from Google information
+        //        var user = await _authService.GetOrCreateGoogleUserAsync(
+        //            googleUser.Email,
+        //            googleUser.FirstName ?? "",
+        //            googleUser.LastName ?? ""
+        //        );
+
+        //        _logger.LogInformation("User retrieved/created successfully for email: {Email}", user.Email);
+
+        //        // Generate tokens for the user
+        //        var tokenResponse = await _authService.CreateTokenResponseAsync(user);
+
+        //        _logger.LogInformation("Token response created successfully for user: {UserId}", user.Id);
+
+        //        // Get user roles for response
+        //        var userRoles = await userManager.GetRolesAsync(user);
+
+        //        var response = new GoogleLoginResponse
+        //        {
+        //            Success = true,
+        //            Message = "Google authentication successful",
+        //            Data = new GoogleLoginData
+        //            {
+        //                Token = tokenResponse.Token,
+        //                RefreshToken = tokenResponse.RefreshToken,
+        //                User = new GoogleUserData
+        //                {
+        //                    Id = user.Id,
+        //                    Email = user.Email,
+        //                    Username = user.UserName,
+        //                    Roles = userRoles.ToArray()
+        //                },
+        //                Roles = userRoles.ToArray()
+        //            }
+        //        };
+
+        //        return Ok(response);
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        _logger.LogWarning(ex, "Invalid operation during Google authentication for email: {Email}", googleUser?.Email);
+        //        return BadRequest(new { success = false, message = ex.Message });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError(ex, "Error during Google authentication for email: {Email}", googleUser?.Email);
+        //        return StatusCode(500, new
+        //        {
+        //            success = false,
+        //            message = "An error occurred during Google authentication",
+        //            details = ex.Message // Remove this in production
+        //        });
+        //    }
+        //}
+
+        [HttpPost("google-auth")]
+        public async Task<IActionResult> GoogleAuth([FromBody] GoogleAuthRequest googleUser)
+        {
+            try
+            {
+                _logger.LogInformation("Google auth request received for email: {Email}", googleUser?.Email);
+
+                if (googleUser == null || string.IsNullOrEmpty(googleUser.Email))
+                {
+                    return BadRequest(new { success = false, message = "Invalid Google user data" });
+                }
+
+                // Get or create user from Google information
+                var user = await _authService.GetOrCreateGoogleUserAsync(
+                    googleUser.Email,
+                    googleUser.FirstName ?? "",
+                    googleUser.LastName ?? ""
+                );
+
+                // Generate tokens for the user
+                var tokenResponse = await _authService.CreateTokenResponseAsync(user);
+
+                // Get user roles for response
+                var userRoles = await userManager.GetRolesAsync(user);
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "Google authentication successful",
+                    data = new
+                    {
+                        token = tokenResponse.Token,
+                        refreshToken = tokenResponse.RefreshToken,
+                        user = new
+                        {
+                            id = user.Id,
+                            email = user.Email,
+                            username = user.UserName,
+                            roles = userRoles
+                        },
+                        roles = userRoles
+                    }
+                });
+            }
+            catch (DbUpdateException dbEx)
+            {
+                _logger.LogError(dbEx, "Database error during Google auth: {Message}. Inner: {InnerException}",
+                    dbEx.Message, dbEx.InnerException?.Message);
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "Database error occurred",
+                    details = dbEx.InnerException?.Message ?? dbEx.Message
+                });
+            }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "Invalid operation during Google authentication for email: {Email}", googleUser?.Email);
+                return BadRequest(new { success = false, message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during Google authentication for email: {Email}. Full exception: {Exception}",
+                    googleUser?.Email, ex.ToString());
+
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = "An error occurred during Google authentication",
+                    details = ex.InnerException?.Message ?? ex.Message,
+                    fullError = ex.ToString() // Remove this in production
+                });
+            }
+        }
+
+        [HttpGet("google-callback")]
+        public async Task<IActionResult> GoogleCallback()
+        {
+            try
+            {
+                var authenticateResult = await HttpContext.AuthenticateAsync(GoogleDefaults.AuthenticationScheme);
+
+                if (!authenticateResult.Succeeded)
+                {
+                    _logger.LogWarning("Google authentication failed");
+                    return BadRequest(new { success = false, message = "Google authentication failed" });
+                }
+
+                var claims = authenticateResult.Principal.Claims;
+                var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    _logger.LogWarning("Email claim not found in Google authentication");
+                    return BadRequest(new { success = false, message = "Email claim not found" });
+                }
+
+                // Get additional claims
+                var firstName = claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value ?? "";
+                var lastName = claims.FirstOrDefault(c => c.Type == ClaimTypes.Surname)?.Value ?? "";
+
+                // Get or create user
+                var user = await _authService.GetOrCreateGoogleUserAsync(email, firstName, lastName);
+
+                // Generate tokens
+                var tokenResponse = await _authService.CreateTokenResponseAsync(user);
+
+                // Return tokens to the frontend (adjust URL as needed)
+                var redirectUrl = $"http://localhost:4200/login?access_token={tokenResponse.Token}";
+
+                if (!string.IsNullOrEmpty(tokenResponse.RefreshToken))
+                {
+                    redirectUrl += $"&refresh_token={tokenResponse.RefreshToken}";
+                }
+
+                return Redirect(redirectUrl);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during Google callback");
+                return Redirect("http://localhost:4200/login?error=authentication_failed");
+            }
+        }
+
+
+
+
+
+
     }
 }

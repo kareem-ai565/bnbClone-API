@@ -80,6 +80,7 @@ namespace bnbClone_API.Controllers
             var reviewDtos = reviews.Select(r => new ReviewReadDto
             {
                 Id = r.Id,
+                PropertyName = r.Property.Title,
                 Rating = r.Rating,
                 Comment = r.Comment,
                 CreatedAt = r.CreatedAt,

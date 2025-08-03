@@ -8,5 +8,6 @@
         public DateTime CreatedAt { get; set; }
         public string ReviewerName { get; set; } 
         public string Reviewerimage { get; set; } 
+        public string PropertyName { get; set; } 
     }
 }
