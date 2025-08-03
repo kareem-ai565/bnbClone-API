@@ -1,9 +1,6 @@
 using bnbClone_API.Data;
-using bnbClone_API.Data;
-using bnbClone_API.Helpers.MappingProfiles;
 using bnbClone_API.Helpers.MappingProfiles;
 using bnbClone_API.Models;
-using bnbClone_API.Repositories;
 using bnbClone_API.Repositories.Impelementations;
 using bnbClone_API.Repositories.Impelementations.admin;
 using bnbClone_API.Repositories.Implementations;
@@ -13,26 +10,16 @@ using bnbClone_API.Repositories.Interfaces.admin;
 using bnbClone_API.Services.Impelementations;
 using bnbClone_API.Services.Implementations;
 using bnbClone_API.Services.Interfaces;
-using bnbClone_API.StripeConfig;
-using bnbClone_API.UnitOfWork;
-using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Connections;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Stripe;
-using System;
 using System.Security.Claims;
 using System.Text;
-using System.Text;
-using TokenService = bnbClone_API.Services.Impelementations.TokenService;
-using bnbClone_API.Helpers.MappingProfiles;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.Google;
 
 
 
@@ -69,7 +56,7 @@ namespace bnbClone_API
 
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
-       
+
 
             builder.Services.AddScoped<UserManager<ApplicationUser>>();
             builder.Services.AddScoped<SignInManager<ApplicationUser>>();
@@ -164,46 +151,46 @@ namespace bnbClone_API
         RoleClaimType = ClaimTypes.Role
     };
 
-                    // Add event logging for debugging with Console.WriteLine
-                    options.Events = new JwtBearerEvents
-                    {
-                        OnAuthenticationFailed = context =>
-                        {
-                            Console.WriteLine($"[DEBUG] JWT Authentication failed: {context.Exception.Message}");
-                            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
-                            {
-                                context.Response.Headers.Add("Token-Expired", "true");
-                            }
-                            return Task.CompletedTask;
-                        },
-                        OnTokenValidated = context =>
-                        {
-                            Console.WriteLine("[DEBUG] JWT Token validated successfully");
-                            var userIdClaim = context.Principal.FindFirst("UserID")?.Value;
-                            Console.WriteLine($"[DEBUG] UserID from token: {userIdClaim}");
-                            return Task.CompletedTask;
-                        },
-                        OnMessageReceived = context =>
-                        {
-                            Console.WriteLine("[DEBUG] JWT Token received");
-                            var token = context.HttpContext.Request.Cookies["access_token"];
-                            if (!string.IsNullOrEmpty(token))
-                            {
-                                context.Token = token;
-                                Console.WriteLine("[DEBUG] Token found in cookie.");
-                                return Task.CompletedTask;
-                            }
+    // Add event logging for debugging with Console.WriteLine
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Console.WriteLine($"[DEBUG] JWT Authentication failed: {context.Exception.Message}");
+            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+            {
+                context.Response.Headers.Add("Token-Expired", "true");
+            }
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            Console.WriteLine("[DEBUG] JWT Token validated successfully");
+            var userIdClaim = context.Principal.FindFirst("UserID")?.Value;
+            Console.WriteLine($"[DEBUG] UserID from token: {userIdClaim}");
+            return Task.CompletedTask;
+        },
+        OnMessageReceived = context =>
+        {
+            Console.WriteLine("[DEBUG] JWT Token received");
+            var token = context.HttpContext.Request.Cookies["access_token"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+                Console.WriteLine("[DEBUG] Token found in cookie.");
+                return Task.CompletedTask;
+            }
 
-                            // Then check SignalR WebSocket query string
-                            var accessToken = context.Request.Query["access_token"];
-                            var path = context.HttpContext.Request.Path;
+            // Then check SignalR WebSocket query string
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
 
-                            if (!string.IsNullOrEmpty(accessToken) &&
-                                path.StartsWithSegments("/chatHub"))
-                            {
-                                context.Token = accessToken;
-                                Console.WriteLine("[DEBUG] Token found in SignalR query string.");
-                            }
+            if (!string.IsNullOrEmpty(accessToken) &&
+                path.StartsWithSegments("/chatHub"))
+            {
+                context.Token = accessToken;
+                Console.WriteLine("[DEBUG] Token found in SignalR query string.");
+            }
 
                             return Task.CompletedTask;
                         },
@@ -213,6 +200,7 @@ namespace bnbClone_API
                             return Task.CompletedTask;
                         }
                     };
+
     // Your existing event logging
     options.Events = new JwtBearerEvents
     {
@@ -447,6 +435,7 @@ namespace bnbClone_API
             {
                 options.EnableDetailedErrors = true;
             });
+
 
 
             // Repositories and Unit of Work
