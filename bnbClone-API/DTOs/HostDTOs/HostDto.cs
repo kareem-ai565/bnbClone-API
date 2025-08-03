@@ -22,6 +22,10 @@
             public string? Pets { get; set; }
             public string? ObsessedWith { get; set; }
             public string? SpecialAbout { get; set; }
+            // Add user info
+            public string? FirstName { get; set; }
+            public string? LastName { get; set; }
+            public string? ProfilePictureUrl { get; set; }
     }
     
 }

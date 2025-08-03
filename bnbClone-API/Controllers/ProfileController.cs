@@ -108,13 +108,18 @@ namespace bnbClone_API.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while updating the profile");
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, ex.Message);
             }
         }
 
         private int GetCurrentUserId()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userIdClaim = User.FindFirst("UserID")?.Value;
+            Console.WriteLine("UserID Claim: " + userIdClaim);
+
+
             if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out int userId))
             {
                 throw new UnauthorizedAccessException("User ID not found in token");

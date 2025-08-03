@@ -1,4 +1,5 @@
 ﻿using bnbClone_API.Data;
+using bnbClone_API.DTOs;
 using bnbClone_API.Models.AiModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -97,6 +98,84 @@ namespace bnbClone_API.Controllers.AiController
             return Ok("Data exported successfully to: " + path);
         }
 
+
+
+
+
+
+
+
+        [HttpPost("recommend")]
+        public async Task<IActionResult> Recommend([FromBody] UserPreferencesDto prefs)
+        {
+            var properties = await _context.Properties
+                .Select(p => new {
+                    p.Id,
+                    p.Title,
+                    p.City,
+                    p.PricePerNight,
+                    p.MaxGuests,
+                    p.PropertyType,
+                }).ToListAsync();
+
+            var scored = properties.Select(p => new
+            {
+                Property = p,
+                Score =
+                    (p.City.Equals(prefs.PreferredCity, StringComparison.OrdinalIgnoreCase) ? 3 : 0) +
+                    (p.PricePerNight <= prefs.BudgetForNight ? 2 : 0) +
+                    (p.MaxGuests >= prefs.MaxGuest ? 2 : 0) +
+                    (p.PropertyType.Equals(prefs.PropertyType, StringComparison.OrdinalIgnoreCase) ? 3 : 0)
+            })
+            .OrderByDescending(x => x.Score)
+            .ToList();
+
+            if (!scored.Any(x => x.Score > 0))
+            {
+                scored = properties.Select(p => new
+                {
+                    Property = p,
+                    Score = 0
+                })
+                .Take(10)
+                .ToList();
+            }
+
+            var result = scored.Select(x => new
+            {
+                x.Property.Id,
+                x.Property.Title,
+                x.Property.City,
+                x.Property.PricePerNight,
+                x.Property.MaxGuests,
+                x.Property.PropertyType,
+                Reason = x.Score > 0 ? GenerateReason(x.Property, prefs) : "Suggested based on availability",
+                x.Score
+            });
+
+            return Ok(result);
+        }
+
+        private string GenerateReason(object property, UserPreferencesDto prefs)
+        {
+            var type = property.GetType().GetProperty("Type")?.GetValue(property)?.ToString() ?? string.Empty;
+            var city = property.GetType().GetProperty("City")?.GetValue(property)?.ToString() ?? string.Empty;
+            var price = Convert.ToDecimal(property.GetType().GetProperty("PricePerNight")?.GetValue(property) ?? 0);
+            var guests = Convert.ToInt32(property.GetType().GetProperty("MaxGuests")?.GetValue(property) ?? 0);
+
+            List<string> reasons = new();
+
+            if (city.Equals(prefs.PreferredCity, StringComparison.OrdinalIgnoreCase))
+                reasons.Add("Located in your preferred city");
+            if (price <= prefs.BudgetForNight)
+                reasons.Add("Fits your budget");
+            if (guests >= prefs.MaxGuest)
+                reasons.Add("Can host your group size");
+            if (type.Equals(prefs.PropertyType, StringComparison.OrdinalIgnoreCase))
+                reasons.Add("Matches your preferred property type");
+
+            return string.Join(", ", reasons);
+        }
 
 
     }
