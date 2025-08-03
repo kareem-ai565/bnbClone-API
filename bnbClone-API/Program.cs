@@ -213,7 +213,6 @@ namespace bnbClone_API
                             return Task.CompletedTask;
                         }
                     };
-                });
     // Your existing event logging
     options.Events = new JwtBearerEvents
     {
