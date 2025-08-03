@@ -1,5 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace bnbClone_API.DTOs
@@ -11,8 +12,8 @@ namespace bnbClone_API.DTOs
         public IFormFile DocumentUrl1 { get; set; }
         public IFormFile DocumentUrl2 { get; set; }
         public DateTime SubmittedAt { get; set; } = DateTime.Now;
-        public DateTime? VerifiedAt { get; set; }  // Make sure this exists
-        public string AdminNotes { get; set; }
+        public DateTime? VerifiedAt { get; set; }// Make sure this exists
+        //public string AdminNotes { get; set; }
     }
 
     public class AdminHostVerificationResponseDto

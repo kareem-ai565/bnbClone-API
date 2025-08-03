@@ -522,6 +522,10 @@ namespace bnbClone_API.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("payment_gateway_response");
 
+                    b.Property<string>("PaymentIntentId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PaymentMethodType")
                         .IsRequired()
                         .HasMaxLength(50)

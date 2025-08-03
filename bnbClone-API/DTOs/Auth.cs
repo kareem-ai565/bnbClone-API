@@ -49,7 +49,7 @@ namespace bnbClone_API.DTOs.Auth
         public string Email { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string Role { get; set; }
+        public string[] Role { get; set; }
         public string Token { get; set; }
         public string RefreshToken { get; set; }
         public DateTime TokenExpiry { get; set; }
@@ -147,7 +147,30 @@ namespace bnbClone_API.DTOs.Auth
             public string Email { get; set; }
             public string FirstName { get; set; }
             public string LastName { get; set; }
-            public string GoogleId { get; set; }
+            public string IdToken { get; set; }
+        }
+
+        public class GoogleLoginResponse
+        {
+            public bool Success { get; set; }
+            public string Message { get; set; }
+            public GoogleLoginData Data { get; set; }
+        }
+
+        public class GoogleLoginData
+        {
+            public string Token { get; set; }
+            public string RefreshToken { get; set; }
+            public GoogleUserData User { get; set; }
+            public string[] Roles { get; set; }
+        }
+
+        public class GoogleUserData
+        {
+            public int Id { get; set; }
+            public string Email { get; set; }
+            public string Username { get; set; }
+            public string[] Roles { get; set; }
         }
 
     }

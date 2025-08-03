@@ -5,6 +5,7 @@ using bnbClone_API.Repositories.Interfaces;
 using bnbClone_API.UnitOfWork;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using static System.Reflection.Metadata.BlobBuilder;
 
 namespace bnbClone_API.Controllers
@@ -41,7 +42,7 @@ namespace bnbClone_API.Controllers
             {
                 // Update existing
                 existingSlot.IsAvailable = dto.IsAvailable;
-                existingSlot.BlockedReason = dto.BlockedReason;
+                existingSlot.BlockedReason = dto.IsAvailable ? "" : (dto.BlockedReason ?? "");
                 existingSlot.Price = dto.Price;
                 existingSlot.MinNights = dto.MinNights;
             }
@@ -53,7 +54,7 @@ namespace bnbClone_API.Controllers
                     PropertyId = dto.PropertyId,
                     Date = dto.Date.Date,
                     IsAvailable = dto.IsAvailable,
-                    BlockedReason = dto.BlockedReason,
+                    BlockedReason = dto.IsAvailable ? "" : (dto.BlockedReason ?? ""),
                     Price = dto.Price,
                     MinNights = dto.MinNights
                 };
@@ -62,7 +63,7 @@ namespace bnbClone_API.Controllers
             }
 
             await _unitOfWork.SaveAsync();
-            return Ok("Availability saved.");
+            return Ok(new { message = "Availability saved." });
         }
 
 
@@ -74,7 +75,7 @@ namespace bnbClone_API.Controllers
             if (!deleted) return NotFound("Availability not found or couldn't be deleted.");
 
             await _unitOfWork.SaveAsync(); // commit the transaction
-            return Ok("Availability deleted.");
+            return Ok(new { message = "Availability deleted." });
         }
 
         //Allows host to update price, dates, or flags on a slot: /api/availability/{id}
@@ -82,17 +83,39 @@ namespace bnbClone_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAvailability(int id, CreateAvailabilityDTO dto)
         {
-            var slot = await _unitOfWork.AvailabilityRepo.GetByIdAsync(id);
-            if (slot == null) return NotFound("Slot not found.");
+            try
+            {
+                if (id != dto.Id)
+                    return BadRequest("Mismatched slot ID.");
 
-            slot.Price = dto.Price;
-            slot.MinNights = dto.MinNights;
-            slot.Date = dto.Date;
-            slot.BlockedReason = dto.BlockedReason;
-            slot.IsAvailable = dto.IsAvailable;
+                var slot = await _unitOfWork.AvailabilityRepo.GetByIdAsync(id);
+                if (slot == null) return NotFound("Slot not found.");
 
-            await _unitOfWork.SaveAsync();
-            return Ok("Availability updated.");
+                // Add validation
+                if (dto.Price < 0)
+                    return BadRequest("Price cannot be negative");
+
+                if (dto.MinNights < 1)
+                    return BadRequest("Minimum nights must be at least 1");
+
+                slot.Price = dto.Price;
+                slot.MinNights = dto.MinNights;
+                slot.Date = dto.Date;
+                slot.BlockedReason = dto.IsAvailable ? "" : (dto.BlockedReason ?? "");
+                slot.IsAvailable = dto.IsAvailable;
+
+                await _unitOfWork.SaveAsync();
+                return Ok(new {message= "Availability updated." });
+            }
+            catch (DbUpdateException ex)
+            {
+                // Log the inner exception for more details
+                return StatusCode(500, $"Database update failed: {ex.InnerException?.Message}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred: {ex.Message}");
+            }
         }
 
         //Lists all slots tied to a host’s properties: /api/availability/host/{hostId}
@@ -104,6 +127,7 @@ namespace bnbClone_API.Controllers
 
             var response = slots.Select(a => new CreateAvailabilityDTO
             {
+                Id = a.Id, 
                 PropertyId = a.PropertyId,
                 Date = a.Date,
                 IsAvailable = a.IsAvailable,
@@ -124,6 +148,7 @@ namespace bnbClone_API.Controllers
 
             var response = slots.Select(a => new CreateAvailabilityDTO
             {
+                Id = a.Id,
                 PropertyId = a.PropertyId,
                 Date = a.Date,
                 IsAvailable = a.IsAvailable,

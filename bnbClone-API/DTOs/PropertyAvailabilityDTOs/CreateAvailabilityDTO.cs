@@ -2,6 +2,7 @@
 {
     public class CreateAvailabilityDTO
     {
+        public int Id { get; set; }
         public int PropertyId { get; set; }
         public DateTime Date { get; set; }
         public bool IsAvailable { get; set; } = true;

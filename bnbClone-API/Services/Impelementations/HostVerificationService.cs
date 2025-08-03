@@ -101,7 +101,7 @@ namespace bnbClone_API.Services.Impelementations
                 HostId = hostIdInt,
                 Type = verificationType,
                 Status = VerificationStatus.pending.ToString(),
-                SubmittedAt = hostVerificationDto.SubmittedAt
+                SubmittedAt = hostVerificationDto.SubmittedAt,
             };
 
             // Ensure directory exists
@@ -208,7 +208,37 @@ namespace bnbClone_API.Services.Impelementations
             return host;
         }
 
-         // New method to approve host verification
+        // // New method to approve host verification
+        //public async Task<HostVerification> ApproveHostVerification(int id, string adminNotes = null)
+        //{
+        //    if (id <= 0)
+        //    {
+        //        throw new ArgumentException("Invalid verification ID.");
+        //    }
+
+        //    var verification = await unitOfWork.hostVerification.GetByIdAsync(id);
+        //    if (verification == null)
+        //    {
+        //        throw new KeyNotFoundException($"Host verification with ID {id} not found.");
+        //    }
+
+        //    // Check if already approved
+        //    if (verification.Status.Equals("approved", StringComparison.OrdinalIgnoreCase))
+        //    {
+        //        throw new InvalidOperationException("Host verification is already approved.");
+        //    }
+
+        //    verification.Status = VerificationStatus.approved.ToString();
+        //    verification.VerifiedAt = DateTime.Now;
+        //    if (!string.IsNullOrWhiteSpace(adminNotes))
+        //    {
+        //        verification.AdminNotes = adminNotes;
+        //    }
+
+        //    await unitOfWork.SaveAsync();
+        //    return verification;
+        //}
+        // Updated method to approve host verification and set IsVerified to true
         public async Task<HostVerification> ApproveHostVerification(int id, string adminNotes = null)
         {
             if (id <= 0)
@@ -228,11 +258,20 @@ namespace bnbClone_API.Services.Impelementations
                 throw new InvalidOperationException("Host verification is already approved.");
             }
 
+            // Update verification status
             verification.Status = VerificationStatus.approved.ToString();
             verification.VerifiedAt = DateTime.Now;
             if (!string.IsNullOrWhiteSpace(adminNotes))
             {
                 verification.AdminNotes = adminNotes;
+            }
+
+            // Update host's IsVerified property to true
+            var host = await unitOfWork.Hosts.GetByIdAsync(verification.HostId);
+            if (host != null)
+            {
+                host.IsVerified = true;
+                // Note: No need to call UpdateAsync if using Entity Framework tracking
             }
 
             await unitOfWork.SaveAsync();
