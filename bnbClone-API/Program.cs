@@ -192,14 +192,15 @@ namespace bnbClone_API
                 Console.WriteLine("[DEBUG] Token found in SignalR query string.");
             }
 
-            return Task.CompletedTask;
-        },
-        OnChallenge = context =>
-        {
-            Console.WriteLine($"[DEBUG] JWT Challenge: {context.Error}, {context.ErrorDescription}");
-            return Task.CompletedTask;
-        }
-    };
+                            return Task.CompletedTask;
+                        },
+                        OnChallenge = context =>
+                        {
+                            Console.WriteLine($"[DEBUG] JWT Challenge: {context.Error}, {context.ErrorDescription}");
+                            return Task.CompletedTask;
+                        }
+                    };
+
     // Your existing event logging
     options.Events = new JwtBearerEvents
     {
@@ -434,7 +435,7 @@ namespace bnbClone_API
             {
                 options.EnableDetailedErrors = true;
             });
-                
+
 
 
             // Repositories and Unit of Work
@@ -568,11 +569,11 @@ namespace bnbClone_API
 
             app.UseStaticFiles(); // ⬅️ مهم جدًا لعرض الصور من wwwroot
 
-           
+
 
             // Configure the HTTP request pipeline.
 
-
+            app.UseStaticFiles();
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
