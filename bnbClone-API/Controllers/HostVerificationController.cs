@@ -123,65 +123,110 @@ namespace bnbClone_API.Controllers
             }
         }
 
-
         //[Consumes("multipart/form-data")]
         //[HttpPost]
-        ////[Authorize(Roles = "Host")]
         //public async Task<IActionResult> AddVerifications([FromForm] HostVerificationDTO? hostDto = null)
         //{
 
-        //    if (hostDto != null)
-        //    {
+        //    Console.WriteLine("AddVerifications endpoint hit!");
 
-        //        await _ihostVerification.AddHostVerification(hostDto);
+        //    try
+        //    {
+        //        Console.WriteLine("AddVerifications endpoint hit!");
+
+        //        if (hostDto == null)
+        //            return BadRequest(new { error = "Enter Required Data" });
+
+        //        Console.WriteLine("DTO received:");
+        //        Console.WriteLine("Type: " + hostDto.Type);
+        //        Console.WriteLine("Doc1: " + hostDto.DocumentUrl1?.FileName);
+        //        Console.WriteLine("Doc2: " + hostDto.DocumentUrl2?.FileName);
+
+        //        // Try-catch the service layer too
+        //        try
+        //        {
+        //            await _ihostVerification.AddHostVerification(hostDto);
+        //        }
+        //        catch (Exception innerEx)
+        //        {
+        //            Console.WriteLine("Service error: " + innerEx.Message);
+        //            return StatusCode(500, new { error = "Service error: " + innerEx.Message });
+        //        }
 
         //        return Ok(hostDto);
-
         //    }
-
-
-        //    return BadRequest(new { error = "Enter Required Data" });
-
+        //    catch (Exception ex)
+        //    {
+        //        Console.WriteLine("Controller error: " + ex.Message);
+        //        return StatusCode(500, new { error = ex.Message });
+        //    }
         //}
         [Consumes("multipart/form-data")]
-        [HttpPost]
+        [HttpPost("AddVerifications")] // ✅ Add explicit route
         public async Task<IActionResult> AddVerifications([FromForm] HostVerificationDTO? hostDto = null)
         {
-
-            Console.WriteLine("AddVerifications endpoint hit!");
+            Console.WriteLine("=== AddVerifications endpoint hit! ===");
 
             try
             {
-                Console.WriteLine("AddVerifications endpoint hit!");
-
+                // ✅ Better null check
                 if (hostDto == null)
-                    return BadRequest(new { error = "Enter Required Data" });
-
-                Console.WriteLine("DTO received:");
-                Console.WriteLine("Type: " + hostDto.Type);
-                Console.WriteLine("Doc1: " + hostDto.DocumentUrl1?.FileName);
-                Console.WriteLine("Doc2: " + hostDto.DocumentUrl2?.FileName);
-
-                // Try-catch the service layer too
-                try
                 {
-                    await _ihostVerification.AddHostVerification(hostDto);
-                }
-                catch (Exception innerEx)
-                {
-                    Console.WriteLine("Service error: " + innerEx.Message);
-                    return StatusCode(500, new { error = "Service error: " + innerEx.Message });
+                    Console.WriteLine("❌ hostDto is null");
+                    return BadRequest(new { error = "No data received" });
                 }
 
-                return Ok(hostDto);
+                Console.WriteLine("✅ DTO received:");
+                Console.WriteLine($"Type: {hostDto.Type}");
+                Console.WriteLine($"Doc1: {hostDto.DocumentUrl1?.FileName} ({hostDto.DocumentUrl1?.Length} bytes)");
+                Console.WriteLine($"Doc2: {hostDto.DocumentUrl2?.FileName} ({hostDto.DocumentUrl2?.Length} bytes)");
+                Console.WriteLine($"SubmittedAt: {hostDto.SubmittedAt}");
+
+                // ✅ Validate files
+                if (hostDto.DocumentUrl1 == null || hostDto.DocumentUrl2 == null)
+                {
+                    Console.WriteLine("❌ Missing files");
+                    return BadRequest(new { error = "Both document files are required" });
+                }
+
+                // ✅ Validate file sizes
+                if (hostDto.DocumentUrl1.Length == 0 || hostDto.DocumentUrl2.Length == 0)
+                {
+                    Console.WriteLine("❌ Empty files");
+                    return BadRequest(new { error = "Files cannot be empty" });
+                }
+
+                var result = await _ihostVerification.AddHostVerification(hostDto);
+                Console.WriteLine("✅ Verification added successfully");
+
+                return Ok(new
+                {
+                    message = "Verification submitted successfully",
+                    verificationId = result.Id
+                });
+            }
+            catch (ArgumentException ex)
+            {
+                Console.WriteLine($"❌ Validation error: {ex.Message}");
+                return BadRequest(new { error = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine($"❌ Auth error: {ex.Message}");
+                return Unauthorized(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"❌ Business logic error: {ex.Message}");
+                return Conflict(new { error = ex.Message });
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Controller error: " + ex.Message);
-                return StatusCode(500, new { error = ex.Message });
+                Console.WriteLine($"❌ Unexpected error: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                return StatusCode(500, new { error = $"Internal server error: {ex.Message}" });
             }
         }
-
         //[HttpPut("{id}/approve")]
         ////[Authorize(Roles = "Admin")]
         //public async Task<IActionResult> ApproveVerification(int id, [FromBody] AdminNotesDto? adminNotesDto = null)
