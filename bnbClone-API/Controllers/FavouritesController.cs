@@ -22,12 +22,9 @@ namespace bnbClone_API.Controllers
         }
 
         // Add to favourites: /api/favorites/{propertyId}
-        [HttpPost("{propertyId}")]
-        public async Task<IActionResult> AddToFavourites(int propertyId)
+        [HttpPost("user/{userId}/{propertyId}")]
+        public async Task<IActionResult> AddToFavourites(int propertyId, int userId)
         {
-            //int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            int userId = 1; // Hardcoded test user ID for now
-
             var exists = await _unitOfWork.FavouriteRepo.IsPropertyFavouritedByUserAsync(userId, propertyId);
             if (exists)
                 return BadRequest("Property already favourited.");
@@ -43,13 +40,11 @@ namespace bnbClone_API.Controllers
             return Ok("Property added to favourites.");
         }
 
-        // Remove from favourites: /api/favorites/{propertyId}
-        [HttpDelete("{propertyId}")]
-        public async Task<IActionResult> RemoveFromFavourites(int propertyId)
-        {
-            //int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            int userId = 1; // Hardcoded test user ID for now
 
+        // Remove from favourites: /api/favorites/{propertyId}
+        [HttpDelete("user/{userId}/{propertyId}")]
+        public async Task<IActionResult> RemoveFromFavourites(int userId, int propertyId)
+        {
             var favourite = await _unitOfWork.FavouriteRepo.GetFavouriteByUserAndPropertyAsync(userId, propertyId);
             if (favourite == null)
                 return NotFound("Favourite not found.");
@@ -59,13 +54,11 @@ namespace bnbClone_API.Controllers
             return Ok("Property removed from favourites.");
         }
 
-        // Get all favourites for current user: /api/favorites
-        [HttpGet]
-        public async Task<IActionResult> GetUserFavourites()
-        {
-           // int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            int userId = 1; // Hardcoded test user ID for now
 
+        // Get all favourites for current user: /api/favorites
+        [HttpGet("user/{userId}/favourites")]
+        public async Task<IActionResult> GetUserFavourites(int userId)
+        {
             var favourites = await _unitOfWork.FavouriteRepo.GetFavouritesByUserIdAsync(userId);
 
             var response = favourites.Select(f => new FavouritePropertiesDTO
@@ -88,8 +81,8 @@ namespace bnbClone_API.Controllers
         [HttpGet("check/{propertyId}")]
         public async Task<IActionResult> IsFavourited(int propertyId)
         {
-            // int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            int userId = 1; // Hardcoded test user ID for now
+             int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            //int userId = 1; // Hardcoded test user ID for now
 
             var exists = await _unitOfWork.FavouriteRepo.IsPropertyFavouritedByUserAsync(userId, propertyId);
             return Ok(new { isFavourited = exists });
