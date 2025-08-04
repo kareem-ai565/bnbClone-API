@@ -8,6 +8,7 @@ namespace bnbClone_API.Services.Interfaces
         Task<HostDto?> GetHostByIdAsync(int hostId);              // api/hosts/{id}
         Task<HostDto?> GetHostByUserIdAsync(int userId);          // api/hosts/me
         Task<bool> UpdateHostByUserIdAsync(int userId, HostUpdateDto dto); // PUT /api/hosts/me
+        Task<HostInsightsDto> GetHostInsightsAsync(int hostId); // api/hosts/{hostId}/insights
     }
 }
 
