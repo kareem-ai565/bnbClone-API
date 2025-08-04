@@ -73,5 +73,15 @@ namespace bnbClone_API.Controllers
                 : throw new UnauthorizedAccessException("User ID not found");
 
         }
+        // GET: api/host/{hostId}/insights
+        [HttpGet("{hostId}/insights")]
+        public async Task<IActionResult> GetHostInsights(int hostId)
+        {
+            var insights = await _hostService.GetHostInsightsAsync(hostId);
+            if (insights == null)
+                return NotFound("Host not found");
+
+            return Ok(insights);
+        }
     }
 }

@@ -99,8 +99,41 @@ namespace bnbClone_API.Services.Implementations
                 FunFact = h.FunFact,
                 Pets = h.Pets,
                 ObsessedWith = h.ObsessedWith,
-                SpecialAbout = h.SpecialAbout
+                SpecialAbout = h.SpecialAbout,
+                // Add from ApplicationUser
+                FirstName = h.User?.FirstName,
+                LastName = h.User?.LastName,
+                ProfilePictureUrl = h.User?.ProfilePictureUrl
             };
+        }
+        public async Task<HostInsightsDto> GetHostInsightsAsync(int hostId)
+        {
+            var host = await _unitOfWork.Hosts.GetHostWithPropertiesAsync(hostId);
+            if (host == null)
+                return null;
+
+            var payouts = await _unitOfWork.HostPayoutRepo.GetByHostIdAsync(hostId);
+
+            var insights = new HostInsightsDto
+            {
+                HostId = hostId,
+                PropertyCount = host.Properties.Count,
+                AvailableBalance = host.AvailableBalance,
+                TotalEarnings = host.TotalEarnings,
+                TotalCompletedPayouts = payouts
+                .Where(p => p.Status.Equals("completed", StringComparison.OrdinalIgnoreCase))
+                .Sum(p => p.Amount),
+                TotalProcessingPayouts = payouts
+                .Where(p => p.Status.Equals("processing", StringComparison.OrdinalIgnoreCase))
+                .Sum(p => p.Amount),
+                TotalCompleted = payouts
+                .Count(p => p.Status.Equals("completed", StringComparison.OrdinalIgnoreCase)),
+                TotalProcessing = payouts
+                .Count(p => p.Status.Equals("processing", StringComparison.OrdinalIgnoreCase)),
+            };
+
+
+            return insights;
         }
     }
 }
